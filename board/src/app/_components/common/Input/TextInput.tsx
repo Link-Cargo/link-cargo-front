@@ -11,14 +11,14 @@ interface TextInputProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const TextInput: React.FC<TextInputProps> = ({
+const TextInput = ({
   label,
   type,
   placeholder,
   name,
   value,
   onChange,
-}) => {
+}: TextInputProps) => {
   return (
     <Container>
       <Label>{label}</Label>
