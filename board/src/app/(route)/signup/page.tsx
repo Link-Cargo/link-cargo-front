@@ -15,13 +15,17 @@ import {
 import PasswordForm from './PasswordForm';
 import { useRouter } from 'next/navigation';
 
+//TODO : 프로세스별 모듈 나누기
+//TODO : react-hook-form 도입 고려
 export default function Page() {
+  /*---- router ----*/
+  const router = useRouter();
+  /*---- state ----*/
   const [curr, setCurr] = useState(1);
   const [isAllChecked, setIsAllChecked] = useState(false);
   const [checkedItems, setCheckedItems] = useState<boolean[]>(
     Array(4).fill(false),
   );
-
   const [formData, setFormData] = useState({
     lastName: '',
     firstName: '',
@@ -30,12 +34,10 @@ export default function Page() {
     confirmPassword: '',
     companyName: '',
     serviceType: [] as string[],
-    position: '',
+    position: '직책을 선택해주세요',
     businessNumber: '',
   });
-
-  const router = useRouter();
-
+  /*---- function ----*/
   const handleAllCheck = () => {
     const newCheckedState = Array(acceptList.length).fill(!isAllChecked);
     setCheckedItems(newCheckedState);
@@ -58,6 +60,7 @@ export default function Page() {
 
   const isNextButtonDisabled = !checkedItems.slice(0, 3).every((item) => item);
 
+  /*---- jsx ----*/
   return (
     <Container>
       <Logo>
