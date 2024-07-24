@@ -36,6 +36,12 @@ const PasswordForm = ({ formData, handleInputChange }: PasswordFormProps) => {
     });
   }, [formData]);
 
+  const validationCriteria = [
+    { key: 'length', label: '8 자리 이상', isValid: passwordErrors.length },
+    { key: 'number', label: '숫자 포함', isValid: passwordErrors.number },
+    { key: 'letter', label: '영문 포함', isValid: passwordErrors.letter },
+  ];
+
   return (
     <>
       <TextInput
@@ -47,24 +53,14 @@ const PasswordForm = ({ formData, handleInputChange }: PasswordFormProps) => {
         onChange={handleInputChange}
       />
       <ValidationList>
-        <ValidationItem isValid={passwordErrors.length}>
-          <Icon isValid={passwordErrors.length} className="material-icons">
-            {passwordErrors.length ? 'check_circle' : 'cancel'}
-          </Icon>
-          <span>8 자리 이상</span>
-        </ValidationItem>
-        <ValidationItem isValid={passwordErrors.number}>
-          <Icon isValid={passwordErrors.number} className="material-icons">
-            {passwordErrors.number ? 'check_circle' : 'cancel'}
-          </Icon>
-          <span>숫자 포함</span>
-        </ValidationItem>
-        <ValidationItem isValid={passwordErrors.letter}>
-          <Icon isValid={passwordErrors.letter} className="material-icons">
-            {passwordErrors.letter ? 'check_circle' : 'cancel'}
-          </Icon>
-          <span>영문 포함</span>
-        </ValidationItem>
+        {validationCriteria.map(({ key, label, isValid }) => (
+          <ValidationItem key={key} isValid={isValid}>
+            <Icon isValid={isValid} className="material-icons">
+              {isValid ? 'check_circle' : 'cancel'}
+            </Icon>
+            <span>{label}</span>
+          </ValidationItem>
+        ))}
       </ValidationList>
       <TextInput
         label="비밀번호 확인"
