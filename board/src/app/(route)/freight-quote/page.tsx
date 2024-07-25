@@ -29,14 +29,8 @@ interface CargoInfo {
 
 export default function Page() {
   /*---- router ----*/
-  /*---- hooks ----*/
+  const router = useRouter();
   /*---- state ----*/
-  /*---- api call function ----*/
-  /*---- function ----*/
-  /*---- useEffect ----*/
-  /*---- jsx ----*/
-
-  const [curr, setCurr] = useState(1);
   const [formData, setFormData] = useState<CargoInfo>({
     출발지: '',
     도착지: '',
@@ -54,10 +48,8 @@ export default function Page() {
       },
     ],
   });
-
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(true);
-  const router = useRouter();
-
+  /*---- function ----*/
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
     index?: number,
@@ -109,13 +101,14 @@ export default function Page() {
       });
     }
   };
-
+  /*---- useEffect ----*/
   useEffect(() => {
     setIsNextButtonDisabled(
       !formData.출발지 || !formData.도착지 || !formData.희망출항날짜,
     );
   }, [formData]);
 
+  /*---- jsx ----*/
   return (
     <Layout>
       <Container>
