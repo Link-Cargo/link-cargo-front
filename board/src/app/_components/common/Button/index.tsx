@@ -8,17 +8,20 @@ interface ButtonProps {
   onClick: () => void;
   disabled?: boolean;
   flexValue?: number;
+  height?: number;
 }
 
 const Button = ({
   text,
   type,
   onClick,
+  height = 48,
   disabled = false,
   flexValue = 1,
 }: ButtonProps) => {
   return (
     <StyledButton
+      height={height}
       type={type}
       onClick={onClick}
       disabled={disabled}
@@ -35,6 +38,7 @@ interface StyledButtonProps {
   type: 'dark' | 'bright';
   flexValue?: number;
   disabled?: boolean;
+  height: number;
 }
 
 const StyledButton = styled.button<StyledButtonProps>`
@@ -43,9 +47,9 @@ const StyledButton = styled.button<StyledButtonProps>`
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px;
   border-radius: 30px;
-  padding: 12px 16px;
+  line-height: 20px;
+  height: ${({ height }) => `${height}px`};
   text-align: center;
   color: ${({ type }) => (type === 'dark' ? COLORS.w : COLORS.g3)};
   background-color: ${({ type }) => (type === 'dark' ? COLORS.main : COLORS.w)};

@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
 import styled from 'styled-components';
-import CloseIcon from '@mui/icons-material/Close';
 import { COLORS } from '@/app/_constant/color';
 
 export interface ConfirmProps {

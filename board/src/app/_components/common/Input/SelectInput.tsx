@@ -33,7 +33,7 @@ const SelectInput = ({
       <Label>{label}</Label>
       <DropdownContainer>
         <SelectedOption onClick={() => setIsOpen(!isOpen)}>
-          {selectedValue || '직책을 선택해 주세요.'}
+          {selectedValue}
           <Arrow isOpen={isOpen} />
         </SelectedOption>
         {isOpen && (
