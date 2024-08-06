@@ -30,7 +30,7 @@ const SelectInput = ({
 
   return (
     <Container>
-      <Label>{label}</Label>
+      {label && <Label>{label}</Label>}
       <DropdownContainer>
         <SelectedOption onClick={() => setIsOpen(!isOpen)}>
           {selectedValue}
