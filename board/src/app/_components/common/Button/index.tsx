@@ -17,7 +17,7 @@ const Button = ({
   onClick,
   height = 48,
   disabled = false,
-  flexValue = 1,
+  flexValue,
 }: ButtonProps) => {
   return (
     <StyledButton
@@ -42,12 +42,12 @@ interface StyledButtonProps {
 }
 
 const StyledButton = styled.button<StyledButtonProps>`
-  flex: ${({ flexValue }) => flexValue};
+  flex: ${({ flexValue }) => flexValue || 'auto'};
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 30px;
+  border-radius: 100px;
   line-height: 20px;
   height: ${({ height }) => `${height}px`};
   text-align: center;
