@@ -1,36 +1,84 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
-import { COLORS } from '@/app/_constant/color';
-import Button from '@/app/_components/common/Button';
-import { TextInput, CheckboxInput } from '@/app/_components/common/Input';
-import { useRouter } from 'next/navigation';
-import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
+import { List } from '@/app/_components/dashboard/List';
+import ProfileCard from '@/app/_components/dashboard/Profile';
+import {
+  CompareFreightRates,
+  CompareQuotes,
+  Overview,
+  MyChatHistory,
+  PaymentHistory,
+} from './(section)';
+
+interface ListItem {
+  title: string;
+  section: React.ReactNode;
+}
+
+export const dashboardListConfigs: ListItem[] = [
+  {
+    title: '한눈에 보기',
+    section: <Overview />,
+  },
+  {
+    title: '견적서 비교',
+    section: <CompareQuotes />,
+  },
+  {
+    title: '운임 관련 비교',
+    section: <CompareFreightRates />,
+  },
+  {
+    title: '나의 대화 이력',
+    section: <MyChatHistory />,
+  },
+  {
+    title: '결제 내역',
+    section: <PaymentHistory />,
+  },
+];
 
 export default function Page() {
-  /*---- router ----*/
-  /*---- hooks ----*/
-  /*---- state ----*/
-  /*---- api call function ----*/
-  /*---- function ----*/
-  /*---- useEffect ----*/
-  /*---- jsx ----*/
+  const [selectedSection, setSelectedSection] = useState<React.ReactNode>(
+    <Overview />,
+  );
+  const [selectedTitle, setSelectedTitle] = useState<string>('한눈에 보기');
+
+  const handleSectionChange = (section: React.ReactNode, title: string) => {
+    setSelectedSection(section);
+    setSelectedTitle(title);
+  };
+
   return (
     <Layout>
       <Container>
-        <Text title="대시보드" />
+        <div>
+          <ProfileCard
+            imgSrc="/assets/r1.png"
+            title="홍길동"
+            desc="소규모 수출 화주"
+          />
+          <List
+            listData={dashboardListConfigs}
+            selectedTitle={selectedTitle}
+            onSectionChange={handleSectionChange}
+          />
+        </div>
+        <section>{selectedSection}</section>
       </Container>
     </Layout>
   );
 }
 
 const Container = styled.div`
-  width: 850px;
   margin: 0 auto;
   display: flex;
-  flex-direction: column;
-  gap: 80px;
-  padding-top: 20px;
+  gap: 50px;
+
+  section {
+    flex: 1;
+  }
 `;
