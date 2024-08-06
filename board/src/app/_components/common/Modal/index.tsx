@@ -40,6 +40,8 @@ const OutSide = styled.div`
   bottom: 0;
   overflow-y: auto;
   background-color: rgba(0, 0, 0, 0.3);
+
+  z-index: 999;
 `;
 
 const ModalLayOut = styled.div`
@@ -53,4 +55,6 @@ const ModalLayOut = styled.div`
   border-radius: 10px;
   box-shadow: 0 2px 30px 0 rgba(0, 0, 0, 0.2);
   position: relative;
+
+  z-index: 9999;
 `;

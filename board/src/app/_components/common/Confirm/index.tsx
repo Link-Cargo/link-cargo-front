@@ -3,8 +3,8 @@ import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 
 export interface ConfirmProps {
-  title: string;
-  desc: string;
+  title?: string;
+  desc?: string;
   /** 팝업 컴포넌트에서 자식 노드로 들어갈 컴포넌트  */
   children?: ReactNode;
   /** 옵션1 이벤트 핸들러   */
