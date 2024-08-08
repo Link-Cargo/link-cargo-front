@@ -22,6 +22,32 @@ export default function Page() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+  /*---- api call function ----*/
+  const handleLogin = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/users/login`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.pw,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to login. Please try again.');
+      }
+
+      router.push('/main');
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   /*---- jsx ----*/
   return (
@@ -52,7 +78,7 @@ export default function Page() {
           text="로그인하기"
           type="dark"
           flexValue={3}
-          onClick={() => router.push('/main')}
+          onClick={handleLogin}
         />
       </ButtonSection>
       <FlexContainer>

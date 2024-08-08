@@ -108,6 +108,49 @@ export default function Page() {
     );
   }, [formData]);
 
+  /*---- api call function ----*/
+  const post화물등록 = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/cargos`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            exportPortId: 0,
+            importPortId: 0,
+            additionalInstructions: '',
+            friendlyDescription: '',
+            insuranceRequired: true,
+            cargoInfo: {
+              productName: 'string',
+              hsCode: 'string',
+              incoterms: 'string',
+              weight: 1,
+              value: 1,
+              quantity: 1,
+              boxSize: {
+                width: 1,
+                height: 1,
+                depth: 1,
+              },
+            },
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to login. Please try again.');
+      }
+
+      router.push('/main');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   /*---- jsx ----*/
   return (
     <Layout>
