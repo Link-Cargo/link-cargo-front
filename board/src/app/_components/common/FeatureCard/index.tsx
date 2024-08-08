@@ -35,6 +35,7 @@ const StyledFeatureCard = styled.div<StyledFeatureCardProps>`
   border: none;
   text-align: left;
   width: 332px;
+  gap: 20px;
 
   img {
     width: 100px;
