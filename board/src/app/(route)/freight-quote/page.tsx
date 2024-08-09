@@ -83,30 +83,31 @@ export default function Page() {
   };
 
   const addCargo = () => {
-    if (formData.화물.length < 5) {
-      setFormData({
-        ...formData,
-        화물: [
-          ...formData.화물,
-          {
-            총수출물품수량: 0,
-            박스당물품수량: 0,
-            박스가로: 0,
-            박스세로: 0,
-            박스높이: 0,
-            박스중량: 0,
-            물품가액: 0,
-          },
-        ],
-      });
-    }
+    setFormData({
+      ...formData,
+      화물: [
+        ...formData.화물,
+        {
+          총수출물품수량: 0,
+          박스당물품수량: 0,
+          박스가로: 0,
+          박스세로: 0,
+          박스높이: 0,
+          박스중량: 0,
+          물품가액: 0,
+        },
+      ],
+    });
   };
+
   /*---- useEffect ----*/
   useEffect(() => {
     setIsNextButtonDisabled(
       !formData.출발지 || !formData.도착지 || !formData.희망출항날짜,
     );
   }, [formData]);
+
+  /*---- api call function ----*/
 
   /*---- jsx ----*/
   return (
