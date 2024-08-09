@@ -6,6 +6,7 @@ import { COLORS } from '@/app/_constant/color';
 import Button from '@/app/_components/common/Button';
 import { TextInput } from '@/app/_components/common/Input';
 import { useRouter } from 'next/navigation';
+import { postLogin } from '@/app/_apis/postLogin';
 
 export default function Page() {
   /*---- router ----*/
@@ -22,6 +23,20 @@ export default function Page() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+
+  /*---- api call function ----*/
+  function wrapPostLogin() {
+    postLogin({
+      email: formData.email,
+      password: formData.pw,
+    })
+      .then((response) => {
+        router.push('/main');
+      })
+      .catch((error) => {
+        console.error('Error fetching register:', error);
+      });
+  }
 
   /*---- jsx ----*/
   return (
@@ -52,7 +67,7 @@ export default function Page() {
           text="로그인하기"
           type="dark"
           flexValue={3}
-          onClick={() => router.push('/main')}
+          onClick={wrapPostLogin}
         />
       </ButtonSection>
       <FlexContainer>
