@@ -14,9 +14,9 @@ import {
 } from '@/app/_components/common/Input';
 import PasswordForm from './PasswordForm';
 import { useRouter } from 'next/navigation';
+import { getPorts } from '@/app/_apis/getPorts';
+import { postRegister } from '@/app/_apis/postRegister';
 
-//TODO : 프로세스별 모듈 나누기
-//TODO : react-hook-form 도입 고려
 export default function Page() {
   /*---- router ----*/
   const router = useRouter();
@@ -27,14 +27,14 @@ export default function Page() {
     Array(4).fill(false),
   );
   const [formData, setFormData] = useState({
-    lastName: '',
     firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
     companyName: '',
-    serviceType: [] as string[],
-    position: '직책을 선택해주세요',
+    role: [] as string[],
+    jobTitle: '직책을 선택해주세요',
     businessNumber: '',
   });
   /*---- function ----*/
@@ -59,6 +59,30 @@ export default function Page() {
   };
 
   const isNextButtonDisabled = !checkedItems.slice(0, 3).every((item) => item);
+  /*---- api call function ----*/
+
+  function wrapPostRegister() {
+    postRegister({
+      role: formData.role,
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      password: formData.password,
+      companyName: formData.companyName,
+      jobTitle: formData.jobTitle,
+      businessNumber: formData.businessNumber,
+    })
+      .then((response) => {
+        router.push('/login');
+      })
+      .catch((error) => {
+        console.error('Error fetching register:', error);
+      });
+  }
+
+  useEffect(() => {
+    console.log(formData);
+  }, [formData]);
 
   /*---- jsx ----*/
   return (
@@ -145,20 +169,20 @@ export default function Page() {
               />
               <CheckboxInput
                 label="서비스 사용 유형 (중복 가능)"
-                name="serviceType"
+                name="role"
                 options={[
-                  { value: 'LCL 화주', label: 'LCL 화주' },
-                  { value: '포워더', label: '포워더' },
+                  { value: 'CONSIGNOR', label: 'LCL 화주' },
+                  { value: 'FORWARDER', label: '포워더' },
                 ]}
-                selectedOptions={formData.serviceType}
+                selectedOptions={formData.role}
                 onChange={(e) =>
                   handleInputChange(e as React.ChangeEvent<HTMLInputElement>)
                 }
               />
               <SelectInput
                 label="직책"
-                name="position"
-                value={formData.position}
+                name="jobTitle"
+                value={formData.jobTitle}
                 onChange={(e) =>
                   handleInputChange(e as React.ChangeEvent<HTMLSelectElement>)
                 }
@@ -190,7 +214,13 @@ export default function Page() {
               text="다음으로"
               type="dark"
               flexValue={3}
-              onClick={() => setCurr(curr + 1)}
+              onClick={() => {
+                if (curr === 3) {
+                  wrapPostRegister();
+                } else {
+                  setCurr(curr + 1);
+                }
+              }}
               disabled={isNextButtonDisabled}
             />
           </ButtonSection>
