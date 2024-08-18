@@ -14,3 +14,33 @@ export const JopOption = [
   { value: '부문장', label: '부문장' },
   { value: '기타', label: '기타' },
 ];
+
+export interface CargoItem {
+  productName: string;
+  hsCode: string;
+  content: string;
+  totalQuantity: number;
+  quantityPerBox: number;
+  boxSize: {
+    width: number;
+    height: number;
+    depth: number;
+  };
+  weight: number;
+  value: number;
+}
+
+export interface CargoInfo {
+  importPortId: number;
+  exportPortId: number;
+  wishExportDate: string;
+  incoterms: string[];
+  cargos: CargoItem[];
+  reserveList: number[];
+}
+
+export interface 항구SelectOptionsInfo {
+  id: number;
+  value: string;
+  label: string;
+}

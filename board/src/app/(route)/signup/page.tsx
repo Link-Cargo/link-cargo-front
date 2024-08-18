@@ -58,6 +58,10 @@ export default function Page() {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleRoleChange = (selectedOptions: string[]) => {
+    setFormData({ ...formData, role: selectedOptions }); // Update roles directly
+  };
+
   const isNextButtonDisabled = !checkedItems.slice(0, 3).every((item) => item);
   /*---- api call function ----*/
 
@@ -79,10 +83,6 @@ export default function Page() {
         console.error('Error fetching register:', error);
       });
   }
-
-  useEffect(() => {
-    console.log(formData);
-  }, [formData]);
 
   /*---- jsx ----*/
   return (
@@ -175,9 +175,7 @@ export default function Page() {
                   { value: 'FORWARDER', label: '포워더' },
                 ]}
                 selectedOptions={formData.role}
-                onChange={(e) =>
-                  handleInputChange(e as React.ChangeEvent<HTMLInputElement>)
-                }
+                onChange={handleRoleChange}
               />
               <SelectInput
                 label="직책"

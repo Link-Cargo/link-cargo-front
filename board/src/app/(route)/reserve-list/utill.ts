@@ -1,80 +1,45 @@
-export const 운송사옵션 = [
-  { value: 'KMTC', label: 'KMTC' },
-  { value: 'HMM', label: 'HMM' },
-  { value: 'HHMM', label: 'HHMM' },
-  { value: 'DEE', label: 'DEE' },
-];
-
-interface 예약가능리스트 {
+export interface 예약가능리스트객체 {
+  schedules: 예약가능리스트배열[];
+}
+export interface 예약가능리스트배열 {
   id: number;
-  이미지: string;
-  운송사: string;
+  exportPortId: number;
+  importPortId: number;
+  carrier: string;
+  vessel: string;
   ETD: string;
   ETA: string;
-  소요일: string;
-  서류마감일: string;
-  화물마감일: string;
+  transportType: 'DIRECT' | 'TRANSSHIPMENT';
+  transitTime: number;
+  documentCutOff: string;
+  cargoCutOff: string;
+  created_at: string;
+  updated_at: string;
 }
 
-export const 예약가능리스트: 예약가능리스트[] = [
-  {
-    id: 0,
-    이미지: '/assets/r1.png',
-    운송사: 'KMTC',
-    ETD: '24.06.21(월)',
-    ETA: '24.06.28(월)',
-    소요일: '5일 (직항)',
-    서류마감일: '24.07.04(목)',
-    화물마감일: '24.07.05(금)',
-  },
-  {
-    id: 1,
-    이미지: '/assets/r3.png',
-    운송사: 'HMM',
-    ETD: '24.06.21(월)',
-    ETA: '24.06.28(월)',
-    소요일: '6일 (환적)',
-    서류마감일: '24.07.04(목)',
-    화물마감일: '24.07.05(금)',
-  },
-  {
-    id: 2,
-    이미지: '/assets/r2.png',
-    운송사: 'HMM',
-    ETD: '24.06.21(월)',
-    ETA: '24.06.28(월)',
-    소요일: '6일 (환적)',
-    서류마감일: '24.07.04(목)',
-    화물마감일: '24.07.05(금)',
-  },
-  {
-    id: 3,
-    이미지: '/assets/r2.png',
-    운송사: 'HMM',
-    ETD: '24.06.21(월)',
-    ETA: '24.06.28(월)',
-    소요일: '6일 (환적)',
-    서류마감일: '24.07.04(목)',
-    화물마감일: '24.07.05(금)',
-  },
-  {
-    id: 4,
-    이미지: '/assets/r1.png',
-    운송사: 'HMM',
-    ETD: '24.06.21(월)',
-    ETA: '24.06.28(월)',
-    소요일: '6일 (환적)',
-    서류마감일: '24.07.04(목)',
-    화물마감일: '24.07.05(금)',
-  },
-  {
-    id: 5,
-    이미지: '/assets/r3.png',
-    운송사: 'HMM',
-    ETD: '24.06.21(월)',
-    ETA: '24.06.28(월)',
-    소요일: '6일 (환적)',
-    서류마감일: '24.07.04(목)',
-    화물마감일: '24.07.05(금)',
-  },
-];
+export function formatDateString(dateString: string) {
+  const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
+
+  const date = new Date(dateString);
+
+  const year = String(date.getFullYear()).slice(2); // 연도에서 뒤의 두 자리만 추출
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // 월 (0부터 시작하므로 +1)
+  const day = String(date.getDate()).padStart(2, '0'); // 일
+
+  const dayOfWeek = daysOfWeek[date.getDay()];
+
+  return `${year}.${month}.${day}(${dayOfWeek})`;
+}
+
+const transportTypeMap = {
+  DIRECT: '직항',
+  TRANSSHIPMENT: '환적',
+} as const;
+
+export function formatTransitTime(
+  transitTime: number,
+  transportType: keyof typeof transportTypeMap,
+): string {
+  const transportTypeString = transportTypeMap[transportType];
+  return `${transitTime}일 (${transportTypeString})`;
+}

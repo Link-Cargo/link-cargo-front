@@ -1,32 +1,63 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import Button from '@/app/_components/common/Button';
-import { SelectInput } from '@/app/_components/common/Input';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
-import { 예약가능리스트, 운송사옵션 } from './utill';
+import {
+  예약가능리스트객체,
+  formatDateString,
+  formatTransitTime,
+} from './utill';
 import OptionCard from '@/app/_components/common/OptionCard';
+import { getSchedule } from '@/app/_apis/getSchedule';
 
 export default function Page() {
   /*---- router ----*/
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   /*---- state ----*/
-  const [검색정보, set검색정보] = useState('부산항 → 상하이항 | 2024.06.24 ~');
-  const [예상비용, use예상비용] = useState<string>('1,234,456');
-  const [운송사, set운송사] = useState('운송사 선택');
-  const [선택한업체, use선택한업체] = useState<number[]>([]);
+  const [reserveList, setReserveList] = useState<number[]>([1, 2]);
+  const [예약가능리스트, set예약가능리스트] = useState<예약가능리스트객체>({
+    schedules: [],
+  });
+
   /*---- function ----*/
   const handleSelect = (id: number) => {
-    if (선택한업체.includes(id)) {
-      use선택한업체(선택한업체.filter((item) => item !== id));
-    } else {
-      use선택한업체([...선택한업체, id]);
+    setReserveList((prevList) =>
+      prevList.includes(id)
+        ? prevList.filter((item) => item !== id)
+        : [...prevList, id],
+    );
+  };
+
+  const handleSubmit = () => {
+    const queryParams = new URLSearchParams(searchParams.toString());
+    queryParams.set('reserveList', JSON.stringify(reserveList));
+
+    router.push(`/request?${queryParams.toString()}`);
+  };
+
+  /*---- api call function ----*/
+  const wrapGetSchedule = async () => {
+    try {
+      const response = await getSchedule();
+      console.log('schedule data>>>', response.schedules);
+      set예약가능리스트({ schedules: response.schedules });
+    } catch (error) {
+      console.error('Error fetching ports:', error);
     }
   };
+
+  /*---- useEffect ----*/
+  useEffect(() => {
+    wrapGetSchedule();
+  }, []);
+
   /*---- jsx ----*/
   return (
     <Layout>
@@ -38,21 +69,15 @@ export default function Page() {
         <FormSection gapValue={8}>
           <FlexContainer>
             <SearchBox>
-              <Icon className="material-icons">{'search'}</Icon>
-              <div>{검색정보}</div>
+              {searchParams.get('importPortId')} →{' '}
+              {searchParams.get('exportPortId')} (
+              {searchParams.get('wishExportDate')})
             </SearchBox>
             <GrayBox>
               <div>예상 비용</div>
-              <span>{예상비용}원</span>
+              <span>123,345,345원</span>
             </GrayBox>
           </FlexContainer>
-          <SelectInput
-            label=""
-            name="운송사"
-            value={운송사}
-            onChange={(e) => {}}
-            options={운송사옵션}
-          />
         </FormSection>
         <FormSection gapValue={30}>
           <Caution>
@@ -63,13 +88,20 @@ export default function Page() {
             <span>도움말</span>
           </Caution>
           <CardContainer>
-            {예약가능리스트.map((el) => (
+            {예약가능리스트.schedules.map((el) => (
               <OptionCard
                 key={el.id}
-                data={el}
+                data={{
+                  선명: el.vessel,
+                  ETD: formatDateString(el.ETD),
+                  ETA: formatDateString(el.ETA),
+                  소요일: formatTransitTime(el.transitTime, el.transportType),
+                  서류마감일: formatDateString(el.documentCutOff),
+                  화물마감일: formatDateString(el.cargoCutOff),
+                }}
                 select={{
-                  isSelected: 선택한업체.includes(el.id),
-                  num: 선택한업체.indexOf(el.id) + 1,
+                  isSelected: reserveList.includes(el.id),
+                  num: reserveList.indexOf(el.id) + 1,
                 }}
                 onClick={() => handleSelect(el.id)}
               />
@@ -80,9 +112,7 @@ export default function Page() {
           <Button
             text="포워딩 업체 선택 완료"
             type="dark"
-            onClick={() => {
-              router.push('/request');
-            }}
+            onClick={handleSubmit}
           />
         </ButtonSection>
       </Container>
@@ -101,9 +131,9 @@ const Container = styled.div`
 const CardContainer = styled.div`
   margin: 0 auto;
   display: flex;
-  gap: 18px 18px;
+  gap: 20px 20px;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: start;
 `;
 
 const FormSection = styled.div<{ gapValue: number }>`
@@ -146,31 +176,22 @@ const GrayBox = styled.div`
 `;
 
 const SearchBox = styled.div`
-  display: flex;
   height: 56px;
+  line-height: 56px;
   padding: 0px 28px;
-  align-items: center;
-  gap: 24px;
   border-radius: 12px;
   background-color: ${COLORS.w};
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
   flex: 1;
-
-  div {
-    font-size: 20px;
-    color: ${COLORS.g4};
-  }
+  text-align: center;
+  font-size: 20px;
+  color: ${COLORS.g4};
 `;
 
 const ButtonSection = styled.div`
   width: 100%;
   display: flex;
   gap: 20px;
-`;
-
-const Icon = styled.span`
-  font-size: 30px;
-  color: ${COLORS.main};
 `;
 
 const Caution = styled.span`

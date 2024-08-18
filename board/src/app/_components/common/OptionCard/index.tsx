@@ -7,16 +7,7 @@ export interface OptionCardProps {
     isSelected: boolean;
     num: number;
   };
-  data: {
-    id: number;
-    이미지: string;
-    운송사: string;
-    ETD: string;
-    ETA: string;
-    소요일: string;
-    서류마감일: string;
-    화물마감일: string;
-  };
+  data: Record<string, string | number>;
   onClick: () => void;
 }
 
@@ -24,32 +15,18 @@ const OptionCard = ({ select, data, onClick }: OptionCardProps) => {
   return (
     <StyledOptionCard isSelected={select.isSelected} onClick={onClick}>
       {select.num > 0 && <p>{select.num}</p>}
-      <img src={data.이미지} alt={`${data.운송사} 이미지`} />
+      {/* <img src={data.이미지 as string} alt={`${data.운송사} 이미지`} /> */}
+      <img src={'/assets/r1.png'} alt={`${data.운송사} 이미지`} />
       <ul>
-        <li>
-          <span>운송사</span>
-          <span>{data.운송사}</span>
-        </li>
-        <li>
-          <span>ETD</span>
-          <span>{data.ETD}</span>
-        </li>
-        <li>
-          <span>ETA</span>
-          <span>{data.ETA}</span>
-        </li>
-        <li>
-          <span>소요일</span>
-          <span>{data.소요일}</span>
-        </li>
-        <li>
-          <span>서류 마감일</span>
-          <span>{data.서류마감일}</span>
-        </li>
-        <li>
-          <span>화물 마감일</span>
-          <span>{data.화물마감일}</span>
-        </li>
+        {Object.keys(data).map(
+          (key) =>
+            key !== 'image' && (
+              <li key={key}>
+                <span>{key}</span>
+                <span>{data[key]}</span>
+              </li>
+            ),
+        )}
       </ul>
     </StyledOptionCard>
   );
@@ -63,8 +40,6 @@ interface StyledOptionCardProps {
 
 const StyledOptionCard = styled.div<StyledOptionCardProps>`
   background-color: ${COLORS.w};
-  box-shadow: ${({ isSelected }) =>
-    isSelected ? `0 0 0 2px ${COLORS.main} inset` : 'none'};
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -85,6 +60,10 @@ const StyledOptionCard = styled.div<StyledOptionCardProps>`
     background-color: ${({ isSelected }) =>
       isSelected ? `${COLORS.main}33` : 'transparent'};
     pointer-events: none;
+
+    box-shadow: ${({ isSelected }) =>
+      isSelected ? `0 0 0 2px ${COLORS.main} inset` : 'none'};
+    border-radius: 12px;
   }
 
   p {
@@ -109,7 +88,7 @@ const StyledOptionCard = styled.div<StyledOptionCardProps>`
 
   ul {
     margin: 0;
-    padding: 0;
+    padding: 0 10px;
     display: flex;
     flex-direction: column;
     justify-content: center;

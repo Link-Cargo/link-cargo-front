@@ -8,6 +8,7 @@ interface SelectInputProps {
   value: string;
   options: { value: string; label: string }[];
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  placeholder?: string;
 }
 
 const SelectInput = ({
@@ -16,6 +17,7 @@ const SelectInput = ({
   value,
   options,
   onChange,
+  placeholder,
 }: SelectInputProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value);
@@ -33,7 +35,7 @@ const SelectInput = ({
       {label && <Label>{label}</Label>}
       <DropdownContainer>
         <SelectedOption onClick={() => setIsOpen(!isOpen)}>
-          {selectedValue}
+          {selectedValue || <span>{placeholder}</span> || 'Select an option'}
           <Arrow isOpen={isOpen} />
         </SelectedOption>
         {isOpen && (
@@ -87,6 +89,11 @@ const SelectedOption = styled.div`
   cursor: pointer;
   background-color: white;
   user-select: none;
+
+  span {
+    color: ${COLORS.g2};
+    font-size: 14px;
+  }
 `;
 
 const Arrow = styled.div<{ isOpen: boolean }>`

@@ -54,11 +54,8 @@ export default function CompareFreightRates() {
   const [월별검색어, set월별검색어] = useState('7월');
 
   /*---- function ----*/
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
-    setCheckedItems((prev) =>
-      checked ? [...prev, value] : prev.filter((item) => item !== value),
-    );
+  const handleCheckboxChange = (selectedOptions: string[]) => {
+    setCheckedItems(selectedOptions); // Handle checkbox changes as an array of selected options
   };
 
   /*---- jsx ----*/

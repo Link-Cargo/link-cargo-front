@@ -23,15 +23,12 @@ interface ResultData {
 
 type GetIRegisterContentDto = ResponseDto<ResultData>;
 
-const tempAT =
-  'eyJhbGciOiJIUzI1NiJ9.eyJpZCI6OCwiZW1haWwiOiJzaWt5dW5nQGdtYWlsLmNvbSIsImlhdCI6MTcyMzE2NTM3NCwiZXhwIjoxNzIzMjUxNzc0fQ.OqnGd8T_wYQkeXFtLSvnGj2yfzfgzkBGHjqiR6GbAig';
-
 export const postRegister = async (req_body: RegisterContent) => {
   try {
     const response = await postAsync<GetIRegisterContentDto, RegisterContent>(
       `/users/register`,
       req_body,
-      tempAT,
+      process.env.NEXT_PUBLIC_TEMP_AT,
     );
     return response.result;
   } catch (error) {

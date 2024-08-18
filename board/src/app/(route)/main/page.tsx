@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { useRouter } from 'next/navigation';
 import FeatureCard from '@/app/_components/common/FeatureCard';
-import { useSpring, animated, config } from '@react-spring/web';
+import { useSprings, animated, config } from '@react-spring/web';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
@@ -21,6 +21,7 @@ export default function Page() {
   /*---- state ----*/
   const [slideIndex, setSlideIndex] = useState(0);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   /*---- function ----*/
 
   // 타이핑 이벤트
@@ -39,8 +40,9 @@ export default function Page() {
     setSlideIndex(swiper.activeIndex);
   }, []);
 
-  const springs = featureCardsConfigs.map((_, index) =>
-    useSpring({
+  const springs = useSprings(
+    featureCardsConfigs.length,
+    featureCardsConfigs.map((_, index) => ({
       from: { opacity: 0, transform: 'translateY(-50px)' },
       to:
         slideIndex === 1
@@ -48,11 +50,11 @@ export default function Page() {
           : { opacity: 0, transform: 'translateY(-50px)' },
       delay: index * 500,
       config: config.wobbly,
-    }),
+    })),
   );
 
   /*---- useEffect ----*/
-  //타이핑 효과 제어
+  // 타이핑 효과 제어
   useEffect(() => {
     if (slideIndex === 1) {
       typingEffect();
@@ -91,13 +93,13 @@ export default function Page() {
         <StyledSwiperSlide>
           <Title>{title}</Title>
           <FlexContainer>
-            {featureCardsConfigs.map((card, index) => (
-              <animated.div style={springs[index]} key={index}>
+            {springs.map((spring, index) => (
+              <animated.div style={spring} key={index}>
                 <FeatureCard
-                  imgSrc={card.imgSrc}
-                  title={card.title}
-                  desc={card.desc}
-                  bgColor={card.bgColor}
+                  imgSrc={featureCardsConfigs[index].imgSrc}
+                  title={featureCardsConfigs[index].title}
+                  desc={featureCardsConfigs[index].desc}
+                  bgColor={featureCardsConfigs[index].bgColor}
                 />
               </animated.div>
             ))}

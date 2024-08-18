@@ -18,7 +18,7 @@ interface ListItem {
   section: React.ReactNode;
 }
 
-export const dashboardListConfigs: ListItem[] = [
+const dashboardListConfigs: ListItem[] = [
   {
     title: '한눈에 보기',
     section: <Overview />,

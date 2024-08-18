@@ -7,7 +7,7 @@ interface CheckboxInputProps {
   name: string;
   options: { value: string; label: string }[];
   selectedOptions: string[];
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (selected: string[]) => void; // Changed to pass selected options directly
 }
 
 const CheckboxInput = ({
@@ -18,10 +18,11 @@ const CheckboxInput = ({
   onChange,
 }: CheckboxInputProps) => {
   const handleBoxClick = (value: string) => {
-    //React.ChangeEvent<HTMLInputElement>
-    onChange({
-      target: { name, value, checked: !selectedOptions.includes(value) },
-    } as any);
+    const newSelectedOptions = selectedOptions.includes(value)
+      ? selectedOptions.filter((option) => option !== value)
+      : [...selectedOptions, value];
+
+    onChange(newSelectedOptions); // Directly passing the updated array
   };
 
   return (
