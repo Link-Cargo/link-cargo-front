@@ -61,11 +61,11 @@ export default function Page() {
             title="홍길동"
             desc="소규모 수출 화주"
           />
-          <List
+          {/* <List
             listData={dashboardListConfigs}
             selectedTitle={selectedTitle}
             onSectionChange={handleSectionChange}
-          />
+          /> */}
         </div>
         <section>{selectedSection}</section>
       </Container>
