@@ -1,6 +1,9 @@
 # 기본 이미지로 Node.js 사용
 FROM node:18-alpine
 
+# Install pnpm globally
+RUN npm install -g pnpm
+
 # 작업 디렉토리 설정
 WORKDIR /board
 
