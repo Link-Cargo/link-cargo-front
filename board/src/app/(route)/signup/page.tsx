@@ -14,7 +14,7 @@ import {
 } from '@/app/_components/common/Input';
 import PasswordForm from './PasswordForm';
 import { useRouter } from 'next/navigation';
-import { getPorts } from '@/app/_apis/getPorts';
+// import { getPorts } from '@/app/_apis/getPorts';
 import { postRegister } from '@/app/_apis/postRegister';
 
 export default function Page() {
