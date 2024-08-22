@@ -5,16 +5,17 @@ FROM node:18-alpine
 RUN npm install -g pnpm
 
 # 작업 디렉토리 설정
-WORKDIR /app
-
-# 루트 디렉토리의 전체 파일을 /app/board 디렉토리로 복사
-COPY . /app/board
-
-# Next.js 프로젝트 디렉토리로 이동
 WORKDIR /app/board
 
+# package.json과 pnpm-lock.yaml 복사
+COPY board/package*.json ./
+COPY board/pnpm-lock.yaml ./
+
 # 의존성 설치
-RUN pnpm ci
+RUN pnpm install --frozen-lockfile
+
+# 소스 코드 복사
+COPY board .
 
 # 환경 변수 설정
 ARG NEXT_PUBLIC_API_BASE_URL
