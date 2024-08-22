@@ -21,6 +21,20 @@ export default function Page() {
   /*---- state ----*/
   const [slideIndex, setSlideIndex] = useState(0);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  /*---- useSpring for all animations ----*/
+  const springs = featureCardsConfigs.map((_, index) =>
+    useSpring({
+      from: { opacity: 0, transform: 'translateY(-50px)' },
+      to:
+        slideIndex === 1
+          ? { opacity: 1, transform: 'translateY(0px)' }
+          : { opacity: 0, transform: 'translateY(-50px)' },
+      delay: index * 500,
+      config: config.wobbly,
+    }),
+  );
+
   /*---- function ----*/
 
   // 타이핑 이벤트
@@ -38,18 +52,6 @@ export default function Page() {
   const handleSlideChange = useCallback((swiper: any) => {
     setSlideIndex(swiper.activeIndex);
   }, []);
-
-  const springs = featureCardsConfigs.map((_, index) =>
-    useSpring({
-      from: { opacity: 0, transform: 'translateY(-50px)' },
-      to:
-        slideIndex === 1
-          ? { opacity: 1, transform: 'translateY(0px)' }
-          : { opacity: 0, transform: 'translateY(-50px)' },
-      delay: index * 500,
-      config: config.wobbly,
-    }),
-  );
 
   /*---- useEffect ----*/
   //타이핑 효과 제어
