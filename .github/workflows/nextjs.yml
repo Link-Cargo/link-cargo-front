@@ -2,7 +2,7 @@ name: Deploy Next.js with Docker to GCP
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
 
 jobs:
   build-and-deploy:
@@ -25,11 +25,9 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/linkargo-web:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/linkcargo-web:latest
           build-args: |
-            NEXT_PUBLIC_SERVER=${{ secrets.NEXT_PUBLIC_SERVER }}
-            NEXT_PUBLIC_NEXT_SERVER=${{ secrets.NEXT_PUBLIC_NEXT_SERVER }}
-            NEXT_PUBLIC_GAHCON_SERVER=${{ secrets.NEXT_PUBLIC_GAHCON_SERVER }}
+            NEXT_PUBLIC_API_BASE_URL=${{secrets.NEXT_PUBLIC_API_BASE_URL  }}
 
       - name: Deploy to AWS
         uses: appleboy/ssh-action@master
@@ -38,10 +36,10 @@ jobs:
           username: ${{ secrets.HOST_NAME }}
           key: ${{ secrets.AWS_EC2_PRIVATE_KEY }}
           script: |
-            docker pull ${{ secrets.DOCKER_USERNAME }}/linkargo-web:latest
-            docker stop linkargo-web || true
-            docker rm linkargo-web || true
-            docker run -d --name linkargo-web \
+            docker pull ${{ secrets.DOCKER_USERNAME }}/linkcargo-web:latest
+            docker stop linkcargo-web || true
+            docker rm linkcargo-web || true
+            docker run -d --name linkcargo-web \
               -e TZ=Asia/Seoul \
               -p 3000:3000 \
-              ${{ secrets.DOCKER_USERNAME }}/linkargo-web:latest
+              ${{ secrets.DOCKER_USERNAME }}/linkcargo-web:latest
