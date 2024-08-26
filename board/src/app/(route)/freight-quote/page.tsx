@@ -1,80 +1,71 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import Button from '@/app/_components/common/Button';
-import { TextInput, CheckboxInput } from '@/app/_components/common/Input';
+import {
+  TextInput,
+  CheckboxInput,
+  SelectInput,
+} from '@/app/_components/common/Input';
 import { useRouter } from 'next/navigation';
 import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
-
-interface CargoItem {
-  총수출물품수량: number;
-  박스당물품수량: number;
-  박스가로: number;
-  박스세로: number;
-  박스높이: number;
-  박스중량: number;
-  물품가액: number;
-}
-
-interface CargoInfo {
-  출발지: string;
-  도착지: string;
-  희망출항날짜: string;
-  인코텀즈: string[];
-  화물: CargoItem[];
-}
+import { getPorts } from '@/app/_apis/getPorts';
+import { CargosContent, CargosInfo } from '@/app/_apis/postCargos';
 
 export default function Page() {
   /*---- router ----*/
   const router = useRouter();
+
   /*---- state ----*/
-  const [formData, setFormData] = useState<CargoInfo>({
-    출발지: '',
-    도착지: '',
-    희망출항날짜: '',
-    인코텀즈: [],
-    화물: [
-      {
-        총수출물품수량: 0,
-        박스당물품수량: 0,
-        박스가로: 0,
-        박스세로: 0,
-        박스높이: 0,
-        박스중량: 0,
-        물품가액: 0,
-      },
-    ],
+  const [formData, setFormData] = useState<CargosContent>({
+    exportPortId: 0,
+    importPortId: 0,
+    wishExportDate: '',
+    incoterms: '',
+    cargos: [],
   });
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(true);
+  const [importPortOptions, setImportPortOptions] = useState<
+    { value: string; label: string; id: number }[]
+  >([]);
+  const [exportPortOptions, setExportPortOptions] = useState<
+    { value: string; label: string; id: number }[]
+  >([]);
+
   /*---- function ----*/
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
     index?: number,
-    field?: keyof CargoItem,
+    field?:
+      | keyof CargosInfo
+      | 'boxSize.width'
+      | 'boxSize.height'
+      | 'boxSize.depth',
   ) => {
-    const target = e.target;
+    const { name, value } = e.target;
 
-    if (target instanceof HTMLInputElement) {
-      const { name, value, type, checked } = target;
-
-      if (index !== undefined && field) {
-        const updatedCargo = [...formData.화물];
-        updatedCargo[index] = {
-          ...updatedCargo[index],
-          [field]: type === 'checkbox' ? checked : parseFloat(value) || 0,
+    if (index !== undefined && field) {
+      const updatedCargos = [...formData.cargos];
+      if (field.startsWith('boxSize.')) {
+        const [_, boxField] = field.split('.');
+        updatedCargos[index] = {
+          ...updatedCargos[index],
+          boxSize: {
+            ...updatedCargos[index].boxSize,
+            [boxField]: Number(value),
+          },
         };
-        setFormData({ ...formData, 화물: updatedCargo });
       } else {
-        setFormData({
-          ...formData,
-          [name]: type === 'checkbox' ? checked : value,
-        });
+        updatedCargos[index] = {
+          ...updatedCargos[index],
+          [field]: value,
+        };
       }
-    } else if (target instanceof HTMLSelectElement) {
-      const { name, value } = target;
+      setFormData({ ...formData, cargos: updatedCargos });
+    } else {
       setFormData({
         ...formData,
         [name]: value,
@@ -85,29 +76,79 @@ export default function Page() {
   const addCargo = () => {
     setFormData({
       ...formData,
-      화물: [
-        ...formData.화물,
+      cargos: [
+        ...formData.cargos,
         {
-          총수출물품수량: 0,
-          박스당물품수량: 0,
-          박스가로: 0,
-          박스세로: 0,
-          박스높이: 0,
-          박스중량: 0,
-          물품가액: 0,
+          productName: '',
+          hsCode: '',
+          additionalNotes: '',
+          totalQuantity: 0,
+          quantityPerBox: 0,
+          boxSize: {
+            width: 0,
+            height: 0,
+            depth: 0,
+          },
+          weight: 0,
+          value: 0,
         },
       ],
     });
   };
 
+  const handleSubmit = () => {
+    const params = new URLSearchParams();
+
+    (Object.keys(formData) as (keyof CargosContent)[]).forEach((key) => {
+      const value = formData[key];
+
+      if (Array.isArray(value)) {
+        params.append(key, JSON.stringify(value));
+      } else {
+        params.append(key, value.toString());
+      }
+    });
+
+    router.push(`/reserve-list?${params.toString()}`);
+  };
+
   /*---- useEffect ----*/
   useEffect(() => {
     setIsNextButtonDisabled(
-      !formData.출발지 || !formData.도착지 || !formData.희망출항날짜,
+      !formData?.exportPortId ||
+        !formData.importPortId ||
+        !formData.wishExportDate,
     );
   }, [formData]);
 
+  useEffect(() => {
+    fetchPorts();
+  }, []);
+
   /*---- api call function ----*/
+  const fetchPorts = async () => {
+    try {
+      const importPorts = await getPorts('IMPORT');
+      const exportPorts = await getPorts('EXPORT');
+
+      setImportPortOptions(
+        importPorts.map((port) => ({
+          value: port.name,
+          label: port.name,
+          id: port.id,
+        })),
+      );
+      setExportPortOptions(
+        exportPorts.map((port) => ({
+          value: port.name,
+          label: port.name,
+          id: port.id,
+        })),
+      );
+    } catch (error) {
+      console.error('Failed to fetch ports:', error);
+    }
+  };
 
   /*---- jsx ----*/
   return (
@@ -120,47 +161,47 @@ export default function Page() {
         />
         <FormSection gapValue={30}>
           <FlexContainer>
-            <TextInput
+            <SelectInput
               label="출발지"
-              type="text"
+              name="exportPortId"
               placeholder="출발지 선택"
-              name="출발지"
-              value={formData.출발지}
+              value={formData.exportPortId.toString()}
               onChange={handleInputChange}
+              options={exportPortOptions}
             />
-            <TextInput
+            <SelectInput
               label="도착지"
-              type="text"
+              name="importPortId"
               placeholder="도착지 선택"
-              name="도착지"
-              value={formData.도착지}
+              value={formData.importPortId.toString()}
               onChange={handleInputChange}
+              options={importPortOptions}
             />
           </FlexContainer>
           <TextInput
             label="희망출항 날짜"
             type="date"
             placeholder="시작날짜 선택"
-            name="희망출항날짜"
-            value={formData.희망출항날짜}
+            name="wishExportDate"
+            value={formData.wishExportDate}
             onChange={handleInputChange}
           />
           <CheckboxInput
             label="인코텀즈"
-            name="인코텀즈"
+            name="incoterms"
             options={[
               { value: 'CIF', label: 'CIF' },
               { value: 'CFR', label: 'CFR' },
               { value: 'DAP', label: 'DAP' },
               { value: 'DDP', label: 'DDP' },
             ]}
-            selectedOptions={formData.인코텀즈}
+            selectedOptions={[formData.incoterms]}
             onChange={(e) =>
               handleInputChange(e as React.ChangeEvent<HTMLInputElement>)
             }
           />
         </FormSection>
-        {formData.화물.map((cargo, index) => (
+        {formData.cargos.map((cargo, index) => (
           <FormSection key={index} gapValue={12}>
             <Text subtitle={`화물 ${index + 1} `} />
             <FlexContainer>
@@ -168,17 +209,17 @@ export default function Page() {
                 label="총 수출 물품 수량"
                 type="number"
                 placeholder="총 수출 물품 수량"
-                name="총수출물품수량"
-                value={cargo.총수출물품수량.toString()}
-                onChange={(e) => handleInputChange(e, index, '총수출물품수량')}
+                name="totalQuantity"
+                value={cargo.totalQuantity.toString()}
+                onChange={(e) => handleInputChange(e, index, 'totalQuantity')}
               />
               <TextInput
                 label="박스당 물품 수량"
                 type="number"
                 placeholder="박스당 물품 수량"
-                name="박스당물품수량"
-                value={cargo.박스당물품수량.toString()}
-                onChange={(e) => handleInputChange(e, index, '박스당물품수량')}
+                name="quantityPerBox"
+                value={cargo.quantityPerBox.toString()}
+                onChange={(e) => handleInputChange(e, index, 'quantityPerBox')}
               />
             </FlexContainer>
             <FlexContainer>
@@ -186,55 +227,55 @@ export default function Page() {
                 label="박스가로"
                 type="number"
                 placeholder="박스가로"
-                name="박스가로"
-                value={cargo.박스가로.toString()}
-                onChange={(e) => handleInputChange(e, index, '박스가로')}
+                name="width"
+                value={cargo.boxSize.width.toString()}
+                onChange={(e) => handleInputChange(e, index, 'boxSize.width')}
               />
               <TextInput
                 label="박스세로"
                 type="number"
                 placeholder="박스세로"
-                name="박스세로"
-                value={cargo.박스세로.toString()}
-                onChange={(e) => handleInputChange(e, index, '박스세로')}
+                name="height"
+                value={cargo.boxSize.height.toString()}
+                onChange={(e) => handleInputChange(e, index, 'boxSize.height')}
               />
               <TextInput
                 label="박스높이"
                 type="number"
                 placeholder="박스높이"
-                name="박스높이"
-                value={cargo.박스높이.toString()}
-                onChange={(e) => handleInputChange(e, index, '박스높이')}
+                name="depth"
+                value={cargo.boxSize.depth.toString()}
+                onChange={(e) => handleInputChange(e, index, 'boxSize.depth')}
               />
             </FlexContainer>
             <TextInput
               label="박스중량"
               type="number"
               placeholder="박스중량"
-              name="박스중량"
-              value={cargo.박스중량.toString()}
-              onChange={(e) => handleInputChange(e, index, '박스중량')}
+              name="weight"
+              value={cargo.weight.toString()}
+              onChange={(e) => handleInputChange(e, index, 'weight')}
             />
             <TextInput
               label="물품 가액"
               type="number"
               placeholder="물품 가액"
-              name="물품가액"
-              value={cargo.물품가액.toString()}
-              onChange={(e) => handleInputChange(e, index, '물품가액')}
+              name="value"
+              value={cargo.value.toString()}
+              onChange={(e) => handleInputChange(e, index, 'value')}
             />
           </FormSection>
         ))}
-        {formData.화물.length < 5 && (
+        {formData.cargos.length < 5 && (
           <AddCargoButton onClick={addCargo}>
-            <Text desc={`화물 ${formData.화물.length + 1} 추가하기`} />
+            <Text desc={`화물 ${formData.cargos.length + 1} 추가하기`} />
           </AddCargoButton>
         )}
         <ButtonSection>
           <Button
             text="운임 조회하기"
             type="dark"
-            onClick={() => router.push('/reserve-list')}
+            onClick={handleSubmit}
             disabled={isNextButtonDisabled}
           />
         </ButtonSection>

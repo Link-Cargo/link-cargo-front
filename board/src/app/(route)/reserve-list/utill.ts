@@ -1,80 +1,30 @@
-export const 운송사옵션 = [
-  { value: 'KMTC', label: 'KMTC' },
-  { value: 'HMM', label: 'HMM' },
-  { value: 'HHMM', label: 'HHMM' },
-  { value: 'DEE', label: 'DEE' },
-];
-
-interface 예약가능리스트 {
-  id: number;
-  이미지: string;
-  운송사: string;
-  ETD: string;
-  ETA: string;
-  소요일: string;
-  서류마감일: string;
-  화물마감일: string;
+export function formatDate(arr: number[]): string {
+  const date = new Date(Date.UTC(arr[0], arr[1] - 1, arr[2], arr[3], arr[4]));
+  return date.toLocaleDateString('ko-KR', {
+    year: '2-digit',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'short',
+  });
 }
 
-export const 예약가능리스트: 예약가능리스트[] = [
-  {
-    id: 0,
-    이미지: '/assets/r1.png',
-    운송사: 'KMTC',
-    ETD: '24.06.21(월)',
-    ETA: '24.06.28(월)',
-    소요일: '5일 (직항)',
-    서류마감일: '24.07.04(목)',
-    화물마감일: '24.07.05(금)',
-  },
-  {
-    id: 1,
-    이미지: '/assets/r3.png',
-    운송사: 'HMM',
-    ETD: '24.06.21(월)',
-    ETA: '24.06.28(월)',
-    소요일: '6일 (환적)',
-    서류마감일: '24.07.04(목)',
-    화물마감일: '24.07.05(금)',
-  },
-  {
-    id: 2,
-    이미지: '/assets/r2.png',
-    운송사: 'HMM',
-    ETD: '24.06.21(월)',
-    ETA: '24.06.28(월)',
-    소요일: '6일 (환적)',
-    서류마감일: '24.07.04(목)',
-    화물마감일: '24.07.05(금)',
-  },
-  {
-    id: 3,
-    이미지: '/assets/r2.png',
-    운송사: 'HMM',
-    ETD: '24.06.21(월)',
-    ETA: '24.06.28(월)',
-    소요일: '6일 (환적)',
-    서류마감일: '24.07.04(목)',
-    화물마감일: '24.07.05(금)',
-  },
-  {
-    id: 4,
-    이미지: '/assets/r1.png',
-    운송사: 'HMM',
-    ETD: '24.06.21(월)',
-    ETA: '24.06.28(월)',
-    소요일: '6일 (환적)',
-    서류마감일: '24.07.04(목)',
-    화물마감일: '24.07.05(금)',
-  },
-  {
-    id: 5,
-    이미지: '/assets/r3.png',
-    운송사: 'HMM',
-    ETD: '24.06.21(월)',
-    ETA: '24.06.28(월)',
-    소요일: '6일 (환적)',
-    서류마감일: '24.07.04(목)',
-    화물마감일: '24.07.05(금)',
-  },
-];
+export function formatTransitTime(
+  transitTime: number,
+  transportType: string,
+): string {
+  return transportType === 'DIRECT'
+    ? `${transitTime}일 (직항)`
+    : `${transitTime}일 (환적)`;
+}
+
+export function processData(data: any) {
+  return {
+    imageUrl: data.imageUrl,
+    선명: data.vessel,
+    ETD: formatDate(data.ETD),
+    ETA: formatDate(data.ETA),
+    소요일: formatTransitTime(data.transitTime, data.transportType),
+    서류마감일: formatDate(data.documentCutOff),
+    화물마감일: formatDate(data.cargoCutOff),
+  };
+}

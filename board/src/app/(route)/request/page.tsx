@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import Button from '@/app/_components/common/Button';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
 import TextBox from './TextBox';
@@ -14,41 +14,58 @@ import { 선택한업체, 화물정보 } from './utill';
 import useModal from '@/app/_hooks/useModal';
 import Modal from '@/app/_components/common/Modal';
 import Confirm from '@/app/_components/common/Confirm';
-interface AddInfo {
-  HS코드: string;
-  화물명: {
-    이름: string;
-    보험부보희망: boolean;
-  };
-  기타전달사항: string;
-}
+import { CargosContent } from '@/app/_apis/postCargos';
+import { Suspense } from 'react';
 
-export default function Page() {
+function ContentPage() {
   /*---- router ----*/
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   /*---- hooks ----*/
   const { isShowing, toggle } = useModal();
+
   /*---- state ----*/
-  const [formData, setFormData] = useState<AddInfo>({
-    HS코드: '',
-    화물명: {
-      이름: '',
-      보험부보희망: false,
-    },
-    기타전달사항: '',
+  const [queryParams, setQueryParams] = useState<CargosContent>({
+    exportPortId: 0,
+    importPortId: 0,
+    wishExportDate: '',
+    incoterms: '',
+    cargos: [],
   });
+
+  /*---- effect ----*/
+  useEffect(() => {
+    const exportPortId = Number(searchParams.get('exportPortId')) || 0;
+    const importPortId = Number(searchParams.get('importPortId')) || 0;
+    const wishExportDate = searchParams.get('wishExportDate') || '';
+    const incoterms = searchParams.get('incoterms') || '';
+    const cargos = JSON.parse(searchParams.get('cargos') || '[]');
+
+    setQueryParams({
+      exportPortId,
+      importPortId,
+      wishExportDate,
+      incoterms,
+      cargos,
+    });
+  }, [searchParams]);
+
   /*---- function ----*/
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    if (name === '화물명') {
-      setFormData((prevData) => ({
-        ...prevData,
-        화물명: { ...prevData.화물명, 이름: value },
-      }));
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number,
+    field: 'productName' | 'hsCode' | 'additionalNotes',
+  ) => {
+    const { value } = e.target;
+    const updatedCargos = [...queryParams.cargos];
+    updatedCargos[index] = {
+      ...updatedCargos[index],
+      [field]: value,
+    };
+    setQueryParams({ ...queryParams, cargos: updatedCargos });
   };
+
   /*---- jsx ----*/
   return (
     <Layout>
@@ -61,70 +78,98 @@ export default function Page() {
           <Text subtitle="선택한 업체" />
           <FlexContainer>
             {선택한업체.map((item, index) => (
-              <MultiTextBox key={index} title={item.title} desc={item.desc} />
+              <MultiTextBox
+                key={index}
+                title={`업체 ${item}`}
+                desc={`업체 ${item} 설명`}
+              />
             ))}
           </FlexContainer>
         </FormSection>
         <FormSection gapValue={24}>
           <Text subtitle="화물 정보" />
           <FlexContainer>
-            {화물정보.slice(0, 3).map((item, index) => (
-              <TextBox
-                key={index}
-                title={item.title}
-                desc={item.desc}
-                isColored={item.isColored}
-              />
-            ))}
-          </FlexContainer>
-          <FlexContainer>
-            {화물정보.slice(3, 5).map((item, index) => (
-              <TextBox
-                key={index}
-                title={item.title}
-                desc={item.desc}
-                isColored={item.isColored}
-              />
-            ))}
-          </FlexContainer>
-          <FlexContainer>
-            {화물정보.slice(5).map((item, index) => (
-              <TextBox
-                key={index}
-                title={item.title}
-                desc={item.desc}
-                isColored={item.isColored}
-              />
-            ))}
+            <TextBox
+              title={`${queryParams.exportPortId} > ${queryParams.importPortId}`}
+              desc="출발지 > 도착지"
+              isColored={true}
+            />
+            <TextBox
+              title={queryParams.wishExportDate}
+              desc="희망 출항 날짜"
+              isColored={true}
+            />
+            <TextBox
+              title={queryParams.incoterms}
+              desc="인코텀즈"
+              isColored={true}
+            />
           </FlexContainer>
         </FormSection>
-        <FormSection gapValue={24}>
-          <Text subtitle="추가 정보 입력" />
-          <TextInput
-            label="HS 코드"
-            type="text"
-            placeholder="HS 코드를 입력해주세요."
-            name="HS코드"
-            value={formData.HS코드}
-            onChange={handleInputChange}
-          />
-          <TextInput
-            label="화물명"
-            type="text"
-            placeholder="화물명을 입력해주세요."
-            name="화물명"
-            value={formData.화물명.이름}
-            onChange={handleInputChange}
-          />
-          <TextInput
-            label="기타 전달사항"
-            type="text"
-            placeholder="전달사항을 입력해주세요."
-            name="기타전달사항"
-            value={formData.기타전달사항}
-            onChange={handleInputChange}
-          />
-        </FormSection>
+
+        {queryParams.cargos.map((cargo, index) => (
+          <React.Fragment key={index}>
+            <FormSection gapValue={24}>
+              <Text subtitle={`화물 ${index + 1} 정보`} />
+              <FlexContainer>
+                <TextBox
+                  title={`${cargo.totalQuantity} 개`}
+                  desc="총 수출 물품 수량"
+                  isColored={true}
+                />
+                <TextBox
+                  title={`${cargo.quantityPerBox} 개`}
+                  desc="박스 당 물품 수량"
+                  isColored={true}
+                />
+              </FlexContainer>
+              <FlexContainer>
+                <TextBox
+                  title={`${cargo.boxSize.width}x${cargo.boxSize.height}x${cargo.boxSize.depth} m`}
+                  desc="박스 길이 (가로x세로x높이) m"
+                  isColored={false}
+                />
+                <TextBox
+                  title={`${cargo.weight} kg`}
+                  desc="화물 중량"
+                  isColored={false}
+                />
+                <TextBox
+                  title={`${cargo.value} 원`}
+                  desc="물품 가액"
+                  isColored={false}
+                />
+              </FlexContainer>
+            </FormSection>
+            <FormSection gapValue={24}>
+              <Text subtitle={`화물 ${index + 1} 추가 정보`} />
+              <TextInput
+                label="HS 코드"
+                type="text"
+                placeholder="HS 코드를 입력해주세요."
+                name="hsCode"
+                value={cargo.hsCode}
+                onChange={(e) => handleInputChange(e, index, 'hsCode')}
+              />
+              <TextInput
+                label="화물명"
+                type="text"
+                placeholder="화물명을 입력해주세요."
+                name="productName"
+                value={cargo.productName}
+                onChange={(e) => handleInputChange(e, index, 'productName')}
+              />
+              <TextInput
+                label="기타 전달사항"
+                type="text"
+                placeholder="전달사항을 입력해주세요."
+                name="additionalNotes"
+                value={cargo.additionalNotes}
+                onChange={(e) => handleInputChange(e, index, 'additionalNotes')}
+              />
+            </FormSection>
+          </React.Fragment>
+        ))}
         <ButtonSection>
           <Button
             text="운임 조회하기"
@@ -158,6 +203,16 @@ export default function Page() {
     </Layout>
   );
 }
+
+const Page = () => {
+  return (
+    <Suspense>
+      <ContentPage />
+    </Suspense>
+  );
+};
+
+export default Page;
 
 const Container = styled.div`
   width: 850px;

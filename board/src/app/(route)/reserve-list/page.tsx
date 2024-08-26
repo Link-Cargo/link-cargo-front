@@ -1,32 +1,60 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import Button from '@/app/_components/common/Button';
-import { SelectInput } from '@/app/_components/common/Input';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
-import { 예약가능리스트, 운송사옵션 } from './utill';
 import OptionCard from '@/app/_components/common/OptionCard';
+import { getSchedules, ResultData } from '@/app/_apis/getSchedules';
+import { processData } from './utill';
+import { Suspense } from 'react';
 
-export default function Page() {
+function ContentPage() {
   /*---- router ----*/
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   /*---- state ----*/
-  const [검색정보, set검색정보] = useState('부산항 → 상하이항 | 2024.06.24 ~');
-  const [예상비용, use예상비용] = useState<string>('1,234,456');
-  const [운송사, set운송사] = useState('운송사 선택');
-  const [선택한업체, use선택한업체] = useState<number[]>([]);
+  const [scheduleInfo, setScheduleInfo] = useState<ResultData>();
+  const [selectedList, setSelectedList] = useState<number[]>([]);
+
   /*---- function ----*/
   const handleSelect = (id: number) => {
-    if (선택한업체.includes(id)) {
-      use선택한업체(선택한업체.filter((item) => item !== id));
+    if (selectedList.includes(id)) {
+      setSelectedList(selectedList.filter((item) => item !== id));
     } else {
-      use선택한업체([...선택한업체, id]);
+      setSelectedList([...selectedList, id]);
     }
   };
+
+  const exportPortId = decodeURIComponent(
+    searchParams.get('exportPortId') || '',
+  );
+  const importPortId = decodeURIComponent(
+    searchParams.get('importPortId') || '',
+  );
+  const wishExportDate = searchParams.get('wishExportDate') || '';
+
+  const searchBoxText = `${exportPortId} → ${importPortId} | ${wishExportDate}`;
+
+  /*---- api call function ----*/
+  const fetchSchedules = async () => {
+    try {
+      const data = await getSchedules();
+      setScheduleInfo(data);
+    } catch (error) {
+      console.error('스케쥴 정보를 가져오는 데 실패했습니다:', error);
+    }
+  };
+
+  /*---- effect ----*/
+  useEffect(() => {
+    fetchSchedules();
+  }, []);
+
   /*---- jsx ----*/
   return (
     <Layout>
@@ -37,22 +65,21 @@ export default function Page() {
         />
         <FormSection gapValue={8}>
           <FlexContainer>
-            <SearchBox>
-              <Icon className="material-icons">{'search'}</Icon>
-              <div>{검색정보}</div>
-            </SearchBox>
+            <SearchBox>{searchBoxText}</SearchBox>
             <GrayBox>
               <div>예상 비용</div>
-              <span>{예상비용}원</span>
+              <span>123,123,123원</span>
             </GrayBox>
           </FlexContainer>
-          <SelectInput
-            label=""
-            name="운송사"
-            value={운송사}
-            onChange={(e) => {}}
-            options={운송사옵션}
-          />
+          <Tip>
+            <span>TIP!</span>
+            <div>
+              LCL 화물은 FCL 화물보다 4~5일 더 소요돼요. 적재 전과 운송 후에
+              화물의 품질 및 수량 확인, 수출 처리, 컨테이너 배송 및 회수, 추가
+              검사 등 FCL보다 더 많은 과정을 거쳐요. 스케줄을 선택할 때 이 점을
+              고려해주세요.
+            </div>
+          </Tip>
         </FormSection>
         <FormSection gapValue={30}>
           <Caution>
@@ -63,17 +90,20 @@ export default function Page() {
             <span>도움말</span>
           </Caution>
           <CardContainer>
-            {예약가능리스트.map((el) => (
-              <OptionCard
-                key={el.id}
-                data={el}
-                select={{
-                  isSelected: 선택한업체.includes(el.id),
-                  num: 선택한업체.indexOf(el.id) + 1,
-                }}
-                onClick={() => handleSelect(el.id)}
-              />
-            ))}
+            {scheduleInfo?.schedules.map((el) => {
+              const processedData = processData(el);
+              return (
+                <OptionCard
+                  key={el.id}
+                  data={processedData}
+                  select={{
+                    isSelected: selectedList.includes(el.id),
+                    num: selectedList.indexOf(el.id) + 1,
+                  }}
+                  onClick={() => handleSelect(el.id)}
+                />
+              );
+            })}
           </CardContainer>
         </FormSection>
         <ButtonSection>
@@ -81,7 +111,9 @@ export default function Page() {
             text="포워딩 업체 선택 완료"
             type="dark"
             onClick={() => {
-              router.push('/request');
+              const params = new URLSearchParams(searchParams);
+              params.set('selectedList', JSON.stringify(selectedList));
+              router.push(`/request?${params.toString()}`);
             }}
           />
         </ButtonSection>
@@ -89,6 +121,16 @@ export default function Page() {
     </Layout>
   );
 }
+
+const Page = () => {
+  return (
+    <Suspense>
+      <ContentPage />
+    </Suspense>
+  );
+};
+
+export default Page;
 
 const Container = styled.div`
   width: 850px;
@@ -146,19 +188,32 @@ const GrayBox = styled.div`
 `;
 
 const SearchBox = styled.div`
-  display: flex;
   height: 56px;
+  line-height: 56px;
   padding: 0px 28px;
-  align-items: center;
-  gap: 24px;
   border-radius: 12px;
   background-color: ${COLORS.w};
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
   flex: 1;
+  text-align: center;
+
+  font-size: 20px;
+  color: ${COLORS.g4};
+`;
+
+const Tip = styled.div`
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  padding: 10px 0px;
 
   div {
-    font-size: 20px;
-    color: ${COLORS.g4};
+    color: ${COLORS.g3};
+  }
+
+  span {
+    color: ${COLORS.red};
+    font-weight: 800;
   }
 `;
 
