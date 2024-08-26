@@ -3,8 +3,8 @@ import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 
 interface TextInputProps {
-  label: string;
-  type: string;
+  label?: string;
+  type?: string;
   placeholder: string;
   name: string;
   value: string;
@@ -13,7 +13,7 @@ interface TextInputProps {
 
 const TextInput = ({
   label,
-  type,
+  type = 'text',
   placeholder,
   name,
   value,
@@ -21,7 +21,7 @@ const TextInput = ({
 }: TextInputProps) => {
   return (
     <Container>
-      <Label>{label}</Label>
+      {label && <Label>{label}</Label>}
       <Input
         type={type}
         placeholder={placeholder}
