@@ -1,5 +1,13 @@
-import { Test } from './_components/test';
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
-  return <Test title="home" />;
+  const router = useRouter();
+
+  useEffect(() => {
+    router.push('/main');
+  }, [router]);
+
+  return null;
 }
