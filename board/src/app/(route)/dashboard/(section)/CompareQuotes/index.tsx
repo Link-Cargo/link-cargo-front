@@ -14,10 +14,11 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
-
+import { useRouter } from 'next/navigation';
 import { Mousewheel, Pagination, Autoplay } from 'swiper/modules';
 
 export default function CompareQuotes() {
+  const router = useRouter();
   /*---- state ----*/
   const [최근검색어, set최근검색어] = useState(
     '인천항 → 상하이항 | ETD : 2024.06.24',
@@ -87,7 +88,9 @@ export default function CompareQuotes() {
                     text="1:1 문의하기"
                     flexValue={1}
                     type="dark"
-                    onClick={() => {}}
+                    onClick={() => {
+                      router.push('/dashboard#chat_history');
+                    }}
                   />
                 </StyledTable>
               </Box>
@@ -196,6 +199,9 @@ const SlideContent = styled.div`
   display: flex;
   height: 100%;
   padding: 16px;
+
+  background: #fff;
+  border-radius: 12px;
 `;
 
 const StyledSwiper = styled(Swiper)`

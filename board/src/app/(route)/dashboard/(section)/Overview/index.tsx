@@ -1,6 +1,4 @@
-'use client';
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { styled } from 'styled-components';
 import { Box } from '@/app/_components/dashboard/Box';
 import { BgType } from '@/app/_components/dashboard/Profile';
@@ -18,6 +16,19 @@ import Modal from '@/app/_components/common/Modal';
 import Confirm from '@/app/_components/common/Confirm';
 import Layout from '@/app/_components/dashboard/Layout';
 
+import {
+  getRecommendation,
+  ResultData as RecommendationData,
+} from '@/app/_apis/dashboard/getRecommendation';
+import {
+  getSummary,
+  ResultData as SummaryData,
+} from '@/app/_apis/dashboard/getSummary';
+import {
+  getCongestion,
+  ResultData as CongestionData,
+} from '@/app/_apis/dashboard/getCongestion';
+
 export default function Overview() {
   /*---- hooks ----*/
   const { isShowing: isAiShowing, toggle: toggleAiModal } = useModal();
@@ -27,6 +38,29 @@ export default function Overview() {
   const [최근검색어, set최근검색어] = useState(
     '인천항 → 상하이항 | ETD : 2024.06.24',
   );
+  const [recommendationInfo, setRecommendationInfo] =
+    useState<RecommendationData>();
+  const [summary, setSummary] = useState<SummaryData>();
+  const [congestion, setCongestion] = useState<CongestionData>();
+
+  /*---- api call function ----*/
+  const fetchOverview = async () => {
+    try {
+      const data = await getRecommendation();
+      const summaryData = await getSummary();
+      const congestionData = await getCongestion();
+      setRecommendationInfo(data);
+      setSummary(summaryData);
+      setCongestion(congestionData);
+    } catch (error) {
+      console.error('추천 정보를 가져오는 데 실패했습니다:', error);
+    }
+  };
+
+  /*---- effect ----*/
+  useEffect(() => {
+    fetchOverview();
+  }, []);
 
   /*---- function ----*/
   const exportPdf = () => {};
@@ -82,10 +116,12 @@ export default function Overview() {
         <Box desc="더 저렴한 가격 추천" bgType={BgType.BRIGHT} width="70%">
           <div>
             <Title>
-              <b>두 달 뒤,</b>운임이 <b>20</b>만큼 <b>낮을 것</b>으로 예상
+              <b>{recommendationInfo?.dateDifference}개월 뒤,</b> 운임이{' '}
+              <b>{recommendationInfo?.indexDifference}</b>만큼 <b>낮을 것</b>
+              으로 예상
             </Title>
             <SubTitle>
-              예상 비용 | <b>1,234,567원</b>
+              예상 비용 | <b>{recommendationInfo?.estimatedCost}원</b>
             </SubTitle>
           </div>
           <div>
@@ -124,13 +160,15 @@ export default function Overview() {
       <FlexBox>
         <Box desc="입국항 혼잡도" bgType={BgType.DARK} width="30%">
           <Title>
-            <b>{정보.혼잡도.수치}</b> {정보.혼잡도.정도}
+            <b>{congestion?.percent}%</b> {congestion?.status}
           </Title>
-          <Desc>{정보.혼잡도.설명}</Desc>
+          <Desc>{congestion?.description}</Desc>
         </Box>
         <Box desc="관련정보 요약" bgType={BgType.DARK} width="70%">
-          <Title>수출국 | 수입국 | 운송사 | 환율 | 주요항로</Title>
-          <Desc>{정보.요약}</Desc>
+          <Title>
+            {summary?.interests.map((interest) => interest.trim()).join(' | ')}
+          </Title>
+          <Desc>{summary?.summary}</Desc>
         </Box>
       </FlexBox>
       <Modal
@@ -147,7 +185,11 @@ export default function Overview() {
               onClick: exportPdf,
               text: 'PDF 내보내기',
             }}
-          />
+          >
+            <ImgD>
+              <img src="/assets/pdf.png" />
+            </ImgD>
+          </Confirm>
         }
       />
       <Modal
@@ -313,4 +355,7 @@ const Icon = styled.span`
 
 const ImgC = styled.div`
   width: 800px;
+`;
+const ImgD = styled.div`
+  width: 300px;
 `;

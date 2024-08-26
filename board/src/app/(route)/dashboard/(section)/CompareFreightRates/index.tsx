@@ -1,65 +1,103 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
 import { Box } from '@/app/_components/dashboard/Box';
 import { BgType } from '@/app/_components/dashboard/Profile';
 import { COLORS } from '@/app/_constant/color';
 import { SelectInput } from '@/app/_components/common/Input';
-import useModal from '@/app/_hooks/useModal';
-import { TextInput, CheckboxInput } from '@/app/_components/common/Input';
 import Button from '@/app/_components/common/Button';
-import { 운송사리스트 } from '../Overview/utils';
+import { 운송사리스트, 최근검색어_리스트 } from '../Overview/utils';
 import Layout from '@/app/_components/dashboard/Layout';
-export const 최근검색어_리스트 = [
-  {
-    value: '인천항 → 상하이항 | ETD : 2024.06.20',
-    label: '인천항 → 상하이항 | ETD : 2024.06.20',
-  },
-  {
-    value: '인천항 → 상하이항 | ETD : 2024.06.21',
-    label: '인천항 → 상하이항 | ETD : 2024.06.21',
-  },
-  {
-    value: '인천항 → 상하이항 | ETD : 2024.06.22',
-    label: '인천항 → 상하이항 | ETD : 2024.06.22',
-  },
-  {
-    value: '인천항 → 상하이항 | ETD : 2024.06.23',
-    label: '인천항 → 상하이항 | ETD : 2024.06.23',
-  },
-];
-
-export const 월별_검색_리스트 = [
-  {
-    value: '6월',
-    label: '6월',
-  },
-  {
-    value: '7월',
-    label: '7월',
-  },
-  {
-    value: '8월',
-    label: '8월',
-  },
-];
+import {
+  getRecommendation,
+  ResultData as RecommendationData,
+} from '@/app/_apis/dashboard/getRecommendation';
+import {
+  getSummary,
+  ResultData as SummaryData,
+} from '@/app/_apis/dashboard/getSummary';
+import {
+  getPredictionReason,
+  ResultData as PredictionReasonData,
+} from '@/app/_apis/dashboard/getPredictionReason';
 
 export default function CompareFreightRates() {
   /*---- state ----*/
-  const [checkedItems, setCheckedItems] = useState<string[]>([]);
   const [최근검색어, set최근검색어] = useState(
     '인천항 → 상하이항 | ETD : 2024.06.21',
   );
-  const [월별검색어, set월별검색어] = useState('7월');
+  const [월별_검색_리스트, set월별_검색_리스트] = useState<
+    { value: string; label: string }[]
+  >([]);
+
+  const [recommendationInfo, setRecommendationInfo] =
+    useState<RecommendationData>();
+  const [prediction, setPrediction] = useState<PredictionReasonData>();
+  const [summary, setSummary] = useState<SummaryData>();
+  const [selectedMonth, setSelectedMonth] = useState({
+    month: '9월',
+    status: '',
+    reason: '',
+  });
 
   /*---- function ----*/
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
-    setCheckedItems((prev) =>
-      checked ? [...prev, value] : prev.filter((item) => item !== value),
+
+  //선택한 달 데이터 setSelectedMonth
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedMonthValue = e.target.value;
+
+    const selectedPrediction = prediction?.predictionReasons.find((item) =>
+      item.date.some((date) => `${date.month}월` === selectedMonthValue),
     );
+
+    if (selectedPrediction) {
+      setSelectedMonth({
+        month: selectedMonthValue,
+        status: selectedPrediction.status,
+        reason: selectedPrediction.reason,
+      });
+    }
   };
+
+  /*---- api call function ----*/
+  const fetchCompare = async () => {
+    try {
+      const data = await getRecommendation();
+      const predictionData = await getPredictionReason();
+      const summaryData = await getSummary();
+      setRecommendationInfo(data);
+      setPrediction(predictionData);
+      setSummary(summaryData);
+
+      // 월별 검색어 리스트 생성
+      const monthOptions = predictionData?.predictionReasons.map((item) => {
+        const month = item.date[1]?.month || '';
+        return { value: `${month}월`, label: `${month}월` };
+      });
+      set월별_검색_리스트(monthOptions || []);
+
+      // 첫 번째 월별 데이터를 기본 선택
+      if (monthOptions && monthOptions.length > 0) {
+        const firstMonth = monthOptions[0].value;
+        const firstPrediction = predictionData.predictionReasons.find((item) =>
+          item.date.some((date) => `${date.month}월` === firstMonth),
+        );
+        setSelectedMonth({
+          month: firstPrediction?.status || '',
+          status: firstPrediction?.status || '',
+          reason: firstPrediction?.reason || '',
+        });
+      }
+    } catch (error) {
+      console.error('정보를 가져오는 데 실패했습니다:', error);
+    }
+  };
+
+  /*---- effect ----*/
+  useEffect(() => {
+    fetchCompare();
+  }, []);
 
   /*---- jsx ----*/
   return (
@@ -86,22 +124,34 @@ export default function CompareFreightRates() {
             <SelectInput
               label=""
               name="월별"
-              value={월별검색어}
-              onChange={(e) => {}}
+              value={selectedMonth.month}
+              onChange={handleMonthChange}
               options={월별_검색_리스트}
             />
-            <SubTitle>하락이 예상됩니다.</SubTitle>
+            <SubTitle>
+              {selectedMonth.status === 'rising'
+                ? '상승이 예상됩니다.'
+                : '하락이 예상됩니다.'}
+            </SubTitle>
           </FlexBox>
+          <Desc>
+            {selectedMonth.status === 'rising'
+              ? '상승 요인 | '
+              : '하락 요인 | '}
+            {selectedMonth.reason}
+          </Desc>
         </Box>
       </FlexBox>
       <FlexBox>
         <Box desc="더 저렴한 가격 추천" bgType={BgType.BRIGHT} width="70%">
           <div>
             <Title>
-              <b>두 달 뒤,</b>운임이 <b>20</b>만큼 <b>낮을 것</b>으로 예상
+              <b>{recommendationInfo?.dateDifference}개월 뒤,</b> 운임이{' '}
+              <b>{recommendationInfo?.indexDifference}</b>만큼 <b>낮을 것</b>
+              으로 예상
             </Title>
             <SubTitle>
-              예상 비용 | <b>1,234,567원</b>
+              예상 비용 | <b>{recommendationInfo?.estimatedCost}원</b>
             </SubTitle>
           </div>
           <div>
@@ -137,25 +187,23 @@ export default function CompareFreightRates() {
           </div>
         </Box>
         <Box desc="관련정보 요약" bgType={BgType.DARK} width="30%">
-          <CheckboxInput
-            label=""
-            name="관련정보 요약"
-            options={[
-              { value: '수출국', label: '수출국' },
-              { value: '수입국', label: '수입국' },
-              { value: '운송사', label: '운송사' },
-              { value: '환율', label: '환율' },
-              { value: '주요항로', label: '주요항로' },
-            ]}
-            selectedOptions={checkedItems}
-            onChange={handleCheckboxChange}
-          />
-          <Desc>
-            항구에 머물고 있는 컨테이너선의 비율이 큽니다. 선박이 대기하는
-            시간이 길어지고, 항구 혼잡으로 인해 하역 및 적재 작업이 지연될 수
-            있으니 이를 고려해서 수출입 스케줄을 조정해항구에 머물고 있는
-            컨테이너선의 비율이 큽니다. 선박이 대기하는 시간이 길어지고, 항구 혼
-          </Desc>
+          <SummaryBox>
+            {summary?.interests.map((interest, index) => (
+              <div key={index}>
+                <span
+                  className="material-icons"
+                  style={{
+                    borderRadius: '10px',
+                    color: '#bbb',
+                  }}
+                >
+                  check_box
+                </span>
+                <span>{interest}</span>
+              </div>
+            ))}
+          </SummaryBox>
+          <Desc>{summary?.summary}</Desc>
         </Box>
       </FlexBox>
     </Layout>
@@ -166,6 +214,18 @@ const FlexBox = styled.div`
   width: 100%;
   display: flex;
   gap: 25px;
+`;
+
+const SummaryBox = styled.div`
+  width: 100%;
+  display: flex;
+  gap: 10px;
+
+  div {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
 `;
 
 const Title = styled.div`
@@ -215,4 +275,8 @@ const Table = styled.table`
   td {
     color: ${COLORS.g3};
   }
+`;
+const Icon = styled.span`
+  font-size: 20px;
+  color: ${COLORS.main};
 `;
