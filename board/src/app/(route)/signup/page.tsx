@@ -14,7 +14,6 @@ import {
 } from '@/app/_components/common/Input';
 import PasswordForm from './PasswordForm';
 import { useRouter } from 'next/navigation';
-// import { getPorts } from '@/app/_apis/getPorts';
 import { postRegister } from '@/app/_apis/postRegister';
 
 export default function Page() {
@@ -73,7 +72,8 @@ export default function Page() {
       businessNumber: formData.businessNumber,
     })
       .then((response) => {
-        router.push('/login');
+        setCurr(4);
+        // router.push('/login');
       })
       .catch((error) => {
         console.error('Error fetching register:', error);
