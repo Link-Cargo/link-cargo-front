@@ -118,6 +118,7 @@ export default function CompareFreightRates() {
           <SubTitle>
             현재를 기준으로 부산항 → 상하이항 운임 예측값입니다.
           </SubTitle>
+          <img src="/assets/graph.png" />
         </Box>
         <Box desc="운임지수 변화 이유" bgType={BgType.BRIGHT} width="30%">
           <FlexBox>
@@ -243,7 +244,7 @@ const Title = styled.div`
 const SubTitle = styled.div`
   color: ${COLORS.g5};
   font-size: 20px;
-  font-weight: 800;
+  font-weight: 500;
   white-space: pre;
   line-height: 46px;
 `;
