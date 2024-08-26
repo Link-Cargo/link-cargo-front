@@ -7,16 +7,7 @@ export interface OptionCardProps {
     isSelected: boolean;
     num: number;
   };
-  data: {
-    id: number;
-    이미지: string;
-    운송사: string;
-    ETD: string;
-    ETA: string;
-    소요일: string;
-    서류마감일: string;
-    화물마감일: string;
-  };
+  data: Record<string, any>;
   onClick: () => void;
 }
 
@@ -24,32 +15,17 @@ const OptionCard = ({ select, data, onClick }: OptionCardProps) => {
   return (
     <StyledOptionCard isSelected={select.isSelected} onClick={onClick}>
       {select.num > 0 && <p>{select.num}</p>}
-      <img src={data.이미지} alt={`${data.운송사} 이미지`} />
+      {data.imageUrl && <img src={data.imageUrl} alt={`${data.선명} 이미지`} />}
       <ul>
-        <li>
-          <span>운송사</span>
-          <span>{data.운송사}</span>
-        </li>
-        <li>
-          <span>ETD</span>
-          <span>{data.ETD}</span>
-        </li>
-        <li>
-          <span>ETA</span>
-          <span>{data.ETA}</span>
-        </li>
-        <li>
-          <span>소요일</span>
-          <span>{data.소요일}</span>
-        </li>
-        <li>
-          <span>서류 마감일</span>
-          <span>{data.서류마감일}</span>
-        </li>
-        <li>
-          <span>화물 마감일</span>
-          <span>{data.화물마감일}</span>
-        </li>
+        {Object.entries(data).map(
+          ([key, value]) =>
+            key !== 'imageUrl' && (
+              <li key={key}>
+                <span>{key}</span>
+                <span>{value}</span>
+              </li>
+            ),
+        )}
       </ul>
     </StyledOptionCard>
   );
@@ -63,8 +39,6 @@ interface StyledOptionCardProps {
 
 const StyledOptionCard = styled.div<StyledOptionCardProps>`
   background-color: ${COLORS.w};
-  box-shadow: ${({ isSelected }) =>
-    isSelected ? `0 0 0 2px ${COLORS.main} inset` : 'none'};
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -82,8 +56,12 @@ const StyledOptionCard = styled.div<StyledOptionCardProps>`
     left: 0;
     right: 0;
     bottom: 0;
+    border: 2px solid
+      ${({ isSelected }) => (isSelected ? COLORS.main : 'transparent')};
     background-color: ${({ isSelected }) =>
       isSelected ? `${COLORS.main}33` : 'transparent'};
+    border-radius: 12px;
+    z-index: 2;
     pointer-events: none;
   }
 
@@ -99,17 +77,19 @@ const StyledOptionCard = styled.div<StyledOptionCardProps>`
     text-align: center;
     top: 10px;
     right: 10px;
-    z-index: 99;
+    z-index: 3;
   }
 
   img {
     width: 100%;
-    height: auto;
+    height: 200px;
+    object-fit: cover;
+    z-index: 1;
   }
 
   ul {
     margin: 0;
-    padding: 0;
+    padding: 0 20px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -141,11 +121,11 @@ const StyledOptionCard = styled.div<StyledOptionCardProps>`
 
   ul > li > span:nth-child(1) {
     text-align: right;
-    flex: 1;
+    flex: 2;
   }
 
   ul > li > span:nth-child(2) {
     text-align: left;
-    flex: 1;
+    flex: 3;
   }
 `;
