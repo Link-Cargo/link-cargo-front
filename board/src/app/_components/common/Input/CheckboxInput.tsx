@@ -6,7 +6,7 @@ interface CheckboxInputProps {
   label: string;
   name: string;
   options: { value: string; label: string }[];
-  selectedOptions: string[];
+  selectedOptions: string[] | string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
@@ -26,7 +26,7 @@ const CheckboxInput = ({
 
   return (
     <Container>
-      <Label>{label}</Label>
+      {label && <Label>{label}</Label>}
       <FlexContainer>
         {options.map((option) => (
           <CheckboxContainer
@@ -69,6 +69,7 @@ const CheckboxContainer = styled.div<{ isSelected: boolean }>`
   color: ${({ isSelected }) => (isSelected ? COLORS.main : COLORS.g5)};
   cursor: pointer;
   text-align: center;
+  justify-content: center;
 `;
 const FlexContainer = styled.div`
   display: flex;
