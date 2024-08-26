@@ -8,6 +8,7 @@ interface SelectInputProps {
   value: string;
   options: { value: string; label: string }[];
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  placeholder?: string;
 }
 
 const SelectInput = ({
@@ -16,6 +17,7 @@ const SelectInput = ({
   value,
   options,
   onChange,
+  placeholder,
 }: SelectInputProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedValue, setSelectedValue] = useState(value);
@@ -32,8 +34,11 @@ const SelectInput = ({
     <Container>
       {label && <Label>{label}</Label>}
       <DropdownContainer>
-        <SelectedOption onClick={() => setIsOpen(!isOpen)}>
-          {selectedValue}
+        <SelectedOption
+          onClick={() => setIsOpen(!isOpen)}
+          isPlaceholder={!selectedValue}
+        >
+          {selectedValue || placeholder}
           <Arrow isOpen={isOpen} />
         </SelectedOption>
         {isOpen && (
@@ -74,7 +79,7 @@ const DropdownContainer = styled.div`
   width: 100%;
 `;
 
-const SelectedOption = styled.div`
+const SelectedOption = styled.div<{ isPlaceholder: boolean }>`
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -83,7 +88,7 @@ const SelectedOption = styled.div`
   border-radius: 12px;
   font-size: 16px;
   line-height: 20px;
-  color: black;
+  color: ${({ isPlaceholder }) => (isPlaceholder ? COLORS.g2 : 'black')};
   cursor: pointer;
   background-color: white;
   user-select: none;
