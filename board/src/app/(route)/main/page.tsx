@@ -5,7 +5,6 @@ import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { useRouter } from 'next/navigation';
 import FeatureCard from '@/app/_components/common/FeatureCard';
-import { useSpring, animated, config } from '@react-spring/web';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
@@ -14,105 +13,93 @@ import 'swiper/css/autoplay';
 
 import { Mousewheel, Pagination, Autoplay } from 'swiper/modules';
 import { featureCardsConfigs } from './utill';
+import { Nav } from '@/app/_components/common/Nav';
 
 export default function Page() {
-  // /*---- router ----*/
-  // const router = useRouter();
-  // /*---- state ----*/
-  // const [slideIndex, setSlideIndex] = useState(0);
-  // const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  /*---- router ----*/
+  const router = useRouter();
+  /*---- state ----*/
+  const [slideIndex, setSlideIndex] = useState(0);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // /*---- useSpring for all animations ----*/
-  // const springs = featureCardsConfigs.map((_, index) =>
-  //   useSpring({
-  //     from: { opacity: 0, transform: 'translateY(-50px)' },
-  //     to:
-  //       slideIndex === 1
-  //         ? { opacity: 1, transform: 'translateY(0px)' }
-  //         : { opacity: 0, transform: 'translateY(-50px)' },
-  //     delay: index * 500,
-  //     config: config.wobbly,
-  //   }),
-  // );
+  /*---- function ----*/
 
-  // /*---- function ----*/
+  // 타이핑 이벤트
+  let index = 0;
+  const [title, setTitle] = useState('');
+  const fullTitle = `복잡하고 어려운 화물 배송, \n링카고가 화주와 포워더를 연결해드립니다.`;
+  const typingEffect = () => {
+    if (index < fullTitle.length) {
+      setTitle(fullTitle.slice(0, index + 1));
+      index++;
+      typingTimeoutRef.current = setTimeout(typingEffect, 100);
+    }
+  };
 
-  // // 타이핑 이벤트
-  // let index = 0;
-  // const [title, setTitle] = useState('');
-  // const fullTitle = `복잡하고 어려운 화물 배송, \n링카고가 화주와 포워더를 연결해드립니다.`;
-  // const typingEffect = () => {
-  //   if (index < fullTitle.length) {
-  //     setTitle(fullTitle.slice(0, index + 1));
-  //     index++;
-  //     typingTimeoutRef.current = setTimeout(typingEffect, 100);
-  //   }
-  // };
+  const handleSlideChange = useCallback((swiper: any) => {
+    setSlideIndex(swiper.activeIndex);
+  }, []);
 
-  // const handleSlideChange = useCallback((swiper: any) => {
-  //   setSlideIndex(swiper.activeIndex);
-  // }, []);
+  /*---- useEffect ----*/
+  //타이핑 효과 제어
+  useEffect(() => {
+    if (slideIndex === 1) {
+      typingEffect();
+    } else {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+    }
 
-  // /*---- useEffect ----*/
-  // //타이핑 효과 제어
-  // useEffect(() => {
-  //   if (slideIndex === 1) {
-  //     typingEffect();
-  //   } else {
-  //     if (typingTimeoutRef.current) {
-  //       clearTimeout(typingTimeoutRef.current);
-  //       typingTimeoutRef.current = null;
-  //     }
-  //   }
-
-  //   return () => {
-  //     if (typingTimeoutRef.current) {
-  //       clearTimeout(typingTimeoutRef.current);
-  //       typingTimeoutRef.current = null;
-  //     }
-  //   };
-  // }, [slideIndex, fullTitle]);
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+    };
+  }, [slideIndex, fullTitle]);
 
   /*---- jsx ----*/
   return (
-    <div>main</div>
-    // <Container>
-    //   <Swiper
-    //     direction="vertical"
-    //     slidesPerView={1}
-    //     spaceBetween={0}
-    //     mousewheel
-    //     speed={1000}
-    //     pagination={{ clickable: true }}
-    //     modules={[Mousewheel, Pagination, Autoplay]}
-    //     onSlideChange={handleSlideChange}
-    //     className="mySwiper"
-    //   >
-    //     <StyledSwiperSlide>
-    //       <Bg src="/bg.png" />
-    //     </StyledSwiperSlide>
-    //     <StyledSwiperSlide>
-    //       <Title>{title}</Title>
-    //       <FlexContainer>
-    //         {featureCardsConfigs.map((card, index) => (
-    //           <animated.div style={springs[index]} key={index}>
-    //             <FeatureCard
-    //               imgSrc={card.imgSrc}
-    //               title={card.title}
-    //               desc={card.desc}
-    //               bgColor={card.bgColor}
-    //             />
-    //           </animated.div>
-    //         ))}
-    //       </FlexContainer>
-    //       <ButtonSection>
-    //         <Button onClick={() => router.push('/freight-quote')}>
-    //           견적 산출하기
-    //         </Button>
-    //       </ButtonSection>
-    //     </StyledSwiperSlide>
-    //   </Swiper>
-    // </Container>
+    <Container>
+      <Nav type="main" />
+      <Swiper
+        direction="vertical"
+        slidesPerView={1}
+        spaceBetween={0}
+        mousewheel
+        speed={1000}
+        pagination={{ clickable: true }}
+        modules={[Mousewheel, Pagination, Autoplay]}
+        onSlideChange={handleSlideChange}
+        className="mySwiper"
+      >
+        <StyledSwiperSlide>
+          <Bg src="/bg.png" />
+        </StyledSwiperSlide>
+        <StyledSwiperSlide>
+          <Title>{title}</Title>
+          <FlexContainer>
+            {featureCardsConfigs.map((card, index) => (
+              <div key={index}>
+                <FeatureCard
+                  imgSrc={card.imgSrc}
+                  title={card.title}
+                  desc={card.desc}
+                  bgColor={card.bgColor}
+                />
+              </div>
+            ))}
+          </FlexContainer>
+          <ButtonSection>
+            <Button onClick={() => router.push('/freight-quote')}>
+              견적 산출하기
+            </Button>
+          </ButtonSection>
+        </StyledSwiperSlide>
+      </Swiper>
+    </Container>
   );
 }
 
