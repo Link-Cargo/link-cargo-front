@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Layout from '@/app/_components/common/Layout';
 import { List } from '@/app/_components/dashboard/List';
@@ -13,64 +13,83 @@ import {
   PaymentHistory,
 } from './(section)';
 
-// interface ListItem {
-//   title: string;
-//   section: React.ReactNode;
-// }
+interface ListItem {
+  [id: string]: {
+    title: string;
+    section: React.ReactNode;
+  };
+}
 
-// export const dashboardListConfigs: ListItem[] = [
-//   {
-//     title: '한눈에 보기',
-//     section: <Overview />,
-//   },
-//   {
-//     title: '견적서 비교',
-//     section: <CompareQuotes />,
-//   },
-//   {
-//     title: '운임 관련 비교',
-//     section: <CompareFreightRates />,
-//   },
-//   {
-//     title: '나의 대화 이력',
-//     section: <MyChatHistory />,
-//   },
-//   {
-//     title: '결제 내역',
-//     section: <PaymentHistory />,
-//   },
-// ];
+const dashboardListConfig: ListItem = {
+  overview: { title: '한눈에 보기', section: <Overview /> },
+  compare_quotes: { title: '견적서 비교', section: <CompareQuotes /> },
+  compare_freight: {
+    title: '운임 관련 비교',
+    section: <CompareFreightRates />,
+  },
+  chat_history: { title: '나의 대화 이력', section: <MyChatHistory /> },
+  payment_history: { title: '결제 내역', section: <PaymentHistory /> },
+};
 
-export default function Page() {
-  // const [selectedSection, setSelectedSection] = useState<React.ReactNode>(
-  //   <Overview />,
-  // );
-  // const [selectedTitle, setSelectedTitle] = useState<string>('한눈에 보기');
+function Page() {
+  const [selectedId, setSelectedId] = useState<string>('overview');
+  const { section: selectedSection, title: selectedTitle } =
+    dashboardListConfig[selectedId];
 
-  // const handleSectionChange = (section: React.ReactNode, title: string) => {
-  //   setSelectedSection(section);
-  //   setSelectedTitle(title);
-  // };
+  // section update
+  const handleSectionChange = (id: string) => {
+    setSelectedId(id);
+    window.location.hash = `#${id}`;
+  };
+  useEffect(() => {
+    const hash = window.location.hash.substring(1) || 'overview';
+    if (dashboardListConfig[hash]) {
+      setSelectedId(hash);
+    }
+  }, []);
+
+  // hash update
+  const handleHashChange = () => {
+    const hash = window.location.hash.substring(1) || 'overview';
+    if (dashboardListConfig[hash]) {
+      setSelectedId(hash);
+    }
+  };
+  useEffect(() => {
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   return (
-    <div>dashboard</div>
-    // <Layout>
-    //   <Container>
-    //     <div>
-    //       <ProfileCard
-    //         imgSrc="/assets/r1.png"
-    //         title="홍길동"
-    //         desc="소규모 수출 화주"
-    //       />
-    //       {/* <List
-    //         listData={dashboardListConfigs}
-    //         selectedTitle={selectedTitle}
-    //         onSectionChange={handleSectionChange}
-    //       /> */}
-    //     </div>
-    //     <section>{selectedSection}</section>
-    //   </Container>
-    // </Layout>
+    <Layout>
+      <Container>
+        <div>
+          <ProfileCard
+            imgSrc="/assets/r1.png"
+            title="홍길동"
+            desc="소규모 수출 화주"
+          />
+          <List
+            listData={Object.entries(dashboardListConfig).map(
+              ([id, { title, section }]) => ({
+                id,
+                title,
+                section, // 이 부분에서 section을 포함
+              }),
+            )}
+            selectedTitle={selectedTitle}
+            onSectionChange={(section, title) => {
+              const id =
+                Object.keys(dashboardListConfig).find(
+                  (key) => dashboardListConfig[key].title === title,
+                ) || 'overview';
+              handleSectionChange(id);
+            }}
+          />
+        </div>
+        <section>{selectedSection}</section>
+      </Container>
+    </Layout>
   );
 }
 
@@ -83,3 +102,5 @@ const Container = styled.div`
     flex: 1;
   }
 `;
+
+export default Page;
