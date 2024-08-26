@@ -1,35 +1,73 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { useRouter } from 'next/navigation';
+import { Noti } from '../Noti';
+import { notiData } from '../Noti/util';
 
-export const Nav = () => {
+interface NavProps {
+  type?: 'default' | 'main';
+}
+
+export const Nav = ({ type = 'default' }: NavProps) => {
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Container>
-      <Logo>
-        <img src="/logo.png" alt="Logo" onClick={() => router.push('/main')} />
-      </Logo>
-      <Links>
-        <a href="/freight-quote">운임 조회</a>
-        <a href="/dashboard">나의 대시보드</a>
-        <Icon className="material-icons">{'notifications'}</Icon>
-      </Links>
+    <Container type={type}>
+      <ContentWrapper>
+        <Logo>
+          <img
+            src="/logo.png"
+            alt="Logo"
+            onClick={() => router.push('/main')}
+          />
+        </Logo>
+        <Links type={type}>
+          <a href="/freight-quote">운임 조회</a>
+          <a href="/dashboard">나의 대시보드</a>
+          <IconContainer>
+            <Icon onClick={() => setIsOpen(!isOpen)} className="material-icons">
+              {'notifications'}
+            </Icon>
+            {isOpen && <Noti data={notiData} />}
+          </IconContainer>
+        </Links>
+      </ContentWrapper>
     </Container>
   );
 };
 
-const Container = styled.div`
+const Container = styled.div<NavProps>`
+  width: 100%;
+  ${({ type }) =>
+    type === 'main'
+      ? `
+      background: linear-gradient(to bottom, #fff 0%, rgba(255, 255, 255, 0) 80%);
+      padding: 40px 0;
+      height: 150px;
+
+      position: absolute;
+      top: 0;
+      z-index: 99;
+      `
+      : `
+      background-color: transparent;
+      padding: 10px 0px;
+      margin: 30px auto;
+      `}
+`;
+
+const ContentWrapper = styled.div`
   width: 90%;
-  margin: 30px auto;
+  margin: 0 auto;
   display: flex;
   justify-content: space-between;
 `;
 
-const Links = styled.div`
+const Links = styled.div<NavProps>`
   display: flex;
   gap: 12px;
 
@@ -39,6 +77,14 @@ const Links = styled.div`
     font-weight: 600;
     line-height: 44px;
     text-decoration: none;
+    padding: 0px 20px;
+    border-radius: 100px;
+    height: 44px;
+    line-height: 44px;
+
+    background-color: ${({ type }) =>
+      type === 'main' ? 'rgba(250, 250, 250, 0.4)' : 'transparent'};
+    backdrop-filter: ${({ type }) => (type === 'main' ? 'blur(4px)' : 'none')};
   }
 `;
 
@@ -50,6 +96,10 @@ const Logo = styled.div`
     width: 100%;
     height: auto;
   }
+`;
+
+const IconContainer = styled.div`
+  position: relative;
 `;
 
 const Icon = styled.span`
