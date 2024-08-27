@@ -231,7 +231,7 @@ export default function Page() {
           <CenteredFormSection gapValue={100}>
             <Icon className="material-icons">{'check_circle'}</Icon>
             <FormSection gapValue={30}>
-              <Title>홍길동님, 가입을 축하합니다!</Title>
+              <Title>링카고님, 가입을 축하합니다!</Title>
               <Desc>
                 LCL 전문 해상수출 플랫폼 Link-Cargo 입니다.
                 <br /> 지금 바로 LCL화주와 연결해보세요.

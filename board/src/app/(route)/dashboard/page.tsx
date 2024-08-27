@@ -66,7 +66,7 @@ function Page() {
         <div>
           <ProfileCard
             imgSrc="/assets/r1.png"
-            title="홍길동"
+            title="링카고"
             desc="소규모 수출 화주"
           />
           <List

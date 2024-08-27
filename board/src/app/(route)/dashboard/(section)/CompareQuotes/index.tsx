@@ -126,7 +126,7 @@ export default function CompareQuotes() {
                       <span>전화번호</span>
                       <span>{item.전화번호}</span>
                     </li>
-                    <li>전달사항입니다.</li>
+                    <li>전달 사항 | {item.전달사항}</li>
                   </ul>
                   <Button
                     text="1:1 문의하기"
