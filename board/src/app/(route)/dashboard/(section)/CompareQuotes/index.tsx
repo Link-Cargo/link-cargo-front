@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
 import { Box } from '@/app/_components/dashboard/Box';
 import { BgType } from '@/app/_components/dashboard/Box';
@@ -23,7 +23,51 @@ export default function CompareQuotes() {
   const [최근검색어, set최근검색어] = useState(
     '인천항 → 상하이항 | ETD : 2024.06.24',
   );
-  const [견적명세, set견적명세] = useState('CFS비용');
+  const [견적명세1, set견적명세1] = useState('CFS 비용');
+  const [견적명세2, set견적명세2] = useState('핸들링 비용');
+  const [견적명세3, set견적명세3] = useState('THC 비용');
+
+  const [randomValues, setRandomValues] = useState([
+    {
+      hansung: 0,
+      jinternational: 0,
+      globallogis: 0,
+    },
+    {
+      hansung: 0,
+      jinternational: 0,
+      globallogis: 0,
+    },
+    {
+      hansung: 0,
+      jinternational: 0,
+      globallogis: 0,
+    },
+  ]);
+
+  const barColors = [COLORS.main, COLORS.point, COLORS.g3];
+
+  useEffect(() => {
+    // 0~2000 사이의 랜덤값 설정
+    setRandomValues([
+      {
+        hansung: Math.floor(Math.random() * 2000),
+        jinternational: Math.floor(Math.random() * 2000),
+        globallogis: Math.floor(Math.random() * 2000),
+      },
+      {
+        hansung: Math.floor(Math.random() * 2000),
+        jinternational: Math.floor(Math.random() * 2000),
+        globallogis: Math.floor(Math.random() * 2000),
+      },
+      {
+        hansung: Math.floor(Math.random() * 2000),
+        jinternational: Math.floor(Math.random() * 2000),
+        globallogis: Math.floor(Math.random() * 2000),
+      },
+    ]);
+  }, []);
+
   /*---- jsx ----*/
   return (
     <Layout>
@@ -99,33 +143,135 @@ export default function CompareQuotes() {
         ))}
       </StyledSwiper>
       <FlexBox>
-        <Box bgType={BgType.DARK} width="33%">
+        <CompareBox>
           <SelectInput
             label=""
             name="운송사"
-            value={견적명세}
-            onChange={(e) => set견적명세(e.target.value)}
+            value={견적명세1}
+            onChange={(e) => {
+              set견적명세1(e.target.value);
+            }}
             options={견적_명세}
           />
-        </Box>
-        <Box bgType={BgType.DARK} width="33%">
+          <ul>
+            <li>
+              <span>한성무역</span>
+              <span>
+                <GraphBar
+                  width={(randomValues[0].hansung / 2000) * 100 + '%'}
+                  color={barColors[0]}
+                />
+              </span>
+              <span>{randomValues[0].hansung}원</span>
+            </li>
+            <li>
+              <span>J인터네셔널</span>
+              <span>
+                <GraphBar
+                  width={(randomValues[0].jinternational / 2000) * 100 + '%'}
+                  color={barColors[1]}
+                />
+              </span>
+              <span>{randomValues[0].jinternational}원</span>
+            </li>
+            <li>
+              <span>글로벌로지스</span>
+              <span>
+                <GraphBar
+                  width={(randomValues[0].globallogis / 2000) * 100 + '%'}
+                  color={barColors[2]}
+                />
+              </span>
+              <span>{randomValues[0].globallogis}원</span>
+            </li>
+          </ul>
+        </CompareBox>
+        <CompareBox>
           <SelectInput
             label=""
             name="운송사"
-            value={견적명세}
-            onChange={(e) => set견적명세(e.target.value)}
+            value={견적명세2}
+            onChange={(e) => {
+              set견적명세2(e.target.value);
+            }}
             options={견적_명세}
           />
-        </Box>
-        <Box bgType={BgType.DARK} width="33%">
+          <ul>
+            <li>
+              <span>한성무역</span>
+              <span>
+                <GraphBar
+                  width={(randomValues[1].hansung / 2000) * 100 + '%'}
+                  color={barColors[0]}
+                />
+              </span>
+              <span>{randomValues[1].hansung}원</span>
+            </li>
+            <li>
+              <span>J인터네셔널</span>
+              <span>
+                <GraphBar
+                  width={(randomValues[1].jinternational / 2000) * 100 + '%'}
+                  color={barColors[1]}
+                />
+              </span>
+              <span>{randomValues[1].jinternational}원</span>
+            </li>
+            <li>
+              <span>글로벌로지스</span>
+              <span>
+                <GraphBar
+                  width={(randomValues[1].globallogis / 2000) * 100 + '%'}
+                  color={barColors[2]}
+                />
+              </span>
+              <span>{randomValues[1].globallogis}원</span>
+            </li>
+          </ul>
+        </CompareBox>
+        <CompareBox>
           <SelectInput
             label=""
             name="운송사"
-            value={견적명세}
-            onChange={(e) => set견적명세(e.target.value)}
+            value={견적명세3}
+            onChange={(e) => {
+              set견적명세3(e.target.value);
+            }}
             options={견적_명세}
           />
-        </Box>
+          <ul>
+            <li>
+              <span>한성무역</span>
+              <span>
+                <GraphBar
+                  width={(randomValues[2].hansung / 2000) * 100 + '%'}
+                  color={barColors[0]}
+                />
+              </span>
+              <span>{randomValues[2].hansung}원</span>
+            </li>
+            <li>
+              <span>J인터네셔널</span>
+              <span>
+                <GraphBar
+                  width={(randomValues[2].jinternational / 2000) * 100 + '%'}
+                  color={barColors[1]}
+                />
+              </span>
+              <span>{randomValues[2].jinternational}원</span>
+            </li>
+            <li>
+              <span>글로벌로지스</span>
+              <span>
+                <GraphBar
+                  width={(randomValues[2].globallogis / 2000) * 100 + '%'}
+                  color={barColors[2]}
+                />
+              </span>
+              <span>{randomValues[2].globallogis}원</span>
+            </li>
+          </ul>
+        </CompareBox>
       </FlexBox>
     </Layout>
   );
@@ -207,4 +353,44 @@ const SlideContent = styled.div`
 const StyledSwiper = styled(Swiper)`
   width: 100%;
   gap: 20px;
+`;
+
+const CompareBox = styled.div`
+  background-color: ${COLORS.g0};
+  padding: 16px;
+  width: 33%;
+  border-radius: 13px;
+
+  ul {
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+
+    span:nth-child(1) {
+      width: 33%;
+      text-align: left;
+      color: ${COLORS.g3};
+    }
+    span:nth-child(2) {
+      width: 50%;
+    }
+    span:nth-child(3) {
+      width: 17%;
+      text-align: right;
+      color: ${COLORS.g2};
+    }
+  }
+`;
+
+const GraphBar = styled.div<{ width: string; color: string }>`
+  height: 12px;
+  background-color: ${({ color }) => color};
+  border-radius: 0px 8px 8px 0px;
+  width: ${({ width }) => width};
 `;
