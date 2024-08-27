@@ -71,7 +71,7 @@ export default function Page() {
         />
       </ButtonSection>
       <FlexContainer>
-        <Desc>회원가입</Desc>
+        <Desc onClick={() => router.push('/signup')}>회원가입</Desc>
         <Desc>아이디 찾기</Desc>
         <Desc>비밀번호 찾기</Desc>
       </FlexContainer>
@@ -133,6 +133,8 @@ const Desc = styled.div`
   color: ${COLORS.g2};
   text-align: center;
   width: 100px;
+
+  cursor: pointer;
 
   border-right: 1px solid ${COLORS.g1};
 

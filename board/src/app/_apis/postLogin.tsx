@@ -12,16 +12,18 @@ interface ResultData {
 
 type GetILoginContentDto = ResponseDto<ResultData>;
 
-const tempAT =
-  'eyJhbGciOiJIUzI1NiJ9.eyJpZCI6OCwiZW1haWwiOiJzaWt5dW5nQGdtYWlsLmNvbSIsImlhdCI6MTcyMzE2NTM3NCwiZXhwIjoxNzIzMjUxNzc0fQ.OqnGd8T_wYQkeXFtLSvnGj2yfzfgzkBGHjqiR6GbAig';
-
 export const postLogin = async (req_body: LoginContent) => {
   try {
     const response = await postAsync<GetILoginContentDto, LoginContent>(
       `/users/login`,
       req_body,
-      tempAT,
+      undefined,
     );
+
+    if (response && response.result && response.result.accessToken) {
+      localStorage.setItem('link-cargo-at', response.result.accessToken);
+    }
+
     return response.result;
   } catch (error) {
     console.error('에러:', error);

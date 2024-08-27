@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { useRouter } from 'next/navigation';
@@ -14,6 +14,12 @@ interface NavProps {
 export const Nav = ({ type = 'default' }: NavProps) => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem('link-cargo-at');
+    setIsLoggedIn(!!token);
+  }, []);
 
   return (
     <Container type={type}>
@@ -27,13 +33,22 @@ export const Nav = ({ type = 'default' }: NavProps) => {
         </Logo>
         <Links type={type}>
           <a href="/freight-quote">운임 조회</a>
-          <a href="/dashboard">나의 대시보드</a>
-          <IconContainer>
-            <Icon onClick={() => setIsOpen(!isOpen)} className="material-icons">
-              {'notifications'}
-            </Icon>
-            {isOpen && <Noti data={notiData} />}
-          </IconContainer>
+          {isLoggedIn ? (
+            <a href="/dashboard">나의 대시보드</a>
+          ) : (
+            <a href="/login">로그인</a>
+          )}
+          {isLoggedIn && (
+            <IconContainer>
+              <Icon
+                onClick={() => setIsOpen(!isOpen)}
+                className="material-icons"
+              >
+                {'notifications'}
+              </Icon>
+              {isOpen && <Noti data={notiData} />}
+            </IconContainer>
+          )}
         </Links>
       </ContentWrapper>
     </Container>
