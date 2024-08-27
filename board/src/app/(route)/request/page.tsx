@@ -197,7 +197,11 @@ function ContentPage() {
               onClick: () => router.push(`/dashboard`),
               text: '나의 대시보드 바로가기',
             }}
-          ></Confirm>
+          >
+            <ImgC>
+              <img src="/assets/expected.png" />
+            </ImgC>
+          </Confirm>
         }
       />
     </Layout>
@@ -239,4 +243,7 @@ const ButtonSection = styled.div`
   width: 100%;
   display: flex;
   gap: 20px;
+`;
+const ImgC = styled.div`
+  width: 800px;
 `;
