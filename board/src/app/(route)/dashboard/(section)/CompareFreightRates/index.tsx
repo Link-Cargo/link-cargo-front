@@ -29,7 +29,11 @@ export default function CompareFreightRates() {
   );
   const [월별_검색_리스트, set월별_검색_리스트] = useState<
     { value: string; label: string }[]
-  >([]);
+  >([
+    { value: '9월', label: '9월' },
+    { value: '10월', label: '10월' },
+    { value: '11월', label: '11월' },
+  ]);
 
   const [recommendationInfo, setRecommendationInfo] =
     useState<RecommendationData>();
@@ -130,16 +134,19 @@ export default function CompareFreightRates() {
               options={월별_검색_리스트}
             />
             <SubTitle>
-              {selectedMonth.status === 'rising'
+              하락이 예상됩니다.
+              {/* {selectedMonth.status === 'rising'
                 ? '상승이 예상됩니다.'
-                : '하락이 예상됩니다.'}
+                : '하락이 예상됩니다.'} */}
             </SubTitle>
           </FlexBox>
           <Desc>
-            {selectedMonth.status === 'rising'
+            하락 요인 | 여름철 소비 활동 감소로 해상 운송 수요가 줄어들고, 해당
+            노선에 많은 선박이 배치되어 과잉공급으로 운임이 낮아질 수 있습니다.
+            {/* {selectedMonth.status === 'rising'
               ? '상승 요인 | '
               : '하락 요인 | '}
-            {selectedMonth.reason}
+            {selectedMonth.reason} */}
           </Desc>
         </Box>
       </FlexBox>
@@ -147,17 +154,19 @@ export default function CompareFreightRates() {
         <Box desc="더 저렴한 가격 추천" bgType={BgType.BRIGHT} width="70%">
           <div>
             <Title>
-              <b>{recommendationInfo?.dateDifference}개월 뒤,</b> 운임이{' '}
-              <b>{recommendationInfo?.indexDifference}</b>만큼 <b>낮을 것</b>
+              <b>{recommendationInfo?.dateDifference || 2}개월 뒤,</b> 운임이{' '}
+              <b>{recommendationInfo?.indexDifference || 20}</b>만큼{' '}
+              <b>낮을 것</b>
               으로 예상
             </Title>
             <SubTitle>
-              예상 비용 | <b>{recommendationInfo?.estimatedCost}원</b>
+              예상 비용 |{' '}
+              <b>{recommendationInfo?.estimatedCost || '143,234,118'}원</b>
             </SubTitle>
           </div>
           <div>
             <Desc>
-              2주 뒤 예약가능한 운송사 리스트
+              2개월 뒤 예약가능한 운송사 리스트
               <hr />
             </Desc>
             <Table>
@@ -189,7 +198,7 @@ export default function CompareFreightRates() {
         </Box>
         <Box desc="관련정보 요약" bgType={BgType.DARK} width="30%">
           <SummaryBox>
-            {summary?.interests.map((interest, index) => (
+            {['수입국', '환율', '운임'].map((interest, index) => (
               <div key={index}>
                 <span
                   className="material-icons"
@@ -203,8 +212,26 @@ export default function CompareFreightRates() {
                 <span>{interest}</span>
               </div>
             ))}
+
+            {/* {summary?.interests.map((interest, index) => (
+              <div key={index}>
+                <span
+                  className="material-icons"
+                  style={{
+                    borderRadius: '10px',
+                    color: '#bbb',
+                  }}
+                >
+                  check_box
+                </span>
+                <span>{interest}</span>
+              </div>
+            ))} */}
           </SummaryBox>
-          <Desc>{summary?.summary}</Desc>
+          <Desc>
+            {summary?.summary ||
+              '항구에 머물고 있는 컨테이너선의 비율이 큽니다. 선박이 대기하는 시간이 길어지고, 항구 혼잡으로 인해 하역 및 적재 작업이 지연될 수 있으니 이를 고려해서 수출입 스케줄을 조정해항구에 머물고 있는 컨테이너선의 비율이 큽니다.'}
+          </Desc>
         </Box>
       </FlexBox>
     </Layout>
@@ -242,7 +269,7 @@ const Title = styled.div`
 `;
 
 const SubTitle = styled.div`
-  color: ${COLORS.g5};
+  color: ${COLORS.g4};
   font-size: 20px;
   font-weight: 500;
   white-space: pre;
@@ -253,6 +280,7 @@ const Desc = styled.div`
   color: ${COLORS.g4};
   font-size: 16px;
   font-weight: 400;
+  line-height: 30px;
 
   hr {
     border: 0.5px solid ${COLORS.g1};

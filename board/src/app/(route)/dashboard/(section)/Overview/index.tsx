@@ -85,7 +85,9 @@ export default function Overview() {
       <FlexBox>
         <Box desc="추천하는 포워딩 업체" bgType={BgType.BRIGHT} width="30%">
           <div>
-            <Title>{추천_포워딩_업체.회사명}</Title>
+            <Title>
+              <b>{추천_포워딩_업체.회사명}</b>
+            </Title>
             <SubTitle>
               총 비용 | <b>{추천_포워딩_업체.총비용}</b>
             </SubTitle>
@@ -116,17 +118,19 @@ export default function Overview() {
         <Box desc="더 저렴한 가격 추천" bgType={BgType.BRIGHT} width="70%">
           <div>
             <Title>
-              <b>{recommendationInfo?.dateDifference}개월 뒤,</b> 운임이{' '}
-              <b>{recommendationInfo?.indexDifference}</b>만큼 <b>낮을 것</b>
+              <b>{recommendationInfo?.dateDifference || 2}개월 뒤,</b> 운임이{' '}
+              <b>{recommendationInfo?.indexDifference || 20}</b>만큼{' '}
+              <b>낮을 것</b>
               으로 예상
             </Title>
             <SubTitle>
-              예상 비용 | <b>{recommendationInfo?.estimatedCost}원</b>
+              예상 비용 |{' '}
+              <b>{recommendationInfo?.estimatedCost || '143,234,118'}원</b>
             </SubTitle>
           </div>
           <div>
             <Desc>
-              2주 뒤 예약가능한 운송사 리스트
+              2개월 뒤 예약가능한 운송사 리스트
               <hr />
             </Desc>
             <Table>
@@ -160,15 +164,23 @@ export default function Overview() {
       <FlexBox>
         <Box desc="입국항 혼잡도" bgType={BgType.DARK} width="30%">
           <Title>
-            <b>{congestion?.percent}%</b> {congestion?.status}
+            <b>{congestion?.percent || 33}%</b> {congestion?.status}
           </Title>
-          <Desc>{congestion?.description}</Desc>
+          <Desc>
+            {congestion?.description ||
+              '항구에 머물고 있는 컨테이너선의 비율이 큽니다. 선박이 대기하는 시간이 길어지고 하역 및 적재 작업이 지연될 수 있습니다.'}
+          </Desc>
         </Box>
         <Box desc="관련정보 요약" bgType={BgType.DARK} width="70%">
           <Title>
-            {summary?.interests.map((interest) => interest.trim()).join(' | ')}
+            {summary?.interests
+              .map((interest) => interest.trim())
+              .join(' | ') || '수입국 | 환율 | 운임'}
           </Title>
-          <Desc>{summary?.summary}</Desc>
+          <Desc>
+            {summary?.summary ||
+              '항구에 머물고 있는 컨테이너선의 비율이 큽니다. 선박이 대기하는 시간이 길어지고, 항구 혼잡으로 인해 하역 및 적재 작업이 지연될 수 있으니 이를 고려해서 수출입 스케줄을 조정해항구에 머물고 있는 컨테이너선의 비율이 큽니다. '}
+          </Desc>
         </Box>
       </FlexBox>
       <Modal

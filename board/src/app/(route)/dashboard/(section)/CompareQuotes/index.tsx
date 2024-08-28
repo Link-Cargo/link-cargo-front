@@ -19,6 +19,7 @@ import { Mousewheel, Pagination, Autoplay } from 'swiper/modules';
 
 export default function CompareQuotes() {
   const router = useRouter();
+
   /*---- state ----*/
   const [최근검색어, set최근검색어] = useState(
     '인천항 → 상하이항 | ETD : 2024.06.24',
@@ -26,6 +27,7 @@ export default function CompareQuotes() {
   const [견적명세1, set견적명세1] = useState('CFS 비용');
   const [견적명세2, set견적명세2] = useState('핸들링 비용');
   const [견적명세3, set견적명세3] = useState('THC 비용');
+  const [dropdownVisible, setDropdownVisible] = useState(false); // State to manage dropdown visibility
 
   const [randomValues, setRandomValues] = useState([
     {
@@ -68,6 +70,10 @@ export default function CompareQuotes() {
     ]);
   }, []);
 
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
   /*---- jsx ----*/
   return (
     <Layout>
@@ -79,10 +85,17 @@ export default function CompareQuotes() {
           onChange={(e) => set최근검색어(e.target.value)}
           options={최근검색어_리스트}
         />
-        <ReportButton>
+        <ReportButton onClick={toggleDropdown}>
           <div>도착한 견적서</div>
-          <div>{도착한_견적서_업체.length}개</div>
+          <b>{도착한_견적서_업체.length}개</b>
         </ReportButton>
+        {dropdownVisible && (
+          <DropdownMenu>
+            {도착한_견적서_업체.map((item, index) => (
+              <DropdownItem key={index}>{item.회사명}</DropdownItem>
+            ))}
+          </DropdownMenu>
+        )}
       </FlexBox>
       <StyledSwiper
         direction="horizontal"
@@ -281,6 +294,7 @@ const FlexBox = styled.div`
   width: 100%;
   display: flex;
   gap: 25px;
+  position: relative;
 `;
 
 const ReportButton = styled.div`
@@ -288,10 +302,41 @@ const ReportButton = styled.div`
   width: 265px;
   display: flex;
   gap: 15px;
+  border-radius: 12px;
   justify-content: center;
   align-items: center;
   font-size: 20px;
   cursor: pointer;
+
+  b {
+    color: ${COLORS.main};
+    font-weight: 800;
+  }
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 300px;
+  background-color: ${COLORS.w};
+  border-radius: 12px;
+  margin-top: 10px;
+  z-index: 10;
+  overflow; hidden;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+`;
+
+const DropdownItem = styled.div`
+  padding: 12px;
+  font-size: 16px;
+  color: ${COLORS.g2};
+  cursor: pointer;
+  text-align: right;
+  &:hover {
+    background-color: ${COLORS.g0};
+    color: ${COLORS.g4};
+  }
 `;
 
 const StyledTable = styled.div`
@@ -324,9 +369,8 @@ const StyledTable = styled.div`
   }
 
   ul > li:nth-child(1) > span:nth-child(2),
-  ul > li:nth-child(2) > span:nth-child(2),
-  ul > li:nth-child(3) > span:nth-child(2) {
-    color: ${COLORS.g4};
+  ul > li:nth-child(2) > span:nth-child(2) {
+    color: ${COLORS.main};
     font-weight: 800;
   }
 

@@ -24,41 +24,11 @@ export default function Page() {
 
   /*---- function ----*/
 
-  // 타이핑 이벤트
-  let index = 0;
-  const [title, setTitle] = useState('');
-  const fullTitle = `복잡하고 어려운 화물 배송, \n링카고가 화주와 포워더를 연결해드립니다.`;
-  const typingEffect = () => {
-    if (index < fullTitle.length) {
-      setTitle(fullTitle.slice(0, index + 1));
-      index++;
-      typingTimeoutRef.current = setTimeout(typingEffect, 100);
-    }
-  };
-
   const handleSlideChange = useCallback((swiper: any) => {
     setSlideIndex(swiper.activeIndex);
   }, []);
 
   /*---- useEffect ----*/
-  //타이핑 효과 제어
-  useEffect(() => {
-    if (slideIndex === 1) {
-      typingEffect();
-    } else {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-        typingTimeoutRef.current = null;
-      }
-    }
-
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-        typingTimeoutRef.current = null;
-      }
-    };
-  }, [slideIndex, fullTitle]);
 
   /*---- jsx ----*/
   return (
@@ -79,7 +49,31 @@ export default function Page() {
           <Bg src="/bg.png" />
         </StyledSwiperSlide>
         <StyledSwiperSlide>
-          <Title>{title}</Title>
+          <Title>
+            <div>
+              <h6>
+                다음과 같은 분이라면 Linkargo가 최고의 선택지가 될 수 있어요
+              </h6>
+              <ul>
+                <li>
+                  <span className="material-icons">check</span>
+                  수출 화물이 너무 작거나 너무 크고 무겁지 않을 때 (LCL 수출)
+                </li>
+                <li>
+                  <span className="material-icons">check</span>해상 수출 경험이
+                  처음일 때
+                </li>
+                <li>
+                  <span className="material-icons">check</span>나 대신
+                  전문적으로 해상수출을 진행해줄 여러 포워더의 연결이 필요할 때
+                </li>
+                <li>
+                  <span className="material-icons">check</span>
+                  수출 뿐만 아니라 Business Intelligence 까지 얻고 싶을 때
+                </li>
+              </ul>
+            </div>
+          </Title>
           <FlexContainer>
             {featureCardsConfigs.map((card, index) => (
               <div key={index}>
@@ -130,22 +124,54 @@ const FlexContainer = styled.div`
   justify-content: center;
   gap: 40px;
   align-items: center;
-  flex: 6;
+  flex: 5;
 `;
 
 const Title = styled.div`
-  font-size: 32px;
-  font-weight: 600;
-  color: ${COLORS.main};
-  text-align: center;
-  line-height: 51.2px;
   background-color: ${COLORS.bg};
+  width: 100%;
+  padding: 120px 0px 50px 0px;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
 
   flex: 2;
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+
+  h6 {
+    font-size: 32px;
+    font-weight: 600;
+    color: ${COLORS.main};
+    line-height: 51.2px;
+  }
+
+  span {
+    font-size: 30px;
+    color: ${COLORS.g4};
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    list-style: none;
+    font-size: 20px;
+    font-weight: 600;
+    color: ${COLORS.g4};
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 `;
 
 const Button = styled.div`
