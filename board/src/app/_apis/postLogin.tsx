@@ -20,10 +20,6 @@ export const postLogin = async (req_body: LoginContent) => {
       undefined,
     );
 
-    if (response && response.result && response.result.accessToken) {
-      localStorage.setItem('link-cargo-at', response.result.accessToken);
-    }
-
     return response.result;
   } catch (error) {
     console.error('에러:', error);
