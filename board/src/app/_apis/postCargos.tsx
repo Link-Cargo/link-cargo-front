@@ -16,8 +16,8 @@ export interface CargosInfo {
 }
 
 export interface CargosContent {
-  exportPortId: number;
-  importPortId: number;
+  exportPortId: number | string;
+  importPortId: number | string;
   wishExportDate: string;
   incoterms: string;
   cargos: CargosInfo[];

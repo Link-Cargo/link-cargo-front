@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { NotificationItemProps } from './util';
+import Button from '../Button';
 
 interface NotiProps {
   data: NotificationItemProps[];
@@ -42,6 +43,20 @@ export const Noti = ({ data }: NotiProps) => {
                     <p key={idx}>{line}</p>
                   ))}
                 </div>
+                <FlexContainer>
+                  <Button
+                    text="화물정보 입력하러 가기"
+                    flexValue={1}
+                    type="dark"
+                    onClick={() => {}}
+                  />
+                  <Button
+                    text="담당자 문의 바로가기"
+                    flexValue={1}
+                    type="dark"
+                    onClick={() => {}}
+                  />
+                </FlexContainer>
               </>
             )}
           </NotificationItem>
@@ -140,4 +155,10 @@ const NotificationItem = styled.div<{ type: 'noti' | 'ad' }>`
     list-style: none;
     line-height: 20px;
   }
+`;
+
+const FlexContainer = styled.div`
+  display: flex;
+  width: 100%;
+  gap: 10px;
 `;

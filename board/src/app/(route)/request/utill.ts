@@ -1,7 +1,7 @@
 export const 선택한업체 = [
-  { title: 'KMTC', desc: '24.06.21(월) - 24.06.28(월)' },
-  { title: 'HMM', desc: '24.06.21(월) - 24.06.28(월)' },
-  { title: 'HMM', desc: '24.06.21(월) - 24.06.29(화)' },
+  { title: 'Vessel Alpha', desc: '24.08.20(월) - 24.08.28(월)' },
+  { title: 'Vessel Gamma', desc: '24.08.24(월) - 24.08.28(월)' },
+  { title: 'Vessel Alpha', desc: '24.08.21(월) - 24.08.29(화)' },
 ];
 
 export const 화물정보 = [

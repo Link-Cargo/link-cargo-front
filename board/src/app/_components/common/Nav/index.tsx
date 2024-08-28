@@ -6,6 +6,8 @@ import { COLORS } from '@/app/_constant/color';
 import { useRouter } from 'next/navigation';
 import { Noti } from '../Noti';
 import { notiData } from '../Noti/util';
+import { useRecoilValue } from 'recoil';
+import { userAtom } from '@/app/_recoil/userAtom';
 
 interface NavProps {
   type?: 'default' | 'main';
@@ -14,11 +16,11 @@ interface NavProps {
 export const Nav = ({ type = 'default' }: NavProps) => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('link-cargo-at');
-    setIsLoggedIn(!!token);
+    setIsLoggedIn(window.location.hash.includes('#auth'));
   }, []);
 
   return (
@@ -32,9 +34,14 @@ export const Nav = ({ type = 'default' }: NavProps) => {
           />
         </Logo>
         <Links type={type}>
-          <a href="/freight-quote">운임 조회</a>
           {isLoggedIn ? (
-            <a href="/dashboard">나의 대시보드</a>
+            <a href="/freight-quote#auth">운임 조회</a>
+          ) : (
+            <a href="/freight-quote">운임 조회</a>
+          )}
+
+          {isLoggedIn ? (
+            <a href="/dashboard#auth">나의 대시보드</a>
           ) : (
             <a href="/login">로그인</a>
           )}

@@ -30,10 +30,24 @@ export default function Page() {
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(true);
   const [importPortOptions, setImportPortOptions] = useState<
     { value: string; label: string; id: number }[]
-  >([]);
+  >([
+    { value: '부산항', label: '부산항', id: 1 },
+    { value: '상하이항', label: '상하이항', id: 2 },
+    { value: '로테르담항', label: '로테르담항', id: 3 },
+    { value: '싱가포르항', label: '싱가포르항', id: 4 },
+    { value: '홍콩항', label: '홍콩항', id: 5 },
+    { value: '두바이항', label: '두바이항', id: 6 },
+  ]);
   const [exportPortOptions, setExportPortOptions] = useState<
     { value: string; label: string; id: number }[]
-  >([]);
+  >([
+    { value: '부산항', label: '부산항', id: 1 },
+    { value: '상하이항', label: '상하이항', id: 2 },
+    { value: '로테르담항', label: '로테르담항', id: 3 },
+    { value: '싱가포르항', label: '싱가포르항', id: 4 },
+    { value: '홍콩항', label: '홍콩항', id: 5 },
+    { value: '두바이항', label: '두바이항', id: 6 },
+  ]);
 
   /*---- function ----*/
   const handleInputChange = (

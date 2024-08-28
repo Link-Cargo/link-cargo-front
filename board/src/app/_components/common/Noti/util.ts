@@ -18,7 +18,7 @@ export const notiData: NotificationItemProps[] = [
     type: 'ad',
     date: '오전 09:56',
     title: 'Link cargo',
-    desc: '(광고) 000 화주님! 올해 수출계획은 어떻게 되시나요?',
+    desc: '(광고) 링카고 화주님! 올해 수출계획은 어떻게 되시나요?',
   },
   {
     type: 'noti',
@@ -37,7 +37,7 @@ export const notiData: NotificationItemProps[] = [
     type: 'ad',
     date: '오전 09:56',
     title: 'Link cargo',
-    desc: '(광고) 000 화주님! 올해 수출계획은 어떻게 되시나요?',
+    desc: '(광고) 링카고 화주님! 올해 수출계획은 어떻게 되시나요?',
     add: {
       content1:
         '작년 8월에 베트남으로 화장품을 수출하셨네요! 올해 3분기 최저 운임지수를 확인해보세요.',

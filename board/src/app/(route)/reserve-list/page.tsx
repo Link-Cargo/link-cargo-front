@@ -9,7 +9,7 @@ import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
 import OptionCard from '@/app/_components/common/OptionCard';
 import { getSchedules, ResultData } from '@/app/_apis/getSchedules';
-import { processData } from './utill';
+import { processData, schedule } from './utill';
 import { Suspense } from 'react';
 
 function ContentPage() {
@@ -90,7 +90,7 @@ function ContentPage() {
             <span>도움말</span>
           </Caution>
           <CardContainer>
-            {scheduleInfo?.schedules.map((el) => {
+            {schedule?.schedules.map((el) => {
               const processedData = processData(el);
               return (
                 <OptionCard

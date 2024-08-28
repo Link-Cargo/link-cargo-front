@@ -27,8 +27,8 @@ function ContentPage() {
 
   /*---- state ----*/
   const [queryParams, setQueryParams] = useState<CargosContent>({
-    exportPortId: 0,
-    importPortId: 0,
+    exportPortId: '',
+    importPortId: '',
     wishExportDate: '',
     incoterms: '',
     cargos: [],
@@ -36,8 +36,8 @@ function ContentPage() {
 
   /*---- effect ----*/
   useEffect(() => {
-    const exportPortId = Number(searchParams.get('exportPortId')) || 0;
-    const importPortId = Number(searchParams.get('importPortId')) || 0;
+    const exportPortId = searchParams.get('exportPortId') || 1;
+    const importPortId = searchParams.get('importPortId') || 0;
     const wishExportDate = searchParams.get('wishExportDate') || '';
     const incoterms = searchParams.get('incoterms') || '';
     const cargos = JSON.parse(searchParams.get('cargos') || '[]');
@@ -80,8 +80,8 @@ function ContentPage() {
             {선택한업체.map((item, index) => (
               <MultiTextBox
                 key={index}
-                title={`업체 ${item}`}
-                desc={`업체 ${item} 설명`}
+                title={`${item.title}`}
+                desc={`${item.desc}`}
               />
             ))}
           </FlexContainer>

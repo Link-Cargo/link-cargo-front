@@ -215,11 +215,12 @@ export default function Page() {
               type="dark"
               flexValue={3}
               onClick={() => {
-                if (curr === 3) {
-                  wrapPostRegister();
-                } else {
-                  setCurr(curr + 1);
-                }
+                setCurr(curr + 1);
+                // if (curr === 3) {
+                //   wrapPostRegister();
+                // } else {
+                //   setCurr(curr + 1);
+                // }
               }}
               disabled={isNextButtonDisabled}
             />
@@ -237,8 +238,8 @@ export default function Page() {
                 <br /> 지금 바로 LCL화주와 연결해보세요.
               </Desc>
             </FormSection>
-            <WideButton onClick={() => router.push('/login')}>
-              로그인하고 운임 조회하러가기
+            <WideButton onClick={() => router.push('/main#auth')}>
+              바로 운임 조회하러가기
             </WideButton>
           </CenteredFormSection>
         </>
