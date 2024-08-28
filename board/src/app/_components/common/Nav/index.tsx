@@ -6,8 +6,6 @@ import { COLORS } from '@/app/_constant/color';
 import { useRouter } from 'next/navigation';
 import { Noti } from '../Noti';
 import { notiData } from '../Noti/util';
-import { useRecoilValue } from 'recoil';
-import { userAtom } from '@/app/_recoil/userAtom';
 
 interface NavProps {
   type?: 'default' | 'main';
