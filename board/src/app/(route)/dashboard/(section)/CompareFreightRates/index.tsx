@@ -161,7 +161,7 @@ export default function CompareFreightRates() {
             </Title>
             <SubTitle>
               예상 비용 |{' '}
-              <b>{recommendationInfo?.estimatedCost || '143,234,118'}원</b>
+              <b>{recommendationInfo?.estimatedCost || '1,073,280'}원</b>
             </SubTitle>
           </div>
           <div>

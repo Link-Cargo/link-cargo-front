@@ -68,7 +68,7 @@ function ContentPage() {
             <SearchBox>{searchBoxText}</SearchBox>
             <GrayBox>
               <div>예상 비용</div>
-              <span>123,123,123원</span>
+              <span>1,073,280원</span>
             </GrayBox>
           </FlexContainer>
           <Tip>
