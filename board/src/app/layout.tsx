@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import StyledComponentsRegistry from './_lib/registry';
-import RecoilRootWrapper from './recoilProvider';
+import { RecoilRootWrapper, ReactQueryProviders } from './provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -38,9 +38,11 @@ export default function RootLayout({
         <title>링카고, 바다에서 시작하는 해외수출, 더 쉽고 편리하게</title>
       </head>
       <RecoilRootWrapper>
-        <StyledComponentsRegistry>
-          <body className={inter.className}>{children}</body>
-        </StyledComponentsRegistry>
+        <ReactQueryProviders>
+          <StyledComponentsRegistry>
+            <body>{children}</body>
+          </StyledComponentsRegistry>
+        </ReactQueryProviders>
       </RecoilRootWrapper>
     </html>
   );
