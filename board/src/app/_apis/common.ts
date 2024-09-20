@@ -168,11 +168,13 @@ export async function deleteAsync<T, D>(
  * @param D parameter 또는 body로 전달할 데이터의 타입
  *
  * @param path API Endpoint
+ * @param accessToken 엑세스 토큰 (옵션)
  * @param config `AxiosRequestConfig`
  * @param errorMessages status code에 따른 에러 메시지
  */
 export async function patchAsync<T, D>(
   path: string,
+  accessToken?: string,
   data?: D,
   config?: AxiosRequestConfig,
   errorMessages?: Record<number, string>,
@@ -181,6 +183,39 @@ export async function patchAsync<T, D>(
     const response = await axios.patch<T, AxiosResponse<T, D>, D>(path, data, {
       baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
       responseType: 'json',
+      ...config,
+    });
+
+    return response.data;
+  } catch (error) {
+    throw processError(error, errorMessages);
+  }
+}
+
+/**
+ * PUT 요청을 보내는 API 호출 함수
+ * @param T 서버 응답 타입
+ * @param D parameter 또는 body로 전달할 데이터의 타입
+ *
+ * @param path API Endpoint
+ * @param accessToken 엑세스 토큰 (옵션)
+ * @param config `AxiosRequestConfig`
+ * @param errorMessages status code에 따른 에러 메시지
+ */
+export async function putAsync<T, D>(
+  path: string,
+  accessToken?: string,
+  data?: D,
+  config?: AxiosRequestConfig,
+  errorMessages?: Record<number, string>,
+): Promise<T> {
+  try {
+    const response = await axios.put<T, AxiosResponse<T, D>, D>(path, data, {
+      baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
+      responseType: 'json',
+      headers: {
+        Authorization: accessToken ? `Bearer ${accessToken}` : '',
+      },
       ...config,
     });
 

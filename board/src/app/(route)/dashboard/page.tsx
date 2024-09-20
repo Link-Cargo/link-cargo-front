@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { userAtom } from '@/app/_recoil/userAtom';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+
 import Layout from '@/app/_components/common/Layout';
 import { List } from '@/app/_components/dashboard/List';
 import ProfileCard from '@/app/_components/dashboard/Profile';
@@ -13,14 +16,14 @@ import {
   PaymentHistory,
 } from './(section)';
 
-interface ListItem {
+interface dashboardListItem {
   [id: string]: {
     title: string;
     section: React.ReactNode;
   };
 }
 
-const dashboardListConfig: ListItem = {
+const dashboardListConfig: dashboardListItem = {
   overview: { title: '한눈에 보기', section: <Overview /> },
   compare_quotes: { title: '견적서 비교', section: <CompareQuotes /> },
   compare_freight: {
@@ -32,6 +35,8 @@ const dashboardListConfig: ListItem = {
 };
 
 function Page() {
+  const user = useRecoilValue(userAtom);
+
   const [selectedId, setSelectedId] = useState<string>('overview');
   const { section: selectedSection, title: selectedTitle } =
     dashboardListConfig[selectedId];
@@ -74,7 +79,7 @@ function Page() {
               ([id, { title, section }]) => ({
                 id,
                 title,
-                section, // 이 부분에서 section을 포함
+                section,
               }),
             )}
             selectedTitle={selectedTitle}

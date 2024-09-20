@@ -1,6 +1,6 @@
 import { ResponseDto, getAsync } from '../common';
 
-interface ResultData {
+export interface ResultData {
   firmName: string;
   totalCost: number;
   forwarderName: string;
@@ -65,18 +65,18 @@ interface ResultData {
   };
 }
 
-type GetICheapestDto = ResponseDto<ResultData>;
+export type GetICheapestDto = ResponseDto<ResultData>;
 
 /*
 운임비용이 가장 적은 견적서를 조회
 */
-export const getCheapest = async () => {
-  const url = `/dashboards/cheapest`;
+export const getCheapest = async (qId: string, at: string) => {
+  const url = `/dashboards/cheapest/${qId}`;
   const response = await getAsync<GetICheapestDto, undefined>(
     url,
-    process.env.NEXT_PUBLIC_TEMP_AT,
+    at,
     undefined,
     undefined,
   );
-  return response.result;
+  return response;
 };

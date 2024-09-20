@@ -2,28 +2,36 @@
 
 import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
+import { COLORS } from '@/app/_constant/color';
+import { useQuery } from '@tanstack/react-query';
+import { useRecoilValue } from 'recoil';
+import { userAtom } from '@/app/_recoil/userAtom';
+
 import { Box } from '@/app/_components/dashboard/Box';
 import { BgType } from '@/app/_components/dashboard/Profile';
-import { COLORS } from '@/app/_constant/color';
 import { SelectInput } from '@/app/_components/common/Input';
 import Button from '@/app/_components/common/Button';
-import { 운송사리스트, 최근검색어_리스트 } from '../Overview/utils';
 import Layout from '@/app/_components/dashboard/Layout';
+import Graph from './Graph';
+
 import {
-  getRecommendation,
-  ResultData as RecommendationData,
-} from '@/app/_apis/dashboard/getRecommendation';
-import {
-  getSummary,
-  ResultData as SummaryData,
-} from '@/app/_apis/dashboard/getSummary';
-import {
-  getPredictionReason,
-  ResultData as PredictionReasonData,
-} from '@/app/_apis/dashboard/getPredictionReason';
+  GetIPredictionDto,
+  GetISummaryDto,
+  GetIPredictionReasonDto,
+  GetIRecommendationDto,
+  DashboardApiService,
+} from '@/app/_apis/dashboard';
+
+//TODO
+import { 운송사리스트, 최근검색어_리스트 } from '../Overview/utils';
+import { ResultData } from '@/app/_apis/dashboard/getPrediction';
 
 export default function CompareFreightRates() {
+  /*---- hooks ----*/
   /*---- state ----*/
+  const { accessToken } = useRecoilValue(userAtom);
+
+  //TODO
   const [최근검색어, set최근검색어] = useState(
     '인천항 → 상하이항 | ETD : 2024.06.21',
   );
@@ -34,74 +42,91 @@ export default function CompareFreightRates() {
     { value: '10월', label: '10월' },
     { value: '11월', label: '11월' },
   ]);
-
-  const [recommendationInfo, setRecommendationInfo] =
-    useState<RecommendationData>();
-  const [prediction, setPrediction] = useState<PredictionReasonData>();
-  const [summary, setSummary] = useState<SummaryData>();
+  const [prediction, setPrediction] = useState<ResultData>();
   const [selectedMonth, setSelectedMonth] = useState({
     month: '9월',
     status: '',
     reason: '',
   });
-
-  /*---- function ----*/
-
-  //선택한 달 데이터 setSelectedMonth
-  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedMonthValue = e.target.value;
-
-    const selectedPrediction = prediction?.predictionReasons.find((item) =>
-      item.date.some((date) => `${date.month}월` === selectedMonthValue),
-    );
-
-    if (selectedPrediction) {
-      setSelectedMonth({
-        month: selectedMonthValue,
-        status: selectedPrediction.status,
-        reason: selectedPrediction.reason,
-      });
-    }
-  };
+  function handleMonthChange() {}
 
   /*---- api call function ----*/
-  const fetchCompare = async () => {
-    try {
-      const data = await getRecommendation();
-      const predictionData = await getPredictionReason();
-      const summaryData = await getSummary();
-      setRecommendationInfo(data);
-      setPrediction(predictionData);
-      setSummary(summaryData);
+  const {
+    data: summaryData,
+    error: summaryError,
+    isLoading: summaryLoading,
+  } = useQuery<GetISummaryDto, Error>({
+    queryKey: ['summary'],
+    queryFn: () => DashboardApiService.getSummary(accessToken!),
+    enabled: !!accessToken,
+  });
 
+  const {
+    data: graphData,
+    error: graphError,
+    isLoading: graphLoading,
+  } = useQuery<GetIPredictionDto, Error>({
+    queryKey: ['graph'],
+    queryFn: () => DashboardApiService.getPrediction(accessToken!),
+    enabled: !!accessToken,
+  });
+
+  const {
+    data: recommendationData,
+    error: recommendationError,
+    isLoading: recommendationLoading,
+  } = useQuery<GetIRecommendationDto, Error>({
+    queryKey: ['recommendation'],
+    queryFn: () => DashboardApiService.getRecommendation(accessToken!),
+    enabled: !!accessToken,
+  });
+
+  const {
+    data: transformedData,
+    error: predictionError,
+    isLoading: predictionLoading,
+  } = useQuery<
+    GetIPredictionReasonDto,
+    Error,
+    {
+      monthOptions: { value: string; label: string }[];
+      selectedMonth: { month: string; status: string; reason: string };
+    }
+  >({
+    queryKey: ['prediction'],
+    queryFn: () => DashboardApiService.getPredictionReason(accessToken!),
+    enabled: !!accessToken,
+    select: (data) => {
       // 월별 검색어 리스트 생성
-      const monthOptions = predictionData?.predictionReasons.map((item) => {
+      const monthOptions = data.result.predictionReasons.map((item) => {
         const month = item.date[1]?.month || '';
         return { value: `${month}월`, label: `${month}월` };
       });
-      set월별_검색_리스트(monthOptions || []);
 
-      // 첫 번째 월별 데이터를 기본 선택
+      // 첫 번째 월별 데이터 기본 선택
+      let selectedMonth = {
+        month: '',
+        status: '',
+        reason: '',
+      };
       if (monthOptions && monthOptions.length > 0) {
         const firstMonth = monthOptions[0].value;
-        const firstPrediction = predictionData.predictionReasons.find((item) =>
+        const firstPrediction = data.result.predictionReasons.find((item) =>
           item.date.some((date) => `${date.month}월` === firstMonth),
         );
-        setSelectedMonth({
-          month: firstPrediction?.status || '',
+        selectedMonth = {
+          month: firstMonth || '',
           status: firstPrediction?.status || '',
           reason: firstPrediction?.reason || '',
-        });
+        };
       }
-    } catch (error) {
-      console.error('정보를 가져오는 데 실패했습니다:', error);
-    }
-  };
 
-  /*---- effect ----*/
-  useEffect(() => {
-    fetchCompare();
-  }, []);
+      return {
+        monthOptions,
+        selectedMonth,
+      };
+    },
+  });
 
   /*---- jsx ----*/
   return (
@@ -120,9 +145,10 @@ export default function CompareFreightRates() {
           width="70%"
         >
           <SubTitle>
-            현재를 기준으로 부산항 → 상하이항 운임 예측값입니다.
+            현재를 기준으로 {graphData?.result.exportPortName} →{' '}
+            {graphData?.result.importPortName} 운임 예측값입니다.
           </SubTitle>
-          <img src="/assets/graph.png" />
+          <Graph predictions={graphData?.result.predictions || {}} />
         </Box>
         <Box desc="운임지수 변화 이유" bgType={BgType.BRIGHT} width="30%">
           <FlexBox>
@@ -134,19 +160,16 @@ export default function CompareFreightRates() {
               options={월별_검색_리스트}
             />
             <SubTitle>
-              하락이 예상됩니다.
-              {/* {selectedMonth.status === 'rising'
+              {selectedMonth.status === 'rising'
                 ? '상승이 예상됩니다.'
-                : '하락이 예상됩니다.'} */}
+                : '하락이 예상됩니다.'}
             </SubTitle>
           </FlexBox>
           <Desc>
-            하락 요인 | 여름철 소비 활동 감소로 해상 운송 수요가 줄어들고, 해당
-            노선에 많은 선박이 배치되어 과잉공급으로 운임이 낮아질 수 있습니다.
-            {/* {selectedMonth.status === 'rising'
+            {selectedMonth.status === 'rising'
               ? '상승 요인 | '
               : '하락 요인 | '}
-            {selectedMonth.reason} */}
+            {selectedMonth.reason}
           </Desc>
         </Box>
       </FlexBox>
@@ -154,14 +177,13 @@ export default function CompareFreightRates() {
         <Box desc="더 저렴한 가격 추천" bgType={BgType.BRIGHT} width="70%">
           <div>
             <Title>
-              <b>{recommendationInfo?.dateDifference || 2}개월 뒤,</b> 운임이{' '}
-              <b>{recommendationInfo?.indexDifference || 20}</b>만큼{' '}
-              <b>낮을 것</b>
+              <b>{recommendationData?.result.dateDifference}개월 뒤,</b> 운임이{' '}
+              <b>{recommendationData?.result.indexDifference}</b>
+              만큼 <b>낮을 것</b>
               으로 예상
             </Title>
             <SubTitle>
-              예상 비용 |{' '}
-              <b>{recommendationInfo?.estimatedCost || '1,073,280'}원</b>
+              예상 비용 | <b>{recommendationData?.result.estimatedCost}원</b>
             </SubTitle>
           </div>
           <div>
@@ -198,7 +220,7 @@ export default function CompareFreightRates() {
         </Box>
         <Box desc="관련정보 요약" bgType={BgType.DARK} width="30%">
           <SummaryBox>
-            {['수입국', '환율', '운임'].map((interest, index) => (
+            {summaryData?.result.interests.map((interest, index) => (
               <div key={index}>
                 <span
                   className="material-icons"
@@ -212,26 +234,8 @@ export default function CompareFreightRates() {
                 <span>{interest}</span>
               </div>
             ))}
-
-            {/* {summary?.interests.map((interest, index) => (
-              <div key={index}>
-                <span
-                  className="material-icons"
-                  style={{
-                    borderRadius: '10px',
-                    color: '#bbb',
-                  }}
-                >
-                  check_box
-                </span>
-                <span>{interest}</span>
-              </div>
-            ))} */}
           </SummaryBox>
-          <Desc>
-            {summary?.summary ||
-              '항구에 머물고 있는 컨테이너선의 비율이 큽니다. 선박이 대기하는 시간이 길어지고, 항구 혼잡으로 인해 하역 및 적재 작업이 지연될 수 있으니 이를 고려해서 수출입 스케줄을 조정해항구에 머물고 있는 컨테이너선의 비율이 큽니다.'}
-          </Desc>
+          <Desc>{summaryData?.result.summary}</Desc>
         </Box>
       </FlexBox>
     </Layout>

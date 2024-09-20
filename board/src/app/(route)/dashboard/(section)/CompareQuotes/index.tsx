@@ -2,14 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
+import { COLORS } from '@/app/_constant/color';
+import { useQuery } from '@tanstack/react-query';
+import { useRecoilValue } from 'recoil';
+import { userAtom } from '@/app/_recoil/userAtom';
+
 import { Box } from '@/app/_components/dashboard/Box';
 import { BgType } from '@/app/_components/dashboard/Box';
-import { COLORS } from '@/app/_constant/color';
 import Button from '@/app/_components/common/Button';
-import { 최근검색어_리스트 } from '../Overview/utils';
 import { SelectInput } from '@/app/_components/common/Input';
 import Layout from '@/app/_components/dashboard/Layout';
-import { 도착한_견적서_업체, 견적_명세 } from './utils';
+
+import { GetICompareDto, DashboardApiService } from '@/app/_apis/dashboard';
+
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -17,64 +22,57 @@ import 'swiper/css/autoplay';
 import { useRouter } from 'next/navigation';
 import { Mousewheel, Pagination, Autoplay } from 'swiper/modules';
 
+//TODO
+import { CostListItem, dummy } from '@/app/_apis/dashboard/getCompare';
+import { 최근검색어_리스트 } from '../Overview/utils';
+import { 견적_명세, getCostListByType, barColors } from './utils';
+
 export default function CompareQuotes() {
+  /*---- hooks ----*/
   const router = useRouter();
 
   /*---- state ----*/
+  const { accessToken } = useRecoilValue(userAtom);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  //set init value
+  const [selectedCostType1, setSelectedCostType1] = useState('THC 비용');
+  const [selectedCostType2, setSelectedCostType2] = useState('CIC 비용');
+  const [selectedCostType3, setSelectedCostType3] = useState('CFS 비용');
+
+  /*---- api call function ----*/
+  const {
+    data: compareData,
+    error: compareError,
+    isLoading: compareLoading,
+  } = useQuery<GetICompareDto, Error>({
+    queryKey: ['compare'],
+    queryFn: () =>
+      DashboardApiService.getCompare('66c2f12d81322169373e2f8d', accessToken!),
+    enabled: !!accessToken,
+  });
+
+  //TODO
   const [최근검색어, set최근검색어] = useState(
     '인천항 → 상하이항 | ETD : 2024.06.24',
   );
-  const [견적명세1, set견적명세1] = useState('CFS 비용');
-  const [견적명세2, set견적명세2] = useState('핸들링 비용');
-  const [견적명세3, set견적명세3] = useState('THC 비용');
-  const [dropdownVisible, setDropdownVisible] = useState(false); // State to manage dropdown visibility
-
-  const [randomValues, setRandomValues] = useState([
-    {
-      hansung: 0,
-      jinternational: 0,
-      globallogis: 0,
-    },
-    {
-      hansung: 0,
-      jinternational: 0,
-      globallogis: 0,
-    },
-    {
-      hansung: 0,
-      jinternational: 0,
-      globallogis: 0,
-    },
-  ]);
-
-  const barColors = [COLORS.main, COLORS.point, COLORS.g3];
-
-  useEffect(() => {
-    // 0~2000 사이의 랜덤값 설정
-    setRandomValues([
-      {
-        hansung: Math.floor(Math.random() * 2000),
-        jinternational: Math.floor(Math.random() * 2000),
-        globallogis: Math.floor(Math.random() * 2000),
-      },
-      {
-        hansung: Math.floor(Math.random() * 2000),
-        jinternational: Math.floor(Math.random() * 2000),
-        globallogis: Math.floor(Math.random() * 2000),
-      },
-      {
-        hansung: Math.floor(Math.random() * 2000),
-        jinternational: Math.floor(Math.random() * 2000),
-        globallogis: Math.floor(Math.random() * 2000),
-      },
-    ]);
-  }, []);
-
-  const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
-  };
 
   /*---- jsx ----*/
+  const renderCostList = (costList: CostListItem[]) => (
+    <ul>
+      {costList.map((item, index) => (
+        <li key={index}>
+          <span>{Object.keys(item)[0]}</span>
+          <span>
+            <GraphBar
+              width={(Object.values(item)[0] as number) / 100 + '%'}
+              color={barColors[index % barColors.length]}
+            />
+          </span>
+          <span>{Object.values(item)[0]}원</span>
+        </li>
+      ))}
+    </ul>
+  );
   return (
     <Layout>
       <FlexBox>
@@ -85,14 +83,14 @@ export default function CompareQuotes() {
           onChange={(e) => set최근검색어(e.target.value)}
           options={최근검색어_리스트}
         />
-        <ReportButton onClick={toggleDropdown}>
+        <ReportButton onClick={() => setDropdownVisible(!dropdownVisible)}>
           <div>도착한 견적서</div>
-          <b>{도착한_견적서_업체.length}개</b>
+          <b>{dummy?.result.quotationCount}개</b>
         </ReportButton>
         {dropdownVisible && (
           <DropdownMenu>
-            {도착한_견적서_업체.map((item, index) => (
-              <DropdownItem key={index}>{item.회사명}</DropdownItem>
+            {dummy.result.dashboardQuotationResponseList.map((item, index) => (
+              <DropdownItem key={index}>{item.forwarderEmail}</DropdownItem>
             ))}
           </DropdownMenu>
         )}
@@ -107,12 +105,12 @@ export default function CompareQuotes() {
         modules={[Mousewheel, Pagination, Autoplay]}
         className="swiper-compare"
       >
-        {도착한_견적서_업체.map((item, index) => (
+        {dummy?.result.dashboardQuotationResponseList.map((item, index) => (
           <SwiperSlide key={index}>
             <SlideContent>
               <Box bgType={BgType.NONE} onClick={() => {}} width="60%">
                 <img
-                  src={item.견적서이미지}
+                  src={'assets/report.png'}
                   alt={`견적서 이미지 ${index + 1}`}
                 />
               </Box>
@@ -121,25 +119,25 @@ export default function CompareQuotes() {
                   <ul>
                     <li>
                       <span>기업명</span>
-                      <span>{item.회사명}</span>
+                      <span>{item.firmName}</span>
                     </li>
                     <li>
                       <span>총 비용</span>
-                      <span>{item.총비용}</span>
+                      <span>{item.totalCost}</span>
                     </li>
                     <li>
                       <span>담당자</span>
-                      <span>{item.담당자}</span>
+                      <span>{item.forwarderName}</span>
                     </li>
                     <li>
                       <span>이메일</span>
-                      <span>{item.이메일}</span>
+                      <span>{item.forwarderEmail}</span>
                     </li>
                     <li>
                       <span>전화번호</span>
-                      <span>{item.전화번호}</span>
+                      <span>{item.forwarderTel}</span>
                     </li>
-                    <li>전달 사항 | {item.전달사항}</li>
+                    <li>전달 사항 | </li>
                   </ul>
                   <Button
                     text="1:1 문의하기"
@@ -158,132 +156,30 @@ export default function CompareQuotes() {
       <FlexBox>
         <CompareBox>
           <SelectInput
-            label=""
-            name="운송사"
-            value={견적명세1}
-            onChange={(e) => {
-              set견적명세1(e.target.value);
-            }}
+            name="견적 명세 1"
+            value={selectedCostType1}
+            onChange={(e) => setSelectedCostType1(e.target.value)}
             options={견적_명세}
           />
-          <ul>
-            <li>
-              <span>한성무역</span>
-              <span>
-                <GraphBar
-                  width={(randomValues[0].hansung / 2000) * 100 + '%'}
-                  color={barColors[0]}
-                />
-              </span>
-              <span>{randomValues[0].hansung}원</span>
-            </li>
-            <li>
-              <span>J인터네셔널</span>
-              <span>
-                <GraphBar
-                  width={(randomValues[0].jinternational / 2000) * 100 + '%'}
-                  color={barColors[1]}
-                />
-              </span>
-              <span>{randomValues[0].jinternational}원</span>
-            </li>
-            <li>
-              <span>글로벌로지스</span>
-              <span>
-                <GraphBar
-                  width={(randomValues[0].globallogis / 2000) * 100 + '%'}
-                  color={barColors[2]}
-                />
-              </span>
-              <span>{randomValues[0].globallogis}원</span>
-            </li>
-          </ul>
+          {renderCostList(getCostListByType(dummy, selectedCostType1))}
         </CompareBox>
         <CompareBox>
           <SelectInput
-            label=""
-            name="운송사"
-            value={견적명세2}
-            onChange={(e) => {
-              set견적명세2(e.target.value);
-            }}
+            name="견적 명세 2"
+            value={selectedCostType2}
+            onChange={(e) => setSelectedCostType2(e.target.value)}
             options={견적_명세}
           />
-          <ul>
-            <li>
-              <span>한성무역</span>
-              <span>
-                <GraphBar
-                  width={(randomValues[1].hansung / 2000) * 100 + '%'}
-                  color={barColors[0]}
-                />
-              </span>
-              <span>{randomValues[1].hansung}원</span>
-            </li>
-            <li>
-              <span>J인터네셔널</span>
-              <span>
-                <GraphBar
-                  width={(randomValues[1].jinternational / 2000) * 100 + '%'}
-                  color={barColors[1]}
-                />
-              </span>
-              <span>{randomValues[1].jinternational}원</span>
-            </li>
-            <li>
-              <span>글로벌로지스</span>
-              <span>
-                <GraphBar
-                  width={(randomValues[1].globallogis / 2000) * 100 + '%'}
-                  color={barColors[2]}
-                />
-              </span>
-              <span>{randomValues[1].globallogis}원</span>
-            </li>
-          </ul>
+          {renderCostList(getCostListByType(dummy, selectedCostType2))}
         </CompareBox>
         <CompareBox>
           <SelectInput
-            label=""
-            name="운송사"
-            value={견적명세3}
-            onChange={(e) => {
-              set견적명세3(e.target.value);
-            }}
+            name="견적 명세 3"
+            value={selectedCostType3}
+            onChange={(e) => setSelectedCostType3(e.target.value)}
             options={견적_명세}
           />
-          <ul>
-            <li>
-              <span>한성무역</span>
-              <span>
-                <GraphBar
-                  width={(randomValues[2].hansung / 2000) * 100 + '%'}
-                  color={barColors[0]}
-                />
-              </span>
-              <span>{randomValues[2].hansung}원</span>
-            </li>
-            <li>
-              <span>J인터네셔널</span>
-              <span>
-                <GraphBar
-                  width={(randomValues[2].jinternational / 2000) * 100 + '%'}
-                  color={barColors[1]}
-                />
-              </span>
-              <span>{randomValues[2].jinternational}원</span>
-            </li>
-            <li>
-              <span>글로벌로지스</span>
-              <span>
-                <GraphBar
-                  width={(randomValues[2].globallogis / 2000) * 100 + '%'}
-                  color={barColors[2]}
-                />
-              </span>
-              <span>{randomValues[2].globallogis}원</span>
-            </li>
-          </ul>
+          {renderCostList(getCostListByType(dummy, selectedCostType3))}
         </CompareBox>
       </FlexBox>
     </Layout>

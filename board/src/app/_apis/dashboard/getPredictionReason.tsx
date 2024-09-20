@@ -19,18 +19,18 @@ export interface ResultData {
   ];
 }
 
-type GetIPredictionReasonDto = ResponseDto<ResultData>;
+export type GetIPredictionReasonDto = ResponseDto<ResultData>;
 
 /*
 운임 비용 관련 이유 정보를 조회
 */
-export const getPredictionReason = async () => {
+export const getPredictionReason = async (at: string) => {
   const url = `/dashboards/prediction/reason`;
   const response = await getAsync<GetIPredictionReasonDto, undefined>(
     url,
-    process.env.NEXT_PUBLIC_TEMP_AT,
+    at,
     undefined,
     undefined,
   );
-  return response.result;
+  return response;
 };

@@ -1,35 +1,5 @@
-export const 도착한_견적서_업체 = [
-  {
-    회사명: '한성무역',
-    총비용: '1,073,280',
-    담당자: '권시경',
-    이메일: 'mobile@gmail.com',
-    전화번호: '010-1232-2345',
-    견적서이미지: 'assets/report.png',
-    전달사항:
-      '포장 재질에 대해 추가적인 요구 사항이 있습니다. 모든 상품은 습기에 민감하므로 방습 포장으로 처리해 주세요. 또한, 서류 작업이 완료되면 PDF 형식으로 이메일로 공유해 주시기 바랍니다.',
-  },
-  {
-    회사명: 'J인터네셔널',
-    총비용: '5,224,567',
-    담당자: '김동현',
-    이메일: 'mobile@gmail.com',
-    전화번호: '010-8755-2345',
-    견적서이미지: 'assets/report.png',
-    전달사항:
-      '추가 비용이 발생하지 않도록 도착 일정을 준수해 주세요. 그리고 이번 배송에는 물류 보험이 포함되어 있는지 확인 부탁드립니다. 필요한 경우 추가 보험을 적용해 주시기 바랍니다.',
-  },
-  {
-    회사명: '글로벌로지스',
-    총비용: '2,234,567',
-    담당자: '전하린',
-    이메일: 'mobile@gmail.com',
-    전화번호: '010-0982-2345',
-    견적서이미지: 'assets/report.png',
-    전달사항:
-      '본 주문 건은 급한 요청입니다. 가능한 빠른 시일 내에 출항할 수 있도록 협조 부탁드립니다. 또한, 모든 제품이 손상 없이 안전하게 도착할 수 있도록 포장 상태를 재검토해 주세요.',
-  },
-];
+import { CostListItem, GetICompareDto } from '@/app/_apis/dashboard/getCompare';
+import { COLORS } from '@/app/_constant/color';
 
 export const 견적_명세 = [
   {
@@ -57,3 +27,24 @@ export const 견적_명세 = [
     label: '통관 수수료',
   },
 ];
+
+export const getCostListByType = (dummy: GetICompareDto, type: string) => {
+  switch (type) {
+    case 'THC 비용':
+      return dummy.result.thcCostList;
+    case 'CIC 비용':
+      return dummy.result.handlingCostList;
+    case 'CFS 비용':
+      return dummy.result.cfsCostList;
+    case '통관 수수료':
+      return dummy.result.listStatusCostList;
+    case '실행 비용':
+      return dummy.result.customsClearanceCostList;
+    case '핸들링 비용':
+      return dummy.result.truckingCostList;
+    default:
+      return [];
+  }
+};
+
+export const barColors = [COLORS.main, COLORS.point, COLORS.g3];

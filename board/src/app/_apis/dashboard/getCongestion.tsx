@@ -6,18 +6,18 @@ export interface ResultData {
   description: string;
 }
 
-type GetICongestionDto = ResponseDto<ResultData>;
+export type GetICongestionDto = ResponseDto<ResultData>;
 
 /*
 입국항의 혼잡도 정보를 조회
 */
-export const getCongestion = async () => {
+export const getCongestion = async (at: string) => {
   const url = `dashboards/port/congestion?importPortId=2`;
   const response = await getAsync<GetICongestionDto, undefined>(
     url,
-    process.env.NEXT_PUBLIC_TEMP_AT,
+    at,
     undefined,
     undefined,
   );
-  return response.result;
+  return response;
 };

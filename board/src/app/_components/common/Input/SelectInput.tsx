@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 
 interface SelectInputProps {
-  label: string;
+  label?: string;
   name: string;
   value: string;
   options: { value: string; label: string }[];

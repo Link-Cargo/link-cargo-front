@@ -1,15 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { styled } from 'styled-components';
+import { COLORS } from '@/app/_constant/color';
+import { useQuery } from '@tanstack/react-query';
+import { useRecoilValue } from 'recoil';
+import { userAtom } from '@/app/_recoil/userAtom';
+
 import { Box } from '@/app/_components/dashboard/Box';
 import { BgType } from '@/app/_components/dashboard/Profile';
-import { COLORS } from '@/app/_constant/color';
 import Button from '@/app/_components/common/Button';
-import {
-  운송사리스트,
-  최근검색어_리스트,
-  추천_포워딩_업체,
-  정보,
-} from './utils';
 import { SelectInput } from '@/app/_components/common/Input';
 import useModal from '@/app/_hooks/useModal';
 import Modal from '@/app/_components/common/Modal';
@@ -17,17 +15,14 @@ import Confirm from '@/app/_components/common/Confirm';
 import Layout from '@/app/_components/dashboard/Layout';
 
 import {
-  getRecommendation,
-  ResultData as RecommendationData,
-} from '@/app/_apis/dashboard/getRecommendation';
-import {
-  getSummary,
-  ResultData as SummaryData,
-} from '@/app/_apis/dashboard/getSummary';
-import {
-  getCongestion,
-  ResultData as CongestionData,
-} from '@/app/_apis/dashboard/getCongestion';
+  GetIRecommendationDto,
+  GetICongestionDto,
+  GetISummaryDto,
+  DashboardApiService,
+} from '@/app/_apis/dashboard';
+
+//TODO
+import { 운송사리스트, 최근검색어_리스트, 추천_포워딩_업체 } from './utils';
 
 export default function Overview() {
   /*---- hooks ----*/
@@ -35,32 +30,41 @@ export default function Overview() {
   const { isShowing: isExpandShowing, toggle: toggleExpandModal } = useModal();
 
   /*---- state ----*/
+  const { accessToken } = useRecoilValue(userAtom);
   const [최근검색어, set최근검색어] = useState(
     '인천항 → 상하이항 | ETD : 2024.06.24',
   );
-  const [recommendationInfo, setRecommendationInfo] =
-    useState<RecommendationData>();
-  const [summary, setSummary] = useState<SummaryData>();
-  const [congestion, setCongestion] = useState<CongestionData>();
 
   /*---- api call function ----*/
-  const fetchOverview = async () => {
-    try {
-      const data = await getRecommendation();
-      const summaryData = await getSummary();
-      const congestionData = await getCongestion();
-      setRecommendationInfo(data);
-      setSummary(summaryData);
-      setCongestion(congestionData);
-    } catch (error) {
-      console.error('추천 정보를 가져오는 데 실패했습니다:', error);
-    }
-  };
+  const {
+    data: summaryData,
+    error: summaryError,
+    isLoading: summaryLoading,
+  } = useQuery<GetISummaryDto, Error>({
+    queryKey: ['summary'],
+    queryFn: () => DashboardApiService.getSummary(accessToken!),
+    enabled: !!accessToken,
+  });
 
-  /*---- effect ----*/
-  useEffect(() => {
-    fetchOverview();
-  }, []);
+  const {
+    data: recommendationData,
+    error: recommendationError,
+    isLoading: recommendationLoading,
+  } = useQuery<GetIRecommendationDto, Error>({
+    queryKey: ['recommendation'],
+    queryFn: () => DashboardApiService.getRecommendation(accessToken!),
+    enabled: !!accessToken,
+  });
+
+  const {
+    data: congestionData,
+    error: congestionError,
+    isLoading: congestionLoading,
+  } = useQuery<GetICongestionDto, Error>({
+    queryKey: ['congestion'],
+    queryFn: () => DashboardApiService.getCongestion(accessToken!),
+    enabled: !!accessToken,
+  });
 
   /*---- function ----*/
   const exportPdf = () => {};
@@ -118,14 +122,13 @@ export default function Overview() {
         <Box desc="더 저렴한 가격 추천" bgType={BgType.BRIGHT} width="70%">
           <div>
             <Title>
-              <b>{recommendationInfo?.dateDifference || 2}개월 뒤,</b> 운임이{' '}
-              <b>{recommendationInfo?.indexDifference || 20}</b>만큼{' '}
-              <b>낮을 것</b>
+              <b>{recommendationData?.result.dateDifference}개월 뒤,</b> 운임이{' '}
+              <b>{recommendationData?.result.indexDifference}</b>
+              만큼 <b>낮을 것</b>
               으로 예상
             </Title>
             <SubTitle>
-              예상 비용 |{' '}
-              <b>{recommendationInfo?.estimatedCost || '1,073,280'}원</b>
+              예상 비용 | <b>{recommendationData?.result.estimatedCost}원</b>
             </SubTitle>
           </div>
           <div>
@@ -164,23 +167,18 @@ export default function Overview() {
       <FlexBox>
         <Box desc="입국항 혼잡도" bgType={BgType.DARK} width="30%">
           <Title>
-            <b>{congestion?.percent || 33}%</b> {congestion?.status}
+            <b>{congestionData?.result.percent}%</b>{' '}
+            {congestionData?.result.status}
           </Title>
-          <Desc>
-            {congestion?.description ||
-              '항구에 머물고 있는 컨테이너선의 비율이 큽니다. 선박이 대기하는 시간이 길어지고 하역 및 적재 작업이 지연될 수 있습니다.'}
-          </Desc>
+          <Desc>{congestionData?.result.description}</Desc>
         </Box>
         <Box desc="관련정보 요약" bgType={BgType.DARK} width="70%">
           <Title>
-            {summary?.interests
+            {summaryData?.result.interests
               .map((interest) => interest.trim())
-              .join(' | ') || '수입국 | 환율 | 운임'}
+              .join(' | ')}
           </Title>
-          <Desc>
-            {summary?.summary ||
-              '항구에 머물고 있는 컨테이너선의 비율이 큽니다. 선박이 대기하는 시간이 길어지고, 항구 혼잡으로 인해 하역 및 적재 작업이 지연될 수 있으니 이를 고려해서 수출입 스케줄을 조정해항구에 머물고 있는 컨테이너선의 비율이 큽니다. '}
-          </Desc>
+          <Desc>{summaryData?.result.summary}</Desc>
         </Box>
       </FlexBox>
       <Modal
