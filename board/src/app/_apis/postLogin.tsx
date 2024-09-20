@@ -1,16 +1,16 @@
 import { postAsync, ResponseDto } from './common';
 
-interface LoginContent {
+export interface LoginContent {
   email: string;
   password: string;
 }
 
-interface ResultData {
+export interface ResultData {
   accessToken: string;
   refreshToken: string;
 }
 
-type GetILoginContentDto = ResponseDto<ResultData>;
+export type GetILoginContentDto = ResponseDto<ResultData>;
 
 export const postLogin = async (req_body: LoginContent) => {
   try {
@@ -20,7 +20,7 @@ export const postLogin = async (req_body: LoginContent) => {
       undefined,
     );
 
-    return response.result;
+    return response;
   } catch (error) {
     console.error('에러:', error);
     throw error;

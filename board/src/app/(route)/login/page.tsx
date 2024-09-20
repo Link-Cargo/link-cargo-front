@@ -3,18 +3,28 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
+import { useRouter } from 'next/navigation';
+import { userAtom } from '@/app/_recoil/userAtom';
+import { useMutation } from '@tanstack/react-query';
+import { useSetRecoilState } from 'recoil';
+
 import Button from '@/app/_components/common/Button';
 import { TextInput } from '@/app/_components/common/Input';
-import { useRouter } from 'next/navigation';
-import { postLogin } from '@/app/_apis/postLogin';
+
+import {
+  postLogin,
+  GetILoginContentDto,
+  LoginContent,
+} from '@/app/_apis/postLogin';
 
 export default function Page() {
-  /*---- router ----*/
+  /*---- hooks ----*/
   const router = useRouter();
   /*---- state ----*/
-  const [formData, setFormData] = useState({
+  const setUser = useSetRecoilState(userAtom);
+  const [formData, setFormData] = useState<LoginContent>({
     email: '',
-    pw: '',
+    password: '',
   });
   /*---- function ----*/
   const handleInputChange = (
@@ -25,18 +35,27 @@ export default function Page() {
   };
 
   /*---- api call function ----*/
-  function wrapPostLogin() {
-    postLogin({
-      email: formData.email,
-      password: formData.pw,
-    })
-      .then((response) => {
-        router.push('/main');
-      })
-      .catch((error) => {
-        console.error('Error fetching register:', error);
-      });
-  }
+  const { mutate, data, error } = useMutation<
+    GetILoginContentDto,
+    Error,
+    LoginContent
+  >({
+    mutationFn: postLogin,
+    onSuccess: (response: GetILoginContentDto) => {
+      if (response.isSuccess) {
+        setUser({
+          accessToken: response.result.accessToken,
+          refreshToken: response.result.refreshToken,
+        });
+        router.push('/dashboard');
+      } else {
+        console.error(response.message);
+      }
+    },
+    onError: (error: Error) => {
+      console.error('Login failed:', error.message);
+    },
+  });
 
   /*---- jsx ----*/
   return (
@@ -57,8 +76,8 @@ export default function Page() {
           label="비밀번호"
           type="password"
           placeholder="비밀번호를 입력해 주세요."
-          name="pw"
-          value={formData.pw}
+          name="password"
+          value={formData.password}
           onChange={handleInputChange}
         />
       </FormSection>
@@ -67,7 +86,12 @@ export default function Page() {
           text="로그인하기"
           type="dark"
           flexValue={3}
-          onClick={wrapPostLogin}
+          onClick={() =>
+            mutate({
+              email: formData.email,
+              password: formData.password,
+            })
+          }
         />
       </ButtonSection>
       <FlexContainer>
