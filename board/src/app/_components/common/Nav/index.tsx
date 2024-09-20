@@ -1,25 +1,67 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { useRouter } from 'next/navigation';
+import { useRecoilValue } from 'recoil';
+import { userAtom } from '@/app/_recoil/userAtom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+
 import { Noti } from '../Noti';
-import { notiData } from '../Noti/util';
+
+import { NotiApiService, GetINotiDto } from '@/app/_apis/noti';
 
 interface NavProps {
   type?: 'default' | 'main';
 }
 
 export const Nav = ({ type = 'default' }: NavProps) => {
+  /*---- hooks ----*/
   const router = useRouter();
+  const queryClient = useQueryClient();
+  /*---- state ----*/
+  const user = useRecoilValue(userAtom);
+  const { accessToken } = useRecoilValue(userAtom);
+  const [isLoggedIn, setIsLoggedIn] = useState(user && !!user.accessToken);
   const [isOpen, setIsOpen] = useState(false);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  /*---- api call function ----*/
+  const {
+    data: notiData,
+    error: notiError,
+    isLoading: notiLoading,
+  } = useQuery<GetINotiDto, Error>({
+    queryKey: ['noti'],
+    queryFn: () => NotiApiService.getNoti(accessToken!),
+    enabled: !!accessToken,
+  });
 
-  useEffect(() => {
-    setIsLoggedIn(window.location.hash.includes('#auth'));
-  }, []);
+  const {
+    mutate: markAsRead,
+    isSuccess,
+    isError,
+  } = useMutation({
+    mutationFn: (id: number) => NotiApiService.putNoti(id, accessToken),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['noti'] });
+    },
+  });
+
+  const { mutate: markAsAllRead } = useMutation({
+    mutationFn: () => NotiApiService.putNotiAll(accessToken),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['noti'] });
+    },
+  });
+
+  const notiReadHandler = (_id?: number) => {
+    if (_id) {
+      markAsRead(_id);
+    } else {
+      markAsAllRead();
+    }
+  };
 
   return (
     <Container type={type}>
@@ -32,14 +74,10 @@ export const Nav = ({ type = 'default' }: NavProps) => {
           />
         </Logo>
         <Links type={type}>
-          {isLoggedIn ? (
-            <a href="/freight-quote#auth">운임 조회</a>
-          ) : (
-            <a href="/freight-quote">운임 조회</a>
-          )}
+          <a href="/freight-quote">운임 조회</a>
 
           {isLoggedIn ? (
-            <a href="/dashboard#auth">나의 대시보드</a>
+            <a href="/dashboard">나의 대시보드</a>
           ) : (
             <a href="/login">로그인</a>
           )}
@@ -51,7 +89,12 @@ export const Nav = ({ type = 'default' }: NavProps) => {
               >
                 {'notifications'}
               </Icon>
-              {isOpen && <Noti data={notiData} />}
+              {isOpen && (
+                <Noti
+                  notifications={notiData?.notifications}
+                  notiReadHandler={notiReadHandler}
+                />
+              )}
             </IconContainer>
           )}
         </Links>
@@ -90,6 +133,7 @@ const ContentWrapper = styled.div`
 const Links = styled.div<NavProps>`
   display: flex;
   gap: 12px;
+  align-items: center;
 
   a {
     color: ${COLORS.main};

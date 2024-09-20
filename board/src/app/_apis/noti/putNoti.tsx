@@ -1,4 +1,4 @@
-import { ResponseDto, putAsync } from './common';
+import { ResponseDto, putAsync } from '../common';
 
 export type PutINotiDto = ResponseDto<{}>;
 
@@ -16,6 +16,9 @@ export const putNoti = async (id: number, at: string): Promise<PutINotiDto> => {
   return response;
 };
 
+/*
+알림 전체 읽음으로 변경
+*/
 export const putNotiAll = async (at: string): Promise<PutINotiDto> => {
   const url = `/notifications/read`;
   const response = await putAsync<PutINotiDto, undefined>(
