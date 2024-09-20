@@ -24,17 +24,18 @@ export interface ResultData {
   totalElements: 0;
 }
 
-type GetISchedulesDto = ResponseDto<ResultData>;
+export type GetISchedulesDto = ResponseDto<ResultData>;
 
 /*
 모든 선박 스케쥴 리스트 조회
 */
-export const getSchedules = async () => {
+export const getSchedules = async (at: string) => {
   const url = `/schedules?page=0&size=10`;
   const response = await getAsync<GetISchedulesDto, undefined>(
     url,
-    process.env.NEXT_PUBLIC_TEMP_AT,
+    at,
+    undefined,
     undefined,
   );
-  return response.result;
+  return response;
 };

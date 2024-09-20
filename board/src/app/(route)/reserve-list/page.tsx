@@ -3,22 +3,28 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
-import Button from '@/app/_components/common/Button';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useRecoilValue } from 'recoil';
+import { userAtom } from '@/app/_recoil/userAtom';
+
+import Button from '@/app/_components/common/Button';
 import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
 import OptionCard from '@/app/_components/common/OptionCard';
-import { getSchedules, ResultData } from '@/app/_apis/getSchedules';
-import { processData, schedule } from './utill';
-import { Suspense } from 'react';
+
+import { GetISchedulesDto, getSchedules } from '@/app/_apis/getSchedules';
+
+import { processData } from './utill';
 
 function ContentPage() {
-  /*---- router ----*/
+  /*---- hooks ----*/
   const router = useRouter();
   const searchParams = useSearchParams();
 
   /*---- state ----*/
-  const [scheduleInfo, setScheduleInfo] = useState<ResultData>();
+  const { accessToken } = useRecoilValue(userAtom);
   const [selectedList, setSelectedList] = useState<number[]>([]);
 
   /*---- function ----*/
@@ -37,23 +43,18 @@ function ContentPage() {
     searchParams.get('importPortId') || '',
   );
   const wishExportDate = searchParams.get('wishExportDate') || '';
-
   const searchBoxText = `${exportPortId} → ${importPortId} | ${wishExportDate}`;
 
   /*---- api call function ----*/
-  const fetchSchedules = async () => {
-    try {
-      const data = await getSchedules();
-      setScheduleInfo(data);
-    } catch (error) {
-      console.error('스케쥴 정보를 가져오는 데 실패했습니다:', error);
-    }
-  };
-
-  /*---- effect ----*/
-  useEffect(() => {
-    fetchSchedules();
-  }, []);
+  const {
+    data: scheduleData,
+    error: scheduleError,
+    isLoading: scheduleLoading,
+  } = useQuery<GetISchedulesDto, Error>({
+    queryKey: ['schedule'],
+    queryFn: () => getSchedules(accessToken!),
+    enabled: !!accessToken,
+  });
 
   /*---- jsx ----*/
   return (
@@ -90,7 +91,7 @@ function ContentPage() {
             <span>도움말</span>
           </Caution>
           <CardContainer>
-            {schedule?.schedules.map((el) => {
+            {scheduleData?.result.schedules.map((el) => {
               const processedData = processData(el);
               return (
                 <OptionCard

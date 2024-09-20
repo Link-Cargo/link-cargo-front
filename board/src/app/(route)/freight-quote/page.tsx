@@ -3,22 +3,27 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
+import { useRouter } from 'next/navigation';
+import { useQuery } from '@tanstack/react-query';
+import { useRecoilValue } from 'recoil';
+import { userAtom } from '@/app/_recoil/userAtom';
+
 import Button from '@/app/_components/common/Button';
 import {
   TextInput,
   CheckboxInput,
   SelectInput,
 } from '@/app/_components/common/Input';
-import { useRouter } from 'next/navigation';
 import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
-import { getPorts } from '@/app/_apis/getPorts';
+
 import { CargosContent, CargosInfo } from '@/app/_apis/postCargos';
+import { GetIPortDto, getPorts, PortType } from '@/app/_apis/getPorts';
 
 export default function Page() {
   /*---- router ----*/
   const router = useRouter();
-
+  const { accessToken } = useRecoilValue(userAtom);
   /*---- state ----*/
   const [formData, setFormData] = useState<CargosContent>({
     exportPortId: 0,
@@ -30,24 +35,10 @@ export default function Page() {
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(true);
   const [importPortOptions, setImportPortOptions] = useState<
     { value: string; label: string; id: number }[]
-  >([
-    { value: '부산항', label: '부산항', id: 1 },
-    { value: '상하이항', label: '상하이항', id: 2 },
-    { value: '로테르담항', label: '로테르담항', id: 3 },
-    { value: '싱가포르항', label: '싱가포르항', id: 4 },
-    { value: '홍콩항', label: '홍콩항', id: 5 },
-    { value: '두바이항', label: '두바이항', id: 6 },
-  ]);
+  >([]);
   const [exportPortOptions, setExportPortOptions] = useState<
     { value: string; label: string; id: number }[]
-  >([
-    { value: '부산항', label: '부산항', id: 1 },
-    { value: '상하이항', label: '상하이항', id: 2 },
-    { value: '로테르담항', label: '로테르담항', id: 3 },
-    { value: '싱가포르항', label: '싱가포르항', id: 4 },
-    { value: '홍콩항', label: '홍콩항', id: 5 },
-    { value: '두바이항', label: '두바이항', id: 6 },
-  ]);
+  >([]);
 
   /*---- function ----*/
   const handleInputChange = (
@@ -126,6 +117,26 @@ export default function Page() {
     router.push(`/reserve-list?${params.toString()}`);
   };
 
+  /*---- api call function ----*/
+  const {
+    data: importPortData,
+    error: importPortError,
+    isLoading: importPortLoading,
+  } = useQuery<GetIPortDto, Error>({
+    queryKey: ['importPort'],
+    queryFn: () => getPorts({ type: PortType.IMPORT }, accessToken!),
+    enabled: !!accessToken,
+  });
+  const {
+    data: exportPortData,
+    error: exportPortError,
+    isLoading: exportPortLoading,
+  } = useQuery<GetIPortDto, Error>({
+    queryKey: ['exportPort'],
+    queryFn: () => getPorts({ type: PortType.EXPORT }, accessToken!),
+    enabled: !!accessToken,
+  });
+
   /*---- useEffect ----*/
   useEffect(() => {
     setIsNextButtonDisabled(
@@ -136,15 +147,12 @@ export default function Page() {
   }, [formData]);
 
   useEffect(() => {
-    fetchPorts();
+    addCargo();
   }, []);
 
-  /*---- api call function ----*/
-  const fetchPorts = async () => {
-    try {
-      const importPorts = await getPorts('IMPORT');
-      const exportPorts = await getPorts('EXPORT');
-
+  useEffect(() => {
+    if (importPortData) {
+      const importPorts = importPortData.result;
       setImportPortOptions(
         importPorts.map((port) => ({
           value: port.name,
@@ -152,6 +160,12 @@ export default function Page() {
           id: port.id,
         })),
       );
+    }
+  }, [importPortData]);
+
+  useEffect(() => {
+    if (exportPortData) {
+      const exportPorts = exportPortData.result;
       setExportPortOptions(
         exportPorts.map((port) => ({
           value: port.name,
@@ -159,10 +173,8 @@ export default function Page() {
           id: port.id,
         })),
       );
-    } catch (error) {
-      console.error('Failed to fetch ports:', error);
     }
-  };
+  }, [exportPortData]);
 
   /*---- jsx ----*/
   return (
@@ -183,6 +195,7 @@ export default function Page() {
               onChange={handleInputChange}
               options={exportPortOptions}
             />
+
             <SelectInput
               label="도착지"
               name="importPortId"

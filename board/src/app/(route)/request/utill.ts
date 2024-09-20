@@ -1,20 +1,20 @@
-export const 선택한업체 = [
-  { title: 'Vessel Alpha', desc: '24.08.20(월) - 24.08.28(월)' },
-  { title: 'Vessel Gamma', desc: '24.08.24(월) - 24.08.28(월)' },
-  { title: 'Vessel Alpha', desc: '24.08.21(월) - 24.08.29(화)' },
-];
+import { GetIPortDto } from '@/app/_apis/getPorts';
 
-export const 화물정보 = [
-  { title: '부산항 > 상하이항', desc: '출발지 > 도착지', isColored: true },
-  { title: '24.06.21(월)', desc: '희망출항 날짜', isColored: true },
-  { title: 'CIF', desc: '인코텀즈', isColored: true },
-  { title: '99 개', desc: '총 수출 물품 수량', isColored: true },
-  { title: '99 개', desc: '박스 당 물품 수량', isColored: true },
-  {
-    title: '123 X 456 X 789 m',
-    desc: '박스 길이 (가로x세로x높이) m',
-    isColored: false,
-  },
-  { title: '123 kg', desc: '박스 중량', isColored: false },
-  { title: '1,234,567 원', desc: '물품 가액', isColored: false },
-];
+/**
+ * 항구 name으로 항구 id를 반환하는 유틸리티 함수
+ * @param portsData 검색할 전체 데이터 : GetIPortDto
+ * @param name 검색할 항구 name
+ */
+export const getPortIdByName = (portsData: GetIPortDto, name: string) => {
+  const port = portsData.result.find((port) => port.name === name);
+  return port ? port.id : undefined;
+};
+
+/**
+ * ISOString 날짜 형식을 반환하는 함수
+ * @param raw 변경 전 날짜 형식 (XXXX-XX-XX)
+ */
+export const transformDate = (raw: string) => {
+  const date = new Date(raw);
+  return date.toISOString();
+};

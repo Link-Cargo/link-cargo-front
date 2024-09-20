@@ -2,30 +2,40 @@
 
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { COLORS } from '@/app/_constant/color';
-import Button from '@/app/_components/common/Button';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { userAtom } from '@/app/_recoil/userAtom';
+import { useMutation } from '@tanstack/react-query';
+import { useRecoilValue } from 'recoil';
+import { useQuery } from '@tanstack/react-query';
+
+import Button from '@/app/_components/common/Button';
 import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
 import TextBox from './TextBox';
 import MultiTextBox from './MultiTextBox';
 import { TextInput } from '@/app/_components/common/Input';
-import { 선택한업체, 화물정보 } from './utill';
 import useModal from '@/app/_hooks/useModal';
 import Modal from '@/app/_components/common/Modal';
 import Confirm from '@/app/_components/common/Confirm';
-import { CargosContent } from '@/app/_apis/postCargos';
-import { Suspense } from 'react';
+
+import { getPortIdByName, transformDate } from './utill';
+
+import {
+  CargosContent,
+  postCargos,
+  GetICargosContentDto,
+} from '@/app/_apis/postCargos';
+import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
 
 function ContentPage() {
-  /*---- router ----*/
+  /*---- hooks ----*/
   const router = useRouter();
   const searchParams = useSearchParams();
-
-  /*---- hooks ----*/
   const { isShowing, toggle } = useModal();
 
   /*---- state ----*/
+  const { accessToken } = useRecoilValue(userAtom);
   const [queryParams, setQueryParams] = useState<CargosContent>({
     exportPortId: '',
     importPortId: '',
@@ -33,23 +43,10 @@ function ContentPage() {
     incoterms: '',
     cargos: [],
   });
-
-  /*---- effect ----*/
-  useEffect(() => {
-    const exportPortId = searchParams.get('exportPortId') || 1;
-    const importPortId = searchParams.get('importPortId') || 0;
-    const wishExportDate = searchParams.get('wishExportDate') || '';
-    const incoterms = searchParams.get('incoterms') || '';
-    const cargos = JSON.parse(searchParams.get('cargos') || '[]');
-
-    setQueryParams({
-      exportPortId,
-      importPortId,
-      wishExportDate,
-      incoterms,
-      cargos,
-    });
-  }, [searchParams]);
+  const [리스트queryParams, set리스트QueryParams] = useState({
+    selectedList: [],
+  });
+  const [resCargoId, setResCargoId] = useState<string[]>([]);
 
   /*---- function ----*/
   const handleInputChange = (
@@ -66,6 +63,75 @@ function ContentPage() {
     setQueryParams({ ...queryParams, cargos: updatedCargos });
   };
 
+  /*---- api call function ----*/
+  const { mutate, data, error } = useMutation<
+    GetICargosContentDto,
+    Error,
+    { req_body: CargosContent; at: string }
+  >({
+    mutationFn: ({ req_body, at }) => postCargos(req_body, at),
+    onSuccess: (response: GetICargosContentDto) => {
+      setResCargoId(response.result.cargoIds);
+    },
+    onError: (error: Error) => {
+      console.error('API call failed:', error.message);
+    },
+  });
+
+  //TODO 캐시로 변경
+  const {
+    data: PortData,
+    error: PortError,
+    isLoading: PortLoading,
+  } = useQuery<GetIPortDto, Error>({
+    queryKey: ['Port'],
+    queryFn: () => getPortsAll(accessToken!),
+    enabled: !!accessToken,
+  });
+
+  function customMutate(req_body: CargosContent, _at: string) {
+    const _exportPortId = PortData
+      ? getPortIdByName(PortData, req_body.exportPortId)
+      : undefined;
+    const _importPortId = PortData
+      ? getPortIdByName(PortData, req_body.importPortId)
+      : undefined;
+
+    const { exportPortId, importPortId, wishExportDate, ...restQueryParams } =
+      queryParams;
+
+    mutate({
+      req_body: {
+        exportPortId: _exportPortId,
+        importPortId: _importPortId,
+        wishExportDate: transformDate(req_body.wishExportDate),
+        ...restQueryParams,
+      },
+      at: _at,
+    });
+  }
+
+  /*---- effect ----*/
+  useEffect(() => {
+    const exportPortId = searchParams.get('exportPortId') || '';
+    const importPortId = searchParams.get('importPortId') || '';
+    const wishExportDate = searchParams.get('wishExportDate') || '';
+    const incoterms = searchParams.get('incoterms') || '';
+    const cargos = JSON.parse(searchParams.get('cargos') || '[]');
+    const selectedList = JSON.parse(searchParams.get('selectedList') || '[]');
+
+    setQueryParams({
+      exportPortId,
+      importPortId,
+      wishExportDate,
+      incoterms,
+      cargos,
+    });
+    set리스트QueryParams({
+      selectedList,
+    });
+  }, [searchParams]);
+
   /*---- jsx ----*/
   return (
     <Layout>
@@ -77,12 +143,8 @@ function ContentPage() {
         <FormSection gapValue={24}>
           <Text subtitle="선택한 업체" />
           <FlexContainer>
-            {선택한업체.map((item, index) => (
-              <MultiTextBox
-                key={index}
-                title={`${item.title}`}
-                desc={`${item.desc}`}
-              />
+            {리스트queryParams.selectedList.map((item, index) => (
+              <MultiTextBox key={index} title={`${item}`} desc={`${item}`} />
             ))}
           </FlexContainer>
         </FormSection>
@@ -176,6 +238,7 @@ function ContentPage() {
             type="dark"
             flexValue={3}
             onClick={() => {
+              customMutate(queryParams, accessToken);
               toggle();
             }}
           />
@@ -197,11 +260,7 @@ function ContentPage() {
               onClick: () => router.push(`/dashboard`),
               text: '나의 대시보드 바로가기',
             }}
-          >
-            <ImgC>
-              <img src="/assets/expected.png" />
-            </ImgC>
-          </Confirm>
+          ></Confirm>
         }
       />
     </Layout>
