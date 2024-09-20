@@ -2,11 +2,16 @@
 
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import Progress from '@/app/_components/common/Progress';
 import { COLORS } from '@/app/_constant/color';
+
+import Progress from '@/app/_components/common/Progress';
 import Button from '@/app/_components/common/Button';
 import ListWithCheck from '@/app/_components/common/ListWithCheck';
-import { acceptList, JopOption } from './utill';
+import { useMutation } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import { userAtom } from '@/app/_recoil/userAtom';
+import { useRecoilValue } from 'recoil';
+
 import {
   TextInput,
   CheckboxInput,
@@ -14,12 +19,23 @@ import {
 } from '@/app/_components/common/Input';
 import PasswordForm from './PasswordForm';
 import { useRouter } from 'next/navigation';
-import { postRegister } from '@/app/_apis/postRegister';
+import { acceptList, JopOption } from './utill';
+
+import { PostIRegisterDto, OnboardApiService } from '@/app/_apis/onboard';
+import { RegisterContent } from '@/app/_apis/onboard/postRegister';
 
 export default function Page() {
-  /*---- router ----*/
+  /*---- hooks ----*/
   const router = useRouter();
   /*---- state ----*/
+  const { accessToken } = useRecoilValue(userAtom);
+  /**
+   * step 설명
+   * = 1 : util 통한 동의항목
+   * = 2 : 기본 정보
+   * = 3 : 추가 정보
+   * = 4 : 회원가입 성공
+   */
   const [curr, setCurr] = useState(1);
   const [isAllChecked, setIsAllChecked] = useState(false);
   const [checkedItems, setCheckedItems] = useState<boolean[]>(
@@ -58,31 +74,22 @@ export default function Page() {
   };
 
   const isNextButtonDisabled = !checkedItems.slice(0, 3).every((item) => item);
+
   /*---- api call function ----*/
-
-  function wrapPostRegister() {
-    postRegister({
-      role: formData.role,
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      password: formData.password,
-      companyName: formData.companyName,
-      jobTitle: formData.jobTitle,
-      businessNumber: formData.businessNumber,
-    })
-      .then((response) => {
-        setCurr(4);
-        // router.push('/login');
-      })
-      .catch((error) => {
-        console.error('Error fetching register:', error);
-      });
-  }
-
-  useEffect(() => {
-    console.log(formData);
-  }, [formData]);
+  const { mutate, data, error } = useMutation<
+    PostIRegisterDto,
+    Error,
+    { req_body: RegisterContent; at: string }
+  >({
+    mutationFn: ({ req_body, at }) =>
+      OnboardApiService.postRegister(req_body, at),
+    onSuccess: (response: PostIRegisterDto) => {
+      setCurr(4);
+    },
+    onError: (error: Error) => {
+      console.error('API call failed:', error.message);
+    },
+  });
 
   /*---- jsx ----*/
   return (
@@ -215,12 +222,23 @@ export default function Page() {
               type="dark"
               flexValue={3}
               onClick={() => {
-                setCurr(curr + 1);
-                // if (curr === 3) {
-                //   wrapPostRegister();
-                // } else {
-                //   setCurr(curr + 1);
-                // }
+                if (curr === 3) {
+                  mutate({
+                    req_body: {
+                      role: formData.role,
+                      firstName: formData.firstName,
+                      lastName: formData.lastName,
+                      email: formData.email,
+                      password: formData.password,
+                      companyName: formData.companyName,
+                      jobTitle: formData.jobTitle,
+                      businessNumber: formData.businessNumber,
+                    },
+                    at: accessToken,
+                  });
+                } else {
+                  setCurr(curr + 1);
+                }
               }}
               disabled={isNextButtonDisabled}
             />
@@ -238,8 +256,8 @@ export default function Page() {
                 <br /> 지금 바로 LCL화주와 연결해보세요.
               </Desc>
             </FormSection>
-            <WideButton onClick={() => router.push('/main#auth')}>
-              바로 운임 조회하러가기
+            <WideButton onClick={() => router.push('/login')}>
+              로그인하기
             </WideButton>
           </CenteredFormSection>
         </>
@@ -316,7 +334,7 @@ const FlexContainer = styled.div`
 `;
 
 const Icon = styled.span`
-  font-size: 120px;
+  font-size: 120px !important;
   color: ${COLORS.main};
 `;
 

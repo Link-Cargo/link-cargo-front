@@ -1,4 +1,4 @@
-import { postAsync, ResponseDto } from './common';
+import { postAsync, ResponseDto } from '../common';
 
 export interface LoginContent {
   email: string;
@@ -10,11 +10,11 @@ export interface ResultData {
   refreshToken: string;
 }
 
-export type GetILoginContentDto = ResponseDto<ResultData>;
+export type PostILoginDto = ResponseDto<ResultData>;
 
 export const postLogin = async (req_body: LoginContent) => {
   try {
-    const response = await postAsync<GetILoginContentDto, LoginContent>(
+    const response = await postAsync<PostILoginDto, LoginContent>(
       `/users/login`,
       req_body,
       undefined,

@@ -11,11 +11,8 @@ import { useSetRecoilState } from 'recoil';
 import Button from '@/app/_components/common/Button';
 import { TextInput } from '@/app/_components/common/Input';
 
-import {
-  postLogin,
-  GetILoginContentDto,
-  LoginContent,
-} from '@/app/_apis/postLogin';
+import { OnboardApiService, PostILoginDto } from '@/app/_apis/onboard';
+import { LoginContent } from '@/app/_apis/onboard/postLogin';
 
 export default function Page() {
   /*---- hooks ----*/
@@ -36,12 +33,12 @@ export default function Page() {
 
   /*---- api call function ----*/
   const { mutate, data, error } = useMutation<
-    GetILoginContentDto,
+    PostILoginDto,
     Error,
     LoginContent
   >({
-    mutationFn: postLogin,
-    onSuccess: (response: GetILoginContentDto) => {
+    mutationFn: OnboardApiService.postLogin,
+    onSuccess: (response: PostILoginDto) => {
       if (response.isSuccess) {
         setUser({
           accessToken: response.result.accessToken,
