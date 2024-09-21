@@ -240,21 +240,20 @@ function ContentPage() {
                 value={cargo.additionalNotes}
                 onChange={(e) => handleInputChange(e, index, 'additionalNotes')}
               />
-              <CheckList>
-                {requestList.map((el, idx) => (
-                  <ListWithCheck
-                    key={idx}
-                    text={el}
-                    type="subTitle"
-                    onClick={() => handleCheckChange(idx)}
-                    isChecked={checkedItems[idx]}
-                  />
-                ))}
-              </CheckList>
             </FormSection>
           </React.Fragment>
         ))}
-
+        <CheckList>
+          {requestList.map((el, idx) => (
+            <ListWithCheck
+              key={idx}
+              text={el}
+              type="subTitle"
+              onClick={() => handleCheckChange(idx)}
+              isChecked={checkedItems[idx]}
+            />
+          ))}
+        </CheckList>
         <ButtonSection>
           <Button
             text="운임 조회하기"
