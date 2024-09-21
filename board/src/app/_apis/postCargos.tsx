@@ -4,15 +4,15 @@ export interface CargosInfo {
   productName: string;
   hsCode: string;
   additionalNotes: string;
-  totalQuantity: number;
-  quantityPerBox: number;
+  totalQuantity: number | null;
+  quantityPerBox: number | null;
   boxSize: {
-    width: number;
-    height: number;
-    depth: number;
+    width: number | null;
+    height: number | null;
+    depth: number | null;
   };
-  weight: number;
-  value: number;
+  weight: number | null;
+  value: number | null;
 }
 
 export interface CargosContent {

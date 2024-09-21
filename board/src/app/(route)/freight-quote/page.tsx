@@ -26,8 +26,8 @@ export default function Page() {
   const { accessToken } = useRecoilValue(userAtom);
   /*---- state ----*/
   const [formData, setFormData] = useState<CargosContent>({
-    exportPortId: 0,
-    importPortId: 0,
+    exportPortId: null,
+    importPortId: null,
     wishExportDate: '',
     incoterms: '',
     cargos: [],
@@ -87,15 +87,15 @@ export default function Page() {
           productName: '',
           hsCode: '',
           additionalNotes: '',
-          totalQuantity: 0,
-          quantityPerBox: 0,
+          totalQuantity: null,
+          quantityPerBox: null,
           boxSize: {
-            width: 0,
-            height: 0,
-            depth: 0,
+            width: null,
+            height: null,
+            depth: null,
           },
-          weight: 0,
-          value: 0,
+          weight: null,
+          value: null,
         },
       ],
     });
@@ -139,10 +139,28 @@ export default function Page() {
 
   /*---- useEffect ----*/
   useEffect(() => {
+    // 각 cargo가 유효한지 확인하는 함수
+    const isCargoValid = (cargo: CargosInfo) => {
+      return (
+        cargo.totalQuantity !== null &&
+        cargo.quantityPerBox !== null &&
+        cargo.boxSize.width !== null &&
+        cargo.boxSize.height !== null &&
+        cargo.boxSize.depth !== null &&
+        cargo.weight !== null &&
+        cargo.value !== null
+      );
+    };
+
+    // 추가된 cargo들의 수에 맞게 그만큼만 유효성 검사
+    const areCargosValid =
+      formData.cargos.length > 0 && formData.cargos.every(isCargoValid);
+
     setIsNextButtonDisabled(
-      !formData?.exportPortId ||
+      !formData.exportPortId ||
         !formData.importPortId ||
-        !formData.wishExportDate,
+        !formData.wishExportDate ||
+        !areCargosValid, // 추가된 모든 cargo가 유효한지 확인
     );
   }, [formData]);
 
@@ -191,7 +209,7 @@ export default function Page() {
               label="출발지"
               name="exportPortId"
               placeholder="출발지 선택"
-              value={formData.exportPortId.toString()}
+              value={formData.exportPortId?.toString() || ''}
               onChange={handleInputChange}
               options={exportPortOptions}
             />
@@ -200,7 +218,7 @@ export default function Page() {
               label="도착지"
               name="importPortId"
               placeholder="도착지 선택"
-              value={formData.importPortId.toString()}
+              value={formData.importPortId?.toString() || ''}
               onChange={handleInputChange}
               options={importPortOptions}
             />
@@ -237,7 +255,7 @@ export default function Page() {
                 type="number"
                 placeholder="총 수출 물품 수량"
                 name="totalQuantity"
-                value={cargo.totalQuantity.toString()}
+                value={cargo.totalQuantity?.toString() || ''}
                 onChange={(e) => handleInputChange(e, index, 'totalQuantity')}
               />
               <TextInput
@@ -245,7 +263,7 @@ export default function Page() {
                 type="number"
                 placeholder="박스당 물품 수량"
                 name="quantityPerBox"
-                value={cargo.quantityPerBox.toString()}
+                value={cargo.quantityPerBox?.toString() || ''}
                 onChange={(e) => handleInputChange(e, index, 'quantityPerBox')}
               />
             </FlexContainer>
@@ -255,7 +273,7 @@ export default function Page() {
                 type="number"
                 placeholder="박스가로"
                 name="width"
-                value={cargo.boxSize.width.toString()}
+                value={cargo.boxSize.width?.toString() || ''}
                 onChange={(e) => handleInputChange(e, index, 'boxSize.width')}
               />
               <TextInput
@@ -263,7 +281,7 @@ export default function Page() {
                 type="number"
                 placeholder="박스세로"
                 name="height"
-                value={cargo.boxSize.height.toString()}
+                value={cargo.boxSize.height?.toString() || ''}
                 onChange={(e) => handleInputChange(e, index, 'boxSize.height')}
               />
               <TextInput
@@ -271,7 +289,7 @@ export default function Page() {
                 type="number"
                 placeholder="박스높이"
                 name="depth"
-                value={cargo.boxSize.depth.toString()}
+                value={cargo.boxSize.depth?.toString() || ''}
                 onChange={(e) => handleInputChange(e, index, 'boxSize.depth')}
               />
             </FlexContainer>
@@ -280,7 +298,7 @@ export default function Page() {
               type="number"
               placeholder="박스중량"
               name="weight"
-              value={cargo.weight.toString()}
+              value={cargo.weight?.toString() || ''}
               onChange={(e) => handleInputChange(e, index, 'weight')}
             />
             <TextInput
@@ -288,7 +306,7 @@ export default function Page() {
               type="number"
               placeholder="물품 가액"
               name="value"
-              value={cargo.value.toString()}
+              value={cargo.value?.toString() || ''}
               onChange={(e) => handleInputChange(e, index, 'value')}
             />
             {formData.cargos.length < 5 && (
