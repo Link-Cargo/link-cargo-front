@@ -291,13 +291,15 @@ export default function Page() {
               value={cargo.value.toString()}
               onChange={(e) => handleInputChange(e, index, 'value')}
             />
+            {formData.cargos.length < 5 && (
+              <AddCargoButton onClick={addCargo}>
+                <Icon className="material-icons">{'add'}</Icon>
+                <div>화물 {index + 2} 추가하기</div>
+              </AddCargoButton>
+            )}
           </FormSection>
         ))}
-        {formData.cargos.length < 5 && (
-          <AddCargoButton onClick={addCargo}>
-            <Text desc={`화물 ${formData.cargos.length + 1} 추가하기`} />
-          </AddCargoButton>
-        )}
+
         <ButtonSection>
           <Button
             text="운임 조회하기"
@@ -334,10 +336,19 @@ const FlexContainer = styled.div`
 
 const AddCargoButton = styled.h1`
   cursor: pointer;
-  color: ${COLORS.main};
-  font-size: 18px;
-  font-weight: 600;
+  color: ${COLORS.g5};
   margin-top: 20px;
+  display: flex;
+  align-items: center;
+  font-weight: 400;
+  div {
+    font-size: 16px;
+    padding: 5.5px 0px;
+  }
+`;
+const Icon = styled.span`
+  font-size: 30px !important;
+  padding-right: 10px;
 `;
 
 const ButtonSection = styled.div`
