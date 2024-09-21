@@ -30,9 +30,13 @@ function ContentPage() {
   /*---- function ----*/
   const handleSelect = (id: number) => {
     if (selectedList.includes(id)) {
+      // 이미 선택된 항목을 클릭하면 선택 해제
       setSelectedList(selectedList.filter((item) => item !== id));
     } else {
-      setSelectedList([...selectedList, id]);
+      // 선택된 항목이 3개 미만일 때만 새로운 항목 선택 허용
+      if (selectedList.length < 3) {
+        setSelectedList([...selectedList, id]);
+      }
     }
   };
 
