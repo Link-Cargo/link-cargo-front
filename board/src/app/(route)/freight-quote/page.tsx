@@ -101,6 +101,11 @@ export default function Page() {
     });
   };
 
+  const deleteCargo = (index: number) => {
+    const updatedCargos = formData.cargos.filter((_, i) => i !== index);
+    setFormData({ ...formData, cargos: updatedCargos });
+  };
+
   const handleSubmit = () => {
     const params = new URLSearchParams();
 
@@ -248,7 +253,18 @@ export default function Page() {
         </FormSection>
         {formData.cargos.map((cargo, index) => (
           <FormSection key={index} gapValue={12}>
-            <Text subtitle={`화물 ${index + 1} `} />
+            <FlexContainer2>
+              <Text subtitle={`화물 ${index + 1} `} />
+              {formData.cargos.length > 1 && (
+                <Icon2
+                  onClick={() => deleteCargo(index)}
+                  className="material-icons"
+                >
+                  {'delete'}
+                </Icon2>
+              )}
+            </FlexContainer2>
+
             <FlexContainer>
               <TextInput
                 label="총 수출 물품 수량"
@@ -364,9 +380,24 @@ const AddCargoButton = styled.h1`
     padding: 5.5px 0px;
   }
 `;
+
+const FlexContainer2 = styled.h1`
+  display: flex;
+  width: 100%;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+`;
+
 const Icon = styled.span`
   font-size: 30px !important;
   padding-right: 10px;
+`;
+
+const Icon2 = styled.span`
+  font-size: 30px !important;
+  color: ${COLORS.red};
+  cursor: pointer;
 `;
 
 const ButtonSection = styled.div`
