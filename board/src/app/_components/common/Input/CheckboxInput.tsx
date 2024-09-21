@@ -5,7 +5,7 @@ import styled from 'styled-components';
 interface CheckboxInputProps {
   label: string;
   name: string;
-  options: { value: string; label: string }[];
+  options: { value: string; label: string; desc?: string }[];
   selectedOptions: string[] | string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -35,6 +35,7 @@ const CheckboxInput = ({
             onClick={() => handleBoxClick(option.value)}
           >
             {option.label}
+            {option.desc && <p>{option.desc}</p>}
           </CheckboxContainer>
         ))}
       </FlexContainer>
@@ -59,6 +60,8 @@ const Label = styled.label`
 
 const CheckboxContainer = styled.div<{ isSelected: boolean }>`
   display: flex;
+  flex-direction: column;
+
   flex: 1;
   align-items: center;
   padding: 12px 16px;
@@ -70,6 +73,14 @@ const CheckboxContainer = styled.div<{ isSelected: boolean }>`
   cursor: pointer;
   text-align: center;
   justify-content: center;
+
+  p {
+    color: ${COLORS.g2};
+    font-weight: 500;
+    font-size: 14px;
+    padding-top: 10px;
+    display: inline-block;
+  }
 `;
 const FlexContainer = styled.div`
   display: flex;

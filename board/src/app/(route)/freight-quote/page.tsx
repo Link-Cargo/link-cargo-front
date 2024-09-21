@@ -217,10 +217,10 @@ export default function Page() {
             label="인코텀즈"
             name="incoterms"
             options={[
-              { value: 'CIF', label: 'CIF' },
-              { value: 'CFR', label: 'CFR' },
-              { value: 'DAP', label: 'DAP' },
-              { value: 'DDP', label: 'DDP' },
+              { value: 'CIF', label: 'CIF', desc: '운임, 보험료 포함인도' },
+              { value: 'CFR', label: 'CFR', desc: '운임포함인도' },
+              { value: 'DAP', label: 'DAP', desc: '도착장소인도' },
+              { value: 'DDP', label: 'DDP', desc: '관세지급인도' },
             ]}
             selectedOptions={[formData.incoterms]}
             onChange={(e) =>
