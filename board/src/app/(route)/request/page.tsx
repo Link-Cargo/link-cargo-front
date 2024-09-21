@@ -18,8 +18,9 @@ import { TextInput } from '@/app/_components/common/Input';
 import useModal from '@/app/_hooks/useModal';
 import Modal from '@/app/_components/common/Modal';
 import Confirm from '@/app/_components/common/Confirm';
+import ListWithCheck from './ListWithCheck';
 
-import { getPortIdByName, transformDate } from './utill';
+import { getPortIdByName, requestList, transformDate } from './utill';
 
 import {
   CargosContent,
@@ -27,6 +28,7 @@ import {
   GetICargosContentDto,
 } from '@/app/_apis/postCargos';
 import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
+import { COLORS } from '@/app/_constant/color';
 
 function ContentPage() {
   /*---- hooks ----*/
@@ -47,6 +49,9 @@ function ContentPage() {
     selectedList: [],
   });
   const [resCargoId, setResCargoId] = useState<string[]>([]);
+  const [checkedItems, setCheckedItems] = useState<boolean[]>(
+    Array(2).fill(false),
+  );
 
   /*---- function ----*/
   const handleInputChange = (
@@ -61,6 +66,12 @@ function ContentPage() {
       [field]: value,
     };
     setQueryParams({ ...queryParams, cargos: updatedCargos });
+  };
+
+  const handleCheckChange = (index: number) => {
+    const newCheckedItems = [...checkedItems]; // 현재 체크박스 상태 배열 복사 (얕은 복사)
+    newCheckedItems[index] = !newCheckedItems[index]; // 각 체크박스 상태 토글 체크
+    setCheckedItems(newCheckedItems); // 현재 체크박스 상태 배열로 업데이트
   };
 
   /*---- api call function ----*/
@@ -229,9 +240,21 @@ function ContentPage() {
                 value={cargo.additionalNotes}
                 onChange={(e) => handleInputChange(e, index, 'additionalNotes')}
               />
+              <CheckList>
+                {requestList.map((el, idx) => (
+                  <ListWithCheck
+                    key={idx}
+                    text={el}
+                    type="subTitle"
+                    onClick={() => handleCheckChange(idx)}
+                    isChecked={checkedItems[idx]}
+                  />
+                ))}
+              </CheckList>
             </FormSection>
           </React.Fragment>
         ))}
+
         <ButtonSection>
           <Button
             text="운임 조회하기"
@@ -306,3 +329,5 @@ const ButtonSection = styled.div`
 const ImgC = styled.div`
   width: 800px;
 `;
+
+const CheckList = styled.div``;

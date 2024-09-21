@@ -18,3 +18,11 @@ export const transformDate = (raw: string) => {
   const date = new Date(raw);
   return date.toISOString();
 };
+
+/**
+ * 견적 요청 시 체크리스트 항목
+ */
+export const requestList = [
+  '보험부보 희망',
+  '해상수출 경험이 많이 없어요. 포워더의 친절한 설명을 원해요. ',
+];
