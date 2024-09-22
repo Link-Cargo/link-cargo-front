@@ -70,8 +70,8 @@ export type GetICheapestDto = ResponseDto<ResultData>;
 /*
 운임비용이 가장 적은 견적서를 조회
 */
-export const getCheapest = async (qId: string, at: string) => {
-  const url = `/dashboards/cheapest/${qId}`;
+export const getCheapest = async (at: string, RQId?: string) => {
+  const url = `/dashboards/cheapest?rawQuotationId=66ed9921d1c9de05d5906000`;
   const response = await getAsync<GetICheapestDto, undefined>(
     url,
     at,

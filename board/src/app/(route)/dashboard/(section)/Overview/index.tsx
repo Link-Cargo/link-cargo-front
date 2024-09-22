@@ -17,12 +17,13 @@ import Layout from '@/app/_components/dashboard/Layout';
 import {
   GetIRecommendationDto,
   GetICongestionDto,
+  GetICheapestDto,
   GetISummaryDto,
   DashboardApiService,
 } from '@/app/_apis/dashboard';
 
 //TODO
-import { 운송사리스트, 최근검색어_리스트, 추천_포워딩_업체 } from './utils';
+import { 운송사리스트, 최근검색어_리스트 } from './utils';
 
 export default function Overview() {
   /*---- hooks ----*/
@@ -66,6 +67,16 @@ export default function Overview() {
     enabled: !!accessToken,
   });
 
+  const {
+    data: cheapestData,
+    error: cheapestError,
+    isLoading: cheapestLoading,
+  } = useQuery<GetICheapestDto, Error>({
+    queryKey: ['cheapest'],
+    queryFn: () => DashboardApiService.getCheapest(accessToken!),
+    enabled: !!accessToken,
+  });
+
   /*---- function ----*/
   const exportPdf = () => {};
   const exportImg = () => {};
@@ -90,30 +101,30 @@ export default function Overview() {
         <Box desc="추천하는 포워딩 업체" bgType={BgType.BRIGHT} width="30%">
           <div>
             <Title>
-              <b>{추천_포워딩_업체.회사명}</b>
+              <b>{cheapestData?.result.firmName}</b>
             </Title>
             <SubTitle>
-              총 비용 | <b>{추천_포워딩_업체.총비용}</b>
+              총 비용 | <b>{cheapestData?.result.totalCost}원</b>
             </SubTitle>
           </div>
           <StyledTable>
             <ul>
               <li>
                 <span>담당자</span>
-                <span>{추천_포워딩_업체.담당자}</span>
+                <span>{cheapestData?.result.forwarderName}</span>
               </li>
               <li>
                 <span>이메일</span>
-                <span>{추천_포워딩_업체.이메일}</span>
+                <span>{cheapestData?.result.forwarderEmail}</span>
               </li>
               <li>
                 <span>전화번호</span>
-                <span>{추천_포워딩_업체.전화번호}</span>
+                <span>{cheapestData?.result.forwarderTel}</span>
               </li>
             </ul>
           </StyledTable>
           <ImgContainer>
-            <img src={추천_포워딩_업체.견적서이미지} />
+            <img src={'assets/report.png'} />
             <Icon className="material-icons" onClick={toggleExpandModal}>
               {'fullscreen'}
             </Icon>
