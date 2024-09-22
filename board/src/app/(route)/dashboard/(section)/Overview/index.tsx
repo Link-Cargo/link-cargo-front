@@ -23,7 +23,12 @@ import {
 } from '@/app/_apis/dashboard';
 
 //TODO
-import { 운송사리스트, 최근검색어_리스트 } from './utils';
+import { 최근검색어_리스트 } from './utils';
+import { formatDateRange } from '@/app/(route)/request/utill';
+import {
+  formatDate,
+  formatTransitTime,
+} from '@/app/(route)/reserve-list/utill';
 
 export default function Overview() {
   /*---- hooks ----*/
@@ -142,9 +147,10 @@ export default function Overview() {
               예상 비용 | <b>{recommendationData?.result.estimatedCost}원</b>
             </SubTitle>
           </div>
-          <div>
+          <div style={{ flex: '1' }}>
             <Desc>
-              2개월 뒤 예약가능한 운송사 리스트
+              {recommendationData?.result.dateDifference}개월 뒤 예약가능한
+              운송사 리스트
               <hr />
             </Desc>
             <Table>
@@ -158,13 +164,15 @@ export default function Overview() {
                 </tr>
               </thead>
               <tbody>
-                {운송사리스트.map((item, index) => (
+                {recommendationData?.result.scheduleInfos.map((item, index) => (
                   <tr key={index}>
-                    <td>{item.운송사}</td>
-                    <td>{item.ETD_ETA}</td>
-                    <td>{item.소요일}</td>
-                    <td>{item.서류마감일}</td>
-                    <td>{item.화물마감일}</td>
+                    <td>{item.carrier}</td>
+                    <td>{formatDateRange(item.ETD, item.ETD)}</td>
+                    <td>
+                      {formatTransitTime(item.transitTime, item.transportType)}
+                    </td>
+                    <td>{formatDate(item.documentCutOff)}</td>
+                    <td>{formatDate(item.cargoCutOff)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -338,6 +346,18 @@ const Table = styled.table`
 
   td {
     color: ${COLORS.g3};
+  }
+
+  tbody {
+    tr {
+      td:nth-child(1) {
+        width: 50px;
+        overflow: hidden; /* 내용이 넘칠 경우 숨김 */
+        text-overflow: ellipsis; /* 말줄임표 적용 */
+        white-space: nowrap; /* 텍스트를 한 줄로 */
+        display: inline-block;
+      }
+    }
   }
 `;
 
