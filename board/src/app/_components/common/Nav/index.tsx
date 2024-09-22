@@ -55,6 +55,13 @@ export const Nav = ({ type = 'default' }: NavProps) => {
     },
   });
 
+  const { mutate: deleteAllNoti } = useMutation({
+    mutationFn: () => NotiApiService.deleteNotiAll(accessToken),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['noti'] });
+    },
+  });
+
   const notiReadHandler = (_id?: number) => {
     if (_id) {
       markAsRead(_id);
@@ -93,6 +100,7 @@ export const Nav = ({ type = 'default' }: NavProps) => {
                 <Noti
                   notifications={notiData?.notifications}
                   notiReadHandler={notiReadHandler}
+                  notiDeleteHandler={deleteAllNoti}
                 />
               )}
             </IconContainer>

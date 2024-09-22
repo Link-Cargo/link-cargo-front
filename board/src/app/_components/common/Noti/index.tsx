@@ -9,6 +9,7 @@ import { Notification } from '@/app/_apis/noti/getNoti';
 interface notiProps {
   notifications?: Notification[];
   notiReadHandler: (id?: number) => void;
+  notiDeleteHandler: () => void;
 }
 
 export const Noti = (props: notiProps) => {
@@ -21,7 +22,7 @@ export const Noti = (props: notiProps) => {
     <NotificationDropdown>
       <DropdownHeader>
         <span onClick={() => notiReadHandler()}>모두 확인</span>
-        <span>모두 삭제</span>
+        <span onClick={() => props.notiDeleteHandler()}>모두 삭제</span>
       </DropdownHeader>
       <NotificationList>
         {notifications?.map((item, index) => (

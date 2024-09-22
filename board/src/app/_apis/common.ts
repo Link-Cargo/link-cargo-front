@@ -141,18 +141,25 @@ export async function postAsync<T, D>(
  * @param D parameter 또는 body로 전달할 데이터의 타입
  *
  * @param path API Endpoint
+ * @param accessToken 엑세스 토큰 (옵션)
  * @param config `AxiosRequestConfig`
  * @param errorMessages status code에 따른 에러 메시지
  */
 export async function deleteAsync<T, D>(
   path: string,
+  accessToken?: string,
   config?: AxiosRequestConfig,
   errorMessages?: Record<number, string>,
 ): Promise<T> {
   try {
+    const headers = accessToken
+      ? { Authorization: `Bearer ${accessToken}` }
+      : {};
+
     const response = await axios.delete<T, AxiosResponse<T, D>, D>(path, {
       baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
       responseType: 'json',
+      headers: { ...headers, ...config?.headers },
       ...config,
     });
 
