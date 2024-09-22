@@ -5,9 +5,8 @@ import styled from 'styled-components';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { userAtom } from '@/app/_recoil/userAtom';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery } from '@tanstack/react-query';
 import { useRecoilValue } from 'recoil';
-import { useQuery } from '@tanstack/react-query';
 
 import Button from '@/app/_components/common/Button';
 import Text from '@/app/_components/common/Text';
@@ -20,7 +19,12 @@ import Modal from '@/app/_components/common/Modal';
 import Confirm from '@/app/_components/common/Confirm';
 import ListWithCheck from './ListWithCheck';
 
-import { getPortIdByName, requestList, transformDate } from './utill';
+import {
+  getPortIdByName,
+  requestList,
+  transformDate,
+  formatDateRange,
+} from './utill';
 
 import {
   CargosContent,
@@ -28,7 +32,7 @@ import {
   GetICargosContentDto,
 } from '@/app/_apis/postCargos';
 import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
-import { COLORS } from '@/app/_constant/color';
+import { GetIScheduleDto, getScheduleId } from '@/app/_apis/getSchedules';
 
 function ContentPage() {
   /*---- hooks ----*/
@@ -45,9 +49,7 @@ function ContentPage() {
     incoterms: '',
     cargos: [],
   });
-  const [리스트queryParams, set리스트QueryParams] = useState({
-    selectedList: [],
-  });
+  const [리스트queryParams, set리스트QueryParams] = useState<string[]>([]);
   const [resCargoId, setResCargoId] = useState<string[]>([]);
   const [checkedItems, setCheckedItems] = useState<boolean[]>(
     Array(2).fill(false),
@@ -87,6 +89,14 @@ function ContentPage() {
     onError: (error: Error) => {
       console.error('API call failed:', error.message);
     },
+  });
+
+  const ScheduleIdData = useQueries({
+    queries: 리스트queryParams.map((sId) => ({
+      queryKey: ['schedule', sId],
+      queryFn: () => getScheduleId(Number(sId), accessToken!),
+      enabled: !!accessToken,
+    })),
   });
 
   //TODO 캐시로 변경
@@ -138,9 +148,8 @@ function ContentPage() {
       incoterms,
       cargos,
     });
-    set리스트QueryParams({
-      selectedList,
-    });
+
+    set리스트QueryParams(selectedList);
   }, [searchParams]);
 
   /*---- jsx ----*/
@@ -154,9 +163,20 @@ function ContentPage() {
         <FormSection gapValue={24}>
           <Text subtitle="선택한 업체" />
           <FlexContainer>
-            {리스트queryParams.selectedList.map((item, index) => (
-              <MultiTextBox key={index} title={`${item}`} desc={`${item}`} />
-            ))}
+            {ScheduleIdData.map((query, index) => {
+              const { data, isLoading, error } = query;
+              return (
+                <MultiTextBox
+                  key={index}
+                  title={data?.result?.vessel || ''}
+                  desc={
+                    data?.result?.ETD && data?.result?.ETA
+                      ? formatDateRange(data.result.ETD, data.result.ETA)
+                      : 'No schedule data'
+                  }
+                />
+              );
+            })}
           </FlexContainer>
         </FormSection>
         <FormSection gapValue={24}>
