@@ -1,9 +1,9 @@
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { userAtom } from '@/app/_recoil/userAtom';
-import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { useRecoilValue } from 'recoil';
+import { useQuery } from '@tanstack/react-query';
 
 import Layout from '@/app/_components/common/Layout';
 import { List } from '@/app/_components/dashboard/List';
@@ -15,6 +15,7 @@ import {
   MyChatHistory,
   PaymentHistory,
 } from './(section)';
+import { GetIUserDto, OnboardApiService } from '@/app/_apis/onboard';
 
 interface dashboardListItem {
   [id: string]: {
@@ -35,17 +36,37 @@ const dashboardListConfig: dashboardListItem = {
 };
 
 function Page() {
+  /*---- hooks ----*/
   const user = useRecoilValue(userAtom);
-
+  const { accessToken } = useRecoilValue(userAtom);
   const [selectedId, setSelectedId] = useState<string>('overview');
   const { section: selectedSection, title: selectedTitle } =
     dashboardListConfig[selectedId];
 
-  // section update
+  /*---- function ----*/
   const handleSectionChange = (id: string) => {
     setSelectedId(id);
     window.location.hash = `#${id}`;
   };
+  const handleHashChange = () => {
+    const hash = window.location.hash.substring(1) || 'overview';
+    if (dashboardListConfig[hash]) {
+      setSelectedId(hash);
+    }
+  };
+
+  /*---- api call function ----*/
+  const {
+    data: UserData,
+    error: UserError,
+    isLoading: UserLoading,
+  } = useQuery<GetIUserDto, Error>({
+    queryKey: ['User'],
+    queryFn: () => OnboardApiService.getUser(accessToken!),
+    enabled: !!accessToken,
+  });
+
+  /*---- useEffect ----*/
   useEffect(() => {
     const hash = window.location.hash.substring(1) || 'overview';
     if (dashboardListConfig[hash]) {
@@ -53,13 +74,6 @@ function Page() {
     }
   }, []);
 
-  // hash update
-  const handleHashChange = () => {
-    const hash = window.location.hash.substring(1) || 'overview';
-    if (dashboardListConfig[hash]) {
-      setSelectedId(hash);
-    }
-  };
   useEffect(() => {
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
@@ -70,9 +84,13 @@ function Page() {
       <Container>
         <div>
           <ProfileCard
-            imgSrc="/assets/r1.png"
-            title="링카고"
-            desc="소규모 수출 화주"
+            imgSrc={UserData?.result.user.profile || '/assets/r1.png'}
+            title={`${UserData?.result.user.lastName}${UserData?.result.user.firstName}`}
+            desc={
+              UserData?.result.user.role === 'CONSIGNOR'
+                ? '소규모 수출 화주'
+                : '포워더'
+            }
           />
           <List
             listData={Object.entries(dashboardListConfig).map(
