@@ -1,5 +1,10 @@
 export function formatDate(arr: number[]): string {
-  const date = new Date(Date.UTC(arr[0], arr[1] - 1, arr[2], arr[3], arr[4]));
+  // 시와 분이 없는 경우 기본값 0으로 설정
+  const hours = arr[3] !== undefined ? arr[3] : 0;
+  const minutes = arr[4] !== undefined ? arr[4] : 0;
+
+  const date = new Date(Date.UTC(arr[0], arr[1] - 1, arr[2], hours, minutes));
+
   return date.toLocaleDateString('ko-KR', {
     year: '2-digit',
     month: '2-digit',

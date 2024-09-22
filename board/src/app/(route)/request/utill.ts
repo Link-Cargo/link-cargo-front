@@ -28,13 +28,27 @@ export const requestList = [
 ];
 
 /**
- * 정수형배열의 날짜 형식을 변환하고 범위로 반환하는 함수
- * @param raw 변경 전 정수형 배열
+ * 정수형 배열의 날짜 형식을 변환하고 범위로 반환하는 함수
+ * @param ETD 변경 전 출발 시간 배열 [연, 월, 일, 시?, 분?]
+ * @param ETA 변경 전 도착 시간 배열 [연, 월, 일, 시?, 분?]
  */
 export function formatDateRange(ETD: number[], ETA: number[]): string {
-  // Date 객체로 변환
-  const etdDate = new Date(ETD[0], ETD[1] - 1, ETD[2], ETD[3], ETD[4]);
-  const etaDate = new Date(ETA[0], ETA[1] - 1, ETA[2], ETA[3], ETA[4]);
+  // Date 객체로 변환 (시, 분이 없을 경우 기본값 0 사용)
+  const etdDate = new Date(
+    ETD[0], // 연
+    ETD[1] - 1, // 월 (0부터 시작하므로 -1)
+    ETD[2], // 일
+    ETD[3] !== undefined ? ETD[3] : 0, // 시 (기본값 0)
+    ETD[4] !== undefined ? ETD[4] : 0, // 분 (기본값 0)
+  );
+
+  const etaDate = new Date(
+    ETA[0], // 연
+    ETA[1] - 1, // 월 (0부터 시작하므로 -1)
+    ETA[2], // 일
+    ETA[3] !== undefined ? ETA[3] : 0, // 시 (기본값 0)
+    ETA[4] !== undefined ? ETA[4] : 0, // 분 (기본값 0)
+  );
 
   // 날짜 형식을 'YY.MM.DD(요일)'로 변환하는 함수
   const formatDate = (date: Date): string => {
