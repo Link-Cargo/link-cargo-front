@@ -24,7 +24,7 @@ const Container = styled.div`
   flex-direction: column;
   gap: 14px;
   background-color: '#fff';
-  padding: 20px 24px;
+  padding: 20px 0px;
   flex: 1;
 `;
 
@@ -36,7 +36,7 @@ const Title = styled.div<{ colored?: boolean }>`
   color: ${({ colored }) => (colored ? COLORS.main : COLORS.bk)};
   text-align: center;
   border-radius: 12px;
-  padding: 20px 24px;
+  padding: 20px 0px;
 `;
 
 const Desc = styled.div`
