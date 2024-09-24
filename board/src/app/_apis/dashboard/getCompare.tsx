@@ -61,7 +61,7 @@ export type GetICompareDto = ResponseDto<ResultData>;
 요청한 견적서를 포워더가 업데이트 한 후 견적서 끼리 비교
 */
 export const getCompare = async (id: string, at: string) => {
-  const url = `/dashboards/compare/${id}`;
+  const url = `/dashboards/compare?rawQuotationId=${id}`;
   const response = await getAsync<GetICompareDto, undefined>(
     url,
     at,
