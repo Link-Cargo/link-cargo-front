@@ -11,6 +11,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Noti } from '../Noti';
 
 import { NotiApiService, GetINotiDto } from '@/app/_apis/noti';
+import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 
 interface NavProps {
   type?: 'default' | 'main';
@@ -21,9 +22,9 @@ export const Nav = ({ type = 'default' }: NavProps) => {
   const router = useRouter();
   const queryClient = useQueryClient();
   /*---- state ----*/
-  const user = useRecoilValue(userAtom);
-  const { accessToken } = useRecoilValue(userAtom);
-  const [isLoggedIn, setIsLoggedIn] = useState(user && !!user.accessToken);
+  const tokens = getTokenFromLocalStorage();
+  const { accessToken } = tokens.accessToken;
+  const [isLoggedIn, setIsLoggedIn] = useState(!accessToken);
   const [isOpen, setIsOpen] = useState(false);
 
   /*---- api call function ----*/

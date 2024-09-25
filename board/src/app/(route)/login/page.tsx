@@ -4,21 +4,20 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { useRouter } from 'next/navigation';
-import { userAtom } from '@/app/_recoil/userAtom';
 import { useMutation } from '@tanstack/react-query';
-import { useSetRecoilState } from 'recoil';
 
 import Button from '@/app/_components/common/Button';
 import { TextInput } from '@/app/_components/common/Input';
 
 import { OnboardApiService, PostILoginDto } from '@/app/_apis/onboard';
 import { LoginContent } from '@/app/_apis/onboard/postLogin';
+import { saveTokenToLocalStorage } from '@/app/_utils/auth';
 
 export default function Page() {
   /*---- hooks ----*/
   const router = useRouter();
   /*---- state ----*/
-  const setUser = useSetRecoilState(userAtom);
+  // const setUser = useSetRecoilState(userAtom);
   const [formData, setFormData] = useState<LoginContent>({
     email: '',
     password: '',
@@ -40,17 +39,17 @@ export default function Page() {
     mutationFn: OnboardApiService.postLogin,
     onSuccess: (response: PostILoginDto) => {
       if (response.isSuccess) {
-        setUser({
-          accessToken: response.result.accessToken,
-          refreshToken: response.result.refreshToken,
-        });
+        saveTokenToLocalStorage(
+          response.result.accessToken,
+          response.result.refreshToken,
+        );
         router.push('/dashboard');
       } else {
         console.error(response.message);
       }
     },
     onError: (error: Error) => {
-      console.error('Login failed:', error.message);
+      alert('로그인 실패 : 다시 시도해주세요');
     },
   });
 

@@ -14,21 +14,25 @@ const handleErrorAndRedirect = (error: any, router: any) => {
 
   throw error;
 };
-
 /**
  * 로컬 스토리지에서 토큰을 가져오는 함수
  */
 export const getTokenFromLocalStorage = () => {
   try {
-    const tokenData = localStorage.getItem('tokens');
-    if (tokenData) {
-      const { accessToken, refreshToken } = JSON.parse(tokenData);
-      return { accessToken, refreshToken };
+    // 클라이언트 환경인지 확인
+    if (typeof window !== 'undefined') {
+      const tokenData = localStorage.getItem('tokens');
+      if (tokenData) {
+        const { accessToken, refreshToken } = JSON.parse(tokenData);
+        return { accessToken, refreshToken };
+      }
     }
     return { accessToken: null, refreshToken: null };
   } catch (error) {
-    const router = useRouter();
-    handleErrorAndRedirect(error, router);
+    if (typeof window !== 'undefined') {
+      const router = useRouter();
+      handleErrorAndRedirect(error, router);
+    }
     return { accessToken: null, refreshToken: null };
   }
 };
