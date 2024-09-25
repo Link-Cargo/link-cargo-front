@@ -1,4 +1,4 @@
-import { postAsync, ResponseDto } from './common';
+import { postAsync, ResponseDto } from '../common';
 
 export interface CargosInfo {
   productName: string;
@@ -29,6 +29,9 @@ export interface ResultData {
 
 export type GetICargosContentDto = ResponseDto<ResultData>;
 
+/*
+화물 여러개 추가
+*/
 export const postCargos = async (
   req_body: CargosContent,
   at: string,

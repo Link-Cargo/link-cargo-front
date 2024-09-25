@@ -17,13 +17,16 @@ import {
 import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
 
-import { CargosContent, CargosInfo } from '@/app/_apis/postCargos';
+import { CargosContent, CargosInfo } from '@/app/_apis/quotation/postCargos';
 import { GetIPortDto, getPorts, PortType } from '@/app/_apis/getPorts';
+import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 
 export default function Page() {
   /*---- router ----*/
   const router = useRouter();
-  const { accessToken } = useRecoilValue(userAtom);
+  const tokens = getTokenFromLocalStorage();
+  const accessToken = tokens?.accessToken || '';
+
   /*---- state ----*/
   const [formData, setFormData] = useState<CargosContent>({
     exportPortId: null,

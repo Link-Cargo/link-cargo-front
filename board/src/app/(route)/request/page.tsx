@@ -26,13 +26,18 @@ import {
   formatDateRange,
 } from './utill';
 
-import {
-  CargosContent,
-  postCargos,
-  GetICargosContentDto,
-} from '@/app/_apis/postCargos';
 import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
-import { GetIScheduleDto, getScheduleId } from '@/app/_apis/getSchedules';
+import { getTokenFromLocalStorage } from '@/app/_utils/auth';
+import {
+  QuotationApiService,
+  GetIEstimatedDto,
+  GetISchedulesDto,
+  GetIScheduleDto,
+  postIQuotationDto,
+  GetICargosContentDto,
+  postIRawQuotationDto,
+} from '@/app/_apis/quotation';
+import { CargosContent } from '@/app/_apis/quotation/postCargos';
 
 function ContentPage() {
   /*---- hooks ----*/
@@ -41,7 +46,8 @@ function ContentPage() {
   const { isShowing, toggle } = useModal();
 
   /*---- state ----*/
-  const { accessToken } = useRecoilValue(userAtom);
+  const tokens = getTokenFromLocalStorage();
+  const accessToken = tokens?.accessToken || '';
   const [queryParams, setQueryParams] = useState<CargosContent>({
     exportPortId: '',
     importPortId: '',
@@ -51,6 +57,10 @@ function ContentPage() {
   });
   const [리스트queryParams, set리스트QueryParams] = useState<string[]>([]);
   const [resCargoId, setResCargoId] = useState<string[]>([]);
+  const [reqRawQuotationId, setReqRawQuotationId] = useState<string>();
+  const [estimatedQuotations, setEstimatedQuotations] = useState<
+    GetIEstimatedDto['result']['estimatedQuotations']
+  >([]);
   const [checkedItems, setCheckedItems] = useState<boolean[]>(
     Array(2).fill(false),
   );
@@ -77,24 +87,99 @@ function ContentPage() {
   };
 
   /*---- api call function ----*/
-  const { mutate, data, error } = useMutation<
+  const {
+    mutate: mutateCargos,
+    data: cargoData,
+    error: cargoError,
+  } = useMutation<
     GetICargosContentDto,
     Error,
     { req_body: CargosContent; at: string }
   >({
-    mutationFn: ({ req_body, at }) => postCargos(req_body, at),
+    mutationFn: ({ req_body, at }) =>
+      QuotationApiService.postCargos(req_body, at),
     onSuccess: (response: GetICargosContentDto) => {
-      setResCargoId(response.result.cargoIds);
+      const cargoIds = response.result.cargoIds;
+      // cargoIds를 사용하여 두 번째 뮤테이션 실행
+      mutateRawQuotation({ cargoIds, at: accessToken });
     },
     onError: (error: Error) => {
-      console.error('API call failed:', error.message);
+      console.error('API call failed (POST /cargos):', error.message);
+    },
+  });
+
+  const {
+    mutate: mutateRawQuotation,
+    data: rawQuotationData,
+    error: rawQuotationError,
+  } = useMutation<
+    postIRawQuotationDto,
+    Error,
+    { cargoIds: string[]; at: string }
+  >({
+    mutationFn: ({ cargoIds, at }) =>
+      QuotationApiService.postRawQuotation({ cargoIds }, at),
+    onSuccess: (response: postIRawQuotationDto) => {
+      const rawQuotationId = response.result;
+      // rawQuotationId를 사용하여 세 번째 뮤테이션 실행
+      mutateQuotation({
+        rawQuotationId,
+        scheduleIds: 리스트queryParams,
+        at: accessToken,
+      });
+    },
+    onError: (error: Error) => {
+      console.error('API call failed (POST /quotations/raw):', error.message);
+    },
+  });
+
+  const { mutate: mutateQuotation } = useMutation<
+    postIQuotationDto,
+    Error,
+    { rawQuotationId: string; scheduleIds: string[]; at: string }
+  >({
+    mutationFn: ({ rawQuotationId, scheduleIds, at }) => {
+      const requestBody = scheduleIds.map((scheduleId) => ({
+        scheduleId: Number(scheduleId),
+        rawQuotationId,
+      }));
+      return QuotationApiService.postQuotation(requestBody, at);
+    },
+    onSuccess: (response) => {
+      const quotationIds = response.result.map((quotation) => quotation);
+      // 네 번째 뮤테이션 호출 (예상 업체 견적 요청)
+      mutateEstimated({ quotationIds, at: accessToken });
+    },
+    onError: (error) => {
+      console.error('API call failed (POST /quotations):', error.message);
+    },
+  });
+
+  const { mutate: mutateEstimated } = useMutation<
+    GetIEstimatedDto,
+    Error,
+    { quotationIds: string[]; at: string }
+  >({
+    mutationFn: ({ quotationIds, at }) =>
+      QuotationApiService.getEstimated(quotationIds, at),
+    onSuccess: (response) => {
+      // 예상 업체 견적을 setState로 저장
+      setEstimatedQuotations(response.result.estimatedQuotations);
+      console.log('Estimated quotations:', response.result.estimatedQuotations);
+    },
+    onError: (error) => {
+      console.error(
+        'API call failed (GET /quotations/estimated):',
+        error.message,
+      );
     },
   });
 
   const ScheduleIdData = useQueries({
     queries: 리스트queryParams.map((sId) => ({
       queryKey: ['schedule', sId],
-      queryFn: () => getScheduleId(Number(sId), accessToken!),
+      queryFn: () =>
+        QuotationApiService.getScheduleId(Number(sId), accessToken!),
       enabled: !!accessToken,
     })),
   });
@@ -121,7 +206,7 @@ function ContentPage() {
     const { exportPortId, importPortId, wishExportDate, ...restQueryParams } =
       queryParams;
 
-    mutate({
+    mutateCargos({
       req_body: {
         exportPortId: _exportPortId,
         importPortId: _importPortId,

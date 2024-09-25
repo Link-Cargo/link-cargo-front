@@ -14,9 +14,10 @@ import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
 import OptionCard from '@/app/_components/common/OptionCard';
 
-import { GetISchedulesDto, getSchedules } from '@/app/_apis/getSchedules';
+import { GetISchedulesDto, QuotationApiService } from '@/app/_apis/quotation';
 
 import { processData } from './utill';
+import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 
 function ContentPage() {
   /*---- hooks ----*/
@@ -24,7 +25,8 @@ function ContentPage() {
   const searchParams = useSearchParams();
 
   /*---- state ----*/
-  const { accessToken } = useRecoilValue(userAtom);
+  const tokens = getTokenFromLocalStorage();
+  const accessToken = tokens?.accessToken || '';
   const [selectedList, setSelectedList] = useState<number[]>([]);
 
   /*---- function ----*/
@@ -56,7 +58,7 @@ function ContentPage() {
     isLoading: scheduleLoading,
   } = useQuery<GetISchedulesDto, Error>({
     queryKey: ['schedule'],
-    queryFn: () => getSchedules(accessToken!),
+    queryFn: () => QuotationApiService.getSchedules(accessToken!),
     enabled: !!accessToken,
   });
 

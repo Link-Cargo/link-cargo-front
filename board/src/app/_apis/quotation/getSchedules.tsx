@@ -1,4 +1,4 @@
-import { ResponseDto, getAsync } from './common';
+import { ResponseDto, getAsync } from '../common';
 
 export interface Schedule {
   id: number;
@@ -62,7 +62,7 @@ export const getSchedules = async (at: string) => {
 };
 
 /*
-모든 선박 스케쥴 리스트 조회
+개별 선박 스케쥴 리스트 조회
 */
 export const getScheduleId = async (scheduleId: number, at: string) => {
   const url = `/schedules/${scheduleId}`;
