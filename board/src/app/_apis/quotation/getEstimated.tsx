@@ -1,6 +1,6 @@
 import { ResponseDto, getAsync } from '../common';
 
-interface ResultData {
+export interface ResultData {
   estimatedQuotations: {
     carrier: string;
     ETD: string;

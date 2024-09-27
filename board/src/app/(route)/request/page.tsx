@@ -34,6 +34,7 @@ import {
   postIRawQuotationDto,
 } from '@/app/_apis/quotation';
 import { CargosContent } from '@/app/_apis/quotation/postCargos';
+import Table from './Table';
 
 function ContentPage() {
   /*---- router ----*/
@@ -58,12 +59,13 @@ function ContentPage() {
   const [리스트queryParams, set리스트QueryParams] = useState<string[]>([]);
   const [resCargoId, setResCargoId] = useState<string[]>([]);
   const [reqRawQuotationId, setReqRawQuotationId] = useState<string>();
-  const [estimatedQuotations, setEstimatedQuotations] = useState<
-    GetIEstimatedDto['result']['estimatedQuotations']
-  >([]);
+  const [estimatedQuotations, setEstimatedQuotations] =
+    useState<GetIEstimatedDto['result']>();
   const [checkedItems, setCheckedItems] = useState<boolean[]>(
     Array(2).fill(false),
   );
+
+  const [errorMsg, setErrorMsg] = useState<{ code: string; msg: string }>();
 
   /*---- function ----*/
   const handleInputChange = (
@@ -103,8 +105,10 @@ function ContentPage() {
       // cargoIds를 사용하여 두 번째 뮤테이션 실행
       mutateRawQuotation({ cargoIds, at: accessToken });
     },
-    onError: (error: Error) => {
-      console.error('API call failed (POST /cargos):', error.message);
+    onError: (error: any) => {
+      const response = error.response?.data;
+      setErrorMsg({ code: response.code, msg: response.message });
+      console.error('API call failed (POST /cargos):', response.message);
     },
   });
 
@@ -128,8 +132,13 @@ function ContentPage() {
         at: accessToken,
       });
     },
-    onError: (error: Error) => {
-      console.error('API call failed (POST /quotations/raw):', error.message);
+    onError: (error: any) => {
+      const response = error.response?.data;
+      setErrorMsg({ code: response.code, msg: response.message });
+      console.error(
+        'API call failed (POST /quotations/raw):',
+        response.message,
+      );
     },
   });
 
@@ -150,8 +159,10 @@ function ContentPage() {
       // 네 번째 뮤테이션 호출 (예상 업체 견적 요청)
       mutateEstimated({ quotationIds, at: accessToken });
     },
-    onError: (error) => {
-      console.error('API call failed (POST /quotations):', error.message);
+    onError: (error: any) => {
+      const response = error.response?.data;
+      setErrorMsg({ code: response.code, msg: response.message });
+      console.error('API call failed (POST /quotations):', response.message);
     },
   });
 
@@ -164,13 +175,15 @@ function ContentPage() {
       QuotationApiService.getEstimated(quotationIds, at),
     onSuccess: (response) => {
       // 예상 업체 견적을 setState로 저장
-      setEstimatedQuotations(response.result.estimatedQuotations);
+      setEstimatedQuotations(response.result);
       console.log('Estimated quotations:', response.result.estimatedQuotations);
     },
-    onError: (error) => {
+    onError: (error: any) => {
+      const response = error.response?.data;
+      setErrorMsg({ code: response.code, msg: response.message });
       console.error(
         'API call failed (GET /quotations/estimated):',
-        error.message,
+        response.message,
       );
     },
   });
@@ -237,6 +250,23 @@ function ContentPage() {
     set리스트QueryParams(selectedList);
   }, [searchParams]);
 
+  const temp = {
+    estimatedQuotations: [
+      {
+        carrier: 'KMTC SHANGHAI',
+        ETD: [2024, 10, 18],
+        ETA: [2024, 10, 20],
+        forwardingName: '블루웨이물류',
+      },
+      {
+        carrier: 'KMTC SHANGHAI',
+        ETD: [2024, 10, 18],
+        ETA: [2024, 10, 20],
+        forwardingName: '블루웨이물류',
+      },
+    ],
+    count: 2,
+  };
   /*---- jsx ----*/
   return (
     <Layout>
@@ -365,8 +395,8 @@ function ContentPage() {
             type="dark"
             flexValue={3}
             onClick={() => {
-              customMutate(queryParams, accessToken);
               toggle();
+              customMutate(queryParams, accessToken);
             }}
           />
         </ButtonSection>
@@ -384,10 +414,14 @@ function ContentPage() {
               text: '닫기',
             }}
             onRight={{
-              onClick: () => router.push(`/dashboard`),
+              onClick: () => {
+                router.push(`/dashboard`);
+              },
               text: '나의 대시보드 바로가기',
             }}
-          ></Confirm>
+          >
+            {<Table data={temp} />}
+          </Confirm>
         }
       />
     </Layout>
