@@ -18,8 +18,12 @@ export type GetIPredictionDto = ResponseDto<ResultData>;
 /*
 운임 비용 관련 그래프 정보를 조회
 */
-export const getPrediction = async (at: string) => {
-  const url = `/dashboards/prediction?exportPortId=1&importPortId=2`;
+export const getPrediction = async (
+  at: string,
+  importId: number,
+  exportId: number,
+) => {
+  const url = `/dashboards/prediction?exportPortId=${exportId}&importPortId=${importId}`;
   const response = await getAsync<GetIPredictionDto, undefined>(
     url,
     at,
