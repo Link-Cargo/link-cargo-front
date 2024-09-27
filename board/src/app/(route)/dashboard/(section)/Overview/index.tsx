@@ -1,18 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { styled } from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
-import { useQuery } from '@tanstack/react-query';
-import { useRecoilValue } from 'recoil';
-import { userAtom } from '@/app/_recoil/userAtom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Box } from '@/app/_components/dashboard/Box';
 import { BgType } from '@/app/_components/dashboard/Profile';
 import Button from '@/app/_components/common/Button';
-import { SelectInput } from '@/app/_components/common/Input';
+import { CustomSelectInput } from '@/app/_components/common/Input';
 import useModal from '@/app/_hooks/useModal';
 import Modal from '@/app/_components/common/Modal';
 import Confirm from '@/app/_components/common/Confirm';
 import Layout from '@/app/_components/dashboard/Layout';
+import { getPortIdByName } from '@/app/(route)/request/utill';
+import { formatDateRange } from '@/app/(route)/request/utill';
+import {
+  formatDate,
+  formatTransitTime,
+} from '@/app/(route)/reserve-list/utill';
+import { formatQuoteListEl } from '../../_util';
+import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 
 import {
   GetIRecommendationDto,
@@ -20,26 +26,31 @@ import {
   GetICheapestDto,
   GetISummaryDto,
   DashboardApiService,
+  GetIUserRawQuotationDto,
 } from '@/app/_apis/dashboard';
-
-//TODO
-import { 최근검색어_리스트 } from './utils';
-import { formatDateRange } from '@/app/(route)/request/utill';
-import {
-  formatDate,
-  formatTransitTime,
-} from '@/app/(route)/reserve-list/utill';
+import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
 
 export default function Overview() {
+  /*---- auth ----*/
+  const tokens = getTokenFromLocalStorage();
   /*---- hooks ----*/
+  const queryClient = useQueryClient();
   const { isShowing: isAiShowing, toggle: toggleAiModal } = useModal();
   const { isShowing: isExpandShowing, toggle: toggleExpandModal } = useModal();
-
   /*---- state ----*/
-  const { accessToken } = useRecoilValue(userAtom);
-  const [최근검색어, set최근검색어] = useState(
-    '인천항 → 상하이항 | ETD : 2024.06.24',
-  );
+  //선택된 RawQuotationId
+  const [selectedRawQuotationId, setSelectedRawQuotationId] =
+    useState<string>('');
+  //선택된 RawQuotationId에 대해 포매팅된 텍스트, 입국항, 출국항
+  const [selectedIdFormatting, setSelectedIdFormatting] = useState<{
+    text: string;
+    importId: number;
+    exportId: number;
+  } | null>(null); // 객체 또는 null 값을 허용
+
+  /*---- function ----*/
+  const exportPdf = () => {};
+  const exportImg = () => {};
 
   /*---- api call function ----*/
   const {
@@ -48,8 +59,8 @@ export default function Overview() {
     isLoading: summaryLoading,
   } = useQuery<GetISummaryDto, Error>({
     queryKey: ['summary'],
-    queryFn: () => DashboardApiService.getSummary(accessToken!),
-    enabled: !!accessToken,
+    queryFn: () => DashboardApiService.getSummary(tokens?.accessToken),
+    enabled: !!tokens?.accessToken,
   });
 
   const {
@@ -58,8 +69,12 @@ export default function Overview() {
     isLoading: recommendationLoading,
   } = useQuery<GetIRecommendationDto, Error>({
     queryKey: ['recommendation'],
-    queryFn: () => DashboardApiService.getRecommendation(accessToken!),
-    enabled: !!accessToken,
+    queryFn: () =>
+      DashboardApiService.getRecommendation(
+        tokens?.accessToken,
+        selectedRawQuotationId,
+      ),
+    enabled: !!selectedRawQuotationId,
   });
 
   const {
@@ -68,8 +83,12 @@ export default function Overview() {
     isLoading: congestionLoading,
   } = useQuery<GetICongestionDto, Error>({
     queryKey: ['congestion'],
-    queryFn: () => DashboardApiService.getCongestion(accessToken!),
-    enabled: !!accessToken,
+    queryFn: () =>
+      DashboardApiService.getCongestion(
+        tokens?.accessToken,
+        selectedIdFormatting?.importId as number,
+      ),
+    enabled: !!selectedIdFormatting?.importId,
   });
 
   const {
@@ -78,25 +97,112 @@ export default function Overview() {
     isLoading: cheapestLoading,
   } = useQuery<GetICheapestDto, Error>({
     queryKey: ['cheapest'],
-    queryFn: () => DashboardApiService.getCheapest(accessToken!),
-    enabled: !!accessToken,
+    queryFn: () =>
+      DashboardApiService.getCheapest(
+        tokens?.accessToken,
+        selectedRawQuotationId,
+      ),
+    enabled: !!selectedRawQuotationId,
   });
 
-  /*---- function ----*/
-  const exportPdf = () => {};
-  const exportImg = () => {};
+  const {
+    data: portData,
+    error: portError,
+    isLoading: portLoading,
+  } = useQuery<GetIPortDto, Error>({
+    queryKey: ['Port'],
+    queryFn: () => getPortsAll(tokens?.accessToken),
+    enabled: !!tokens?.accessToken,
+  });
+
+  const {
+    data: userRawQuotationData,
+    error: userRawQuotationError,
+    isLoading: userRawQuotationLoading,
+  } = useQuery<GetIUserRawQuotationDto, Error>({
+    queryKey: ['userRawQuotationData'],
+    queryFn: () => DashboardApiService.getUserRawQuotation(tokens?.accessToken),
+    enabled: !!tokens?.accessToken,
+  });
+
+  /*---- useEffect ----*/
+  useEffect(() => {
+    if (
+      userRawQuotationData &&
+      userRawQuotationData.result.rawQuotationInfoList.length > 0
+    ) {
+      const firstItem = userRawQuotationData.result.rawQuotationInfoList[0];
+      const firstValue = formatQuoteListEl(firstItem);
+      setSelectedRawQuotationId(firstItem.rawQuotationId);
+      setSelectedIdFormatting({
+        text: firstValue.text,
+        importId:
+          getPortIdByName(portData as GetIPortDto, firstValue.importPort) ?? 0, // undefined일 경우 0으로 설정
+        exportId:
+          getPortIdByName(portData as GetIPortDto, firstValue.exportPort) ?? 0, // undefined일 경우 0으로 설정
+      });
+    }
+  }, [userRawQuotationData]);
+
+  const RawQuotationList =
+    userRawQuotationData?.result?.rawQuotationInfoList?.map((item) => {
+      const formatted = formatQuoteListEl(item); // 포매팅된 결과를 가져옴
+      return {
+        value: formatted.text, // 텍스트를 문자열로 설정
+        label: formatted.text, // 동일한 텍스트를 라벨로 설정
+        id: item.rawQuotationId, // rawQuotationId를 ID로 사용
+      };
+    }) || [];
+
+  /*---- useEffect for invalidating queries ----*/
+  useEffect(() => {
+    if (selectedRawQuotationId) {
+      queryClient.invalidateQueries({ queryKey: ['recommendation'] });
+      queryClient.invalidateQueries({ queryKey: ['cheapest'] });
+      queryClient.invalidateQueries({ queryKey: ['congestion'] });
+    }
+  }, [selectedRawQuotationId, queryClient]);
 
   /*---- jsx ----*/
   return (
     <Layout>
       <FlexBox>
-        <SelectInput
-          label=""
-          name="운송사"
-          value={최근검색어}
-          onChange={(e) => set최근검색어(e.target.value)}
-          options={최근검색어_리스트}
-        />
+        {selectedIdFormatting && (
+          <CustomSelectInput
+            label=""
+            name="운송사"
+            value={selectedIdFormatting?.text || ''} // 선택된 포맷팅된 텍스트를 표시
+            onChange={(value, id) => {
+              const selectedItem =
+                userRawQuotationData?.result.rawQuotationInfoList.find(
+                  (item) => item.rawQuotationId === id,
+                );
+
+              if (selectedItem) {
+                const formatted = formatQuoteListEl(selectedItem); // 선택된 아이템을 포맷팅
+
+                setSelectedIdFormatting({
+                  text: formatted.text,
+                  importId:
+                    getPortIdByName(
+                      portData as GetIPortDto,
+                      formatted.importPort,
+                    ) ?? 0,
+                  exportId:
+                    getPortIdByName(
+                      portData as GetIPortDto,
+                      formatted.exportPort,
+                    ) ?? 0,
+                });
+
+                setSelectedRawQuotationId(id || '');
+              }
+            }}
+            options={RawQuotationList}
+            placeholder="운송사를 선택하세요"
+          />
+        )}
+        {!selectedIdFormatting && <div>값을 불러오는 중...</div>}
         <ReportButton onClick={toggleAiModal}>
           <span className="material-symbols-outlined">draft</span>
           AI 요약 보고서
@@ -164,6 +270,7 @@ export default function Overview() {
                 </tr>
               </thead>
               <tbody>
+                {!recommendationData && <div>값을 불러오는 중...</div>}
                 {recommendationData?.result.scheduleInfos.map((item, index) => (
                   <tr key={index}>
                     <td>{item.carrier}</td>
