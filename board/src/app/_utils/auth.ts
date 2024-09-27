@@ -30,8 +30,7 @@ export const getTokenFromLocalStorage = () => {
     return { accessToken: null, refreshToken: null };
   } catch (error) {
     if (typeof window !== 'undefined') {
-      const router = useRouter();
-      handleErrorAndRedirect(error, router);
+      window.location.href = '/login';
     }
     return { accessToken: null, refreshToken: null };
   }
@@ -53,8 +52,7 @@ export const saveTokenToLocalStorage = (
     localStorage.setItem('tokens', JSON.stringify(tokenData));
     console.log('2');
   } catch (error) {
-    const router = useRouter();
-    handleErrorAndRedirect(error, router);
+    window.location.href = '/login';
   }
 };
 
