@@ -4,8 +4,6 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { useRouter } from 'next/navigation';
-import { useRecoilValue } from 'recoil';
-import { userAtom } from '@/app/_recoil/userAtom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Noti } from '../Noti';
@@ -18,15 +16,27 @@ interface NavProps {
 }
 
 export const Nav = ({ type = 'default' }: NavProps) => {
-  /*---- hooks ----*/
+  /*---- router ----*/
   const router = useRouter();
+  /*---- auth ----*/
+  const tokens = getTokenFromLocalStorage();
+  const accessToken = tokens?.accessToken || '';
+  if (!accessToken) {
+    router.push('/login');
+  }
+  /*---- hooks ----*/
   const queryClient = useQueryClient();
   /*---- state ----*/
-  const tokens = getTokenFromLocalStorage();
-  const { accessToken } = tokens.accessToken;
-  const [isLoggedIn, setIsLoggedIn] = useState(!accessToken);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!accessToken);
   const [isOpen, setIsOpen] = useState(false);
-
+  /*---- function ----*/
+  const notiReadHandler = (_id?: number) => {
+    if (_id) {
+      markAsRead(_id);
+    } else {
+      markAsAllRead();
+    }
+  };
   /*---- api call function ----*/
   const {
     data: notiData,
@@ -34,7 +44,7 @@ export const Nav = ({ type = 'default' }: NavProps) => {
     isLoading: notiLoading,
   } = useQuery<GetINotiDto, Error>({
     queryKey: ['noti'],
-    queryFn: () => NotiApiService.getNoti(accessToken!),
+    queryFn: () => NotiApiService.getNoti(accessToken),
     enabled: !!accessToken,
   });
 
@@ -62,15 +72,7 @@ export const Nav = ({ type = 'default' }: NavProps) => {
       queryClient.invalidateQueries({ queryKey: ['noti'] });
     },
   });
-
-  const notiReadHandler = (_id?: number) => {
-    if (_id) {
-      markAsRead(_id);
-    } else {
-      markAsAllRead();
-    }
-  };
-
+  /*---- jsx ----*/
   return (
     <Container type={type}>
       <ContentWrapper>
@@ -82,10 +84,10 @@ export const Nav = ({ type = 'default' }: NavProps) => {
           />
         </Logo>
         <Links type={type}>
+          {isLoggedIn && <a href="/dashboard">나의 대시보드</a>}
           <a href="/freight-quote">운임 조회</a>
-
           {isLoggedIn ? (
-            <a href="/dashboard">나의 대시보드</a>
+            <a href="/dashboard">로그아웃</a>
           ) : (
             <a href="/login">로그인</a>
           )}
