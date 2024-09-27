@@ -3,17 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
-import { useQuery } from '@tanstack/react-query';
-import { useRecoilValue } from 'recoil';
-import { userAtom } from '@/app/_recoil/userAtom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Box } from '@/app/_components/dashboard/Box';
 import { BgType } from '@/app/_components/dashboard/Box';
 import Button from '@/app/_components/common/Button';
-import { SelectInput } from '@/app/_components/common/Input';
+import { CustomSelectInput, SelectInput } from '@/app/_components/common/Input';
 import Layout from '@/app/_components/dashboard/Layout';
-
-import { GetICompareDto, DashboardApiService } from '@/app/_apis/dashboard';
 
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
@@ -21,23 +17,51 @@ import 'swiper/css/pagination';
 import 'swiper/css/autoplay';
 import { useRouter } from 'next/navigation';
 import { Mousewheel, Pagination, Autoplay } from 'swiper/modules';
+import { CostListItem } from '@/app/_apis/dashboard/getCompare';
+import {
+  견적_명세,
+  getCostListByType,
+  barColors,
+  formatQuoteListEl,
+} from '@/app/(route)/dashboard/_util';
+import { getPortIdByName } from '@/app/(route)/request/utill';
+import useModal from '@/app/_hooks/useModal';
+import Modal from '@/app/_components/common/Modal';
+import ModalContent from '@/app/_components/common/ModalContent';
+import { Table } from './Table';
 
-//TODO
-import { CostListItem, dummy } from '@/app/_apis/dashboard/getCompare';
-import { 최근검색어_리스트 } from '../Overview/utils';
-import { 견적_명세, getCostListByType, barColors } from './utils';
+import { getTokenFromLocalStorage } from '@/app/_utils/auth';
+import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
+import {
+  GetICompareDto,
+  DashboardApiService,
+  GetIUserRawQuotationDto,
+} from '@/app/_apis/dashboard';
 
 export default function CompareQuotes() {
-  /*---- hooks ----*/
+  /*---- router ----*/
   const router = useRouter();
-
+  /*---- auth ----*/
+  const tokens = getTokenFromLocalStorage();
+  /*---- hooks ----*/
+  const queryClient = useQueryClient();
+  const { isShowing, toggle } = useModal();
   /*---- state ----*/
-  const { accessToken } = useRecoilValue(userAtom);
   const [dropdownVisible, setDropdownVisible] = useState(false);
-  //set init value
+  //set init chart value
   const [selectedCostType1, setSelectedCostType1] = useState('THC 비용');
   const [selectedCostType2, setSelectedCostType2] = useState('CIC 비용');
   const [selectedCostType3, setSelectedCostType3] = useState('CFS 비용');
+  //선택된 RawQuotationId
+  const [selectedRawQuotationId, setSelectedRawQuotationId] =
+    useState<string>('');
+  //선택된 RawQuotationId에 대해 포매팅된 텍스트, 입국항, 출국항
+  const [selectedIdFormatting, setSelectedIdFormatting] = useState<{
+    text: string;
+    importId: number;
+    exportId: number;
+  } | null>(null); // 객체 또는 null 값을 허용
+  const [selectedQuoteData, setSelectedQuoteData] = useState<any>(null);
 
   /*---- api call function ----*/
   const {
@@ -47,24 +71,77 @@ export default function CompareQuotes() {
   } = useQuery<GetICompareDto, Error>({
     queryKey: ['compare'],
     queryFn: () =>
-      DashboardApiService.getCompare('66c2f12d81322169373e2f8d', accessToken!),
-    enabled: !!accessToken,
+      DashboardApiService.getCompare(
+        selectedRawQuotationId,
+        tokens?.accessToken,
+      ),
+    enabled: !!selectedRawQuotationId,
   });
 
-  //TODO
-  const [최근검색어, set최근검색어] = useState(
-    '인천항 → 상하이항 | ETD : 2024.06.24',
-  );
+  const {
+    data: userRawQuotationData,
+    error: userRawQuotationError,
+    isLoading: userRawQuotationLoading,
+  } = useQuery<GetIUserRawQuotationDto, Error>({
+    queryKey: ['userRawQuotationData'],
+    queryFn: () => DashboardApiService.getUserRawQuotation(tokens?.accessToken),
+    enabled: !!tokens?.accessToken,
+  });
+
+  const RawQuotationList =
+    userRawQuotationData?.result?.rawQuotationInfoList?.map((item) => {
+      const formatted = formatQuoteListEl(item); // 포매팅된 결과를 가져옴
+      return {
+        value: formatted.text, // 텍스트를 문자열로 설정
+        label: formatted.text, // 동일한 텍스트를 라벨로 설정
+        id: item.rawQuotationId, // rawQuotationId를 ID로 사용
+      };
+    }) || [];
+
+  const {
+    data: portData,
+    error: portError,
+    isLoading: portLoading,
+  } = useQuery<GetIPortDto, Error>({
+    queryKey: ['Port'],
+    queryFn: () => getPortsAll(tokens?.accessToken),
+    enabled: !!tokens?.accessToken,
+  });
+
+  /*---- useEffect ----*/
+  useEffect(() => {
+    if (
+      userRawQuotationData &&
+      userRawQuotationData.result.rawQuotationInfoList.length > 0
+    ) {
+      const firstItem = userRawQuotationData.result.rawQuotationInfoList[0];
+      const firstValue = formatQuoteListEl(firstItem);
+      setSelectedRawQuotationId(firstItem.rawQuotationId);
+      setSelectedIdFormatting({
+        text: firstValue.text,
+        importId:
+          getPortIdByName(portData as GetIPortDto, firstValue.importPort) ?? 0, // undefined일 경우 0으로 설정
+        exportId:
+          getPortIdByName(portData as GetIPortDto, firstValue.exportPort) ?? 0, // undefined일 경우 0으로 설정
+      });
+    }
+  }, [userRawQuotationData]);
+
+  useEffect(() => {
+    if (selectedRawQuotationId) {
+      queryClient.invalidateQueries({ queryKey: ['compare'] });
+    }
+  }, [selectedRawQuotationId, queryClient]);
 
   /*---- jsx ----*/
   const renderCostList = (costList: CostListItem[]) => (
     <ul>
-      {costList.map((item, index) => (
+      {costList?.map((item, index) => (
         <li key={index}>
           <span>{Object.keys(item)[0]}</span>
           <span>
             <GraphBar
-              width={(Object.values(item)[0] as number) / 100 + '%'}
+              width={(Object.values(item)[0] as number) + '%'}
               color={barColors[index % barColors.length]}
             />
           </span>
@@ -76,22 +153,53 @@ export default function CompareQuotes() {
   return (
     <Layout>
       <FlexBox>
-        <SelectInput
-          label=""
-          name="운송사"
-          value={최근검색어}
-          onChange={(e) => set최근검색어(e.target.value)}
-          options={최근검색어_리스트}
-        />
+        {selectedIdFormatting && (
+          <CustomSelectInput
+            label=""
+            name="운송사"
+            value={selectedIdFormatting?.text || ''} // 선택된 포맷팅된 텍스트를 표시
+            onChange={(value, id) => {
+              const selectedItem =
+                userRawQuotationData?.result.rawQuotationInfoList.find(
+                  (item) => item.rawQuotationId === id,
+                );
+
+              if (selectedItem) {
+                const formatted = formatQuoteListEl(selectedItem); // 선택된 아이템을 포맷팅
+
+                setSelectedIdFormatting({
+                  text: formatted.text,
+                  importId:
+                    getPortIdByName(
+                      portData as GetIPortDto,
+                      formatted.importPort,
+                    ) ?? 0,
+                  exportId:
+                    getPortIdByName(
+                      portData as GetIPortDto,
+                      formatted.exportPort,
+                    ) ?? 0,
+                });
+
+                setSelectedRawQuotationId(id || '');
+              }
+            }}
+            options={RawQuotationList}
+            placeholder="운송사를 선택하세요"
+          />
+        )}
+        {!selectedIdFormatting && <div>값을 불러오는 중...</div>}
         <ReportButton onClick={() => setDropdownVisible(!dropdownVisible)}>
           <div>도착한 견적서</div>
-          <b>{dummy?.result.quotationCount}개</b>
+          <b>{compareData?.result.quotationCount}개</b>
         </ReportButton>
         {dropdownVisible && (
           <DropdownMenu>
-            {dummy.result.dashboardQuotationResponseList.map((item, index) => (
-              <DropdownItem key={index}>{item.forwarderEmail}</DropdownItem>
-            ))}
+            {compareData?.result.dashboardQuotationResponseList.map(
+              (item, index) => (
+                <DropdownItem key={index}>{item.forwarderEmail}</DropdownItem>
+              ),
+            )}
           </DropdownMenu>
         )}
       </FlexBox>
@@ -99,59 +207,71 @@ export default function CompareQuotes() {
         direction="horizontal"
         slidesPerView={1}
         spaceBetween={0}
-        mousewheel
         speed={1000}
         pagination={{ clickable: true }}
         modules={[Mousewheel, Pagination, Autoplay]}
         className="swiper-compare"
       >
-        {dummy?.result.dashboardQuotationResponseList.map((item, index) => (
-          <SwiperSlide key={index}>
-            <SlideContent>
-              <Box bgType={BgType.NONE} onClick={() => {}} width="60%">
-                <img
-                  src={'assets/report.png'}
-                  alt={`견적서 이미지 ${index + 1}`}
-                />
-              </Box>
-              <Box bgType={BgType.NONE} width="40%">
-                <StyledTable>
-                  <ul>
-                    <li>
-                      <span>기업명</span>
-                      <span>{item.firmName}</span>
-                    </li>
-                    <li>
-                      <span>총 비용</span>
-                      <span>{item.totalCost}</span>
-                    </li>
-                    <li>
-                      <span>담당자</span>
-                      <span>{item.forwarderName}</span>
-                    </li>
-                    <li>
-                      <span>이메일</span>
-                      <span>{item.forwarderEmail}</span>
-                    </li>
-                    <li>
-                      <span>전화번호</span>
-                      <span>{item.forwarderTel}</span>
-                    </li>
-                    <li>전달 사항 | </li>
-                  </ul>
-                  <Button
-                    text="1:1 문의하기"
-                    flexValue={1}
-                    type="dark"
-                    onClick={() => {
-                      router.push('/dashboard#chat_history');
-                    }}
-                  />
-                </StyledTable>
-              </Box>
-            </SlideContent>
-          </SwiperSlide>
-        ))}
+        {compareData?.result.dashboardQuotationResponseList.map(
+          (item, index) => (
+            <>
+              <SwiperSlide key={index}>
+                <SlideContent>
+                  <TableContainer
+                    style={{ width: '70%', position: 'relative' }}
+                  >
+                    <ExpandIcon
+                      className="material-icons"
+                      onClick={() => {
+                        setSelectedQuoteData(item); // 선택된 데이터를 저장
+                        toggle(); // 모달을 토글
+                      }}
+                    >
+                      fullscreen
+                    </ExpandIcon>
+                    <Table data={item.quotationInfoResponse} size="small" />
+                  </TableContainer>
+
+                  <Box bgType={BgType.NONE} width="30%">
+                    <StyledTable>
+                      <ul>
+                        <li>
+                          <span>기업명</span>
+                          <span>{item.firmName}</span>
+                        </li>
+                        <li>
+                          <span>총 비용</span>
+                          <span>{item.totalCost}</span>
+                        </li>
+                        <li>
+                          <span>담당자</span>
+                          <span>{item.forwarderName}</span>
+                        </li>
+                        <li>
+                          <span>이메일</span>
+                          <span>{item.forwarderEmail}</span>
+                        </li>
+                        <li>
+                          <span>전화번호</span>
+                          <span>{item.forwarderTel}</span>
+                        </li>
+                        <li>전달 사항 | </li>
+                      </ul>
+                      <Button
+                        text="1:1 문의하기"
+                        flexValue={1}
+                        type="dark"
+                        onClick={() => {
+                          router.push('/dashboard#chat_history');
+                        }}
+                      />
+                    </StyledTable>
+                  </Box>
+                </SlideContent>
+              </SwiperSlide>
+            </>
+          ),
+        )}
       </StyledSwiper>
       <FlexBox>
         <CompareBox>
@@ -161,7 +281,9 @@ export default function CompareQuotes() {
             onChange={(e) => setSelectedCostType1(e.target.value)}
             options={견적_명세}
           />
-          {renderCostList(getCostListByType(dummy, selectedCostType1))}
+          {renderCostList(
+            getCostListByType(compareData as GetICompareDto, selectedCostType1),
+          )}
         </CompareBox>
         <CompareBox>
           <SelectInput
@@ -170,7 +292,9 @@ export default function CompareQuotes() {
             onChange={(e) => setSelectedCostType2(e.target.value)}
             options={견적_명세}
           />
-          {renderCostList(getCostListByType(dummy, selectedCostType2))}
+          {renderCostList(
+            getCostListByType(compareData as GetICompareDto, selectedCostType2),
+          )}
         </CompareBox>
         <CompareBox>
           <SelectInput
@@ -179,9 +303,31 @@ export default function CompareQuotes() {
             onChange={(e) => setSelectedCostType3(e.target.value)}
             options={견적_명세}
           />
-          {renderCostList(getCostListByType(dummy, selectedCostType3))}
+          {renderCostList(
+            getCostListByType(compareData as GetICompareDto, selectedCostType3),
+          )}
         </CompareBox>
       </FlexBox>
+      <Modal
+        isShowing={isShowing}
+        content={
+          selectedQuoteData && (
+            <ModalContent
+              onLeft={{
+                onClick: () => {
+                  toggle();
+                },
+                text: '닫기',
+              }}
+            >
+              <Table
+                data={selectedQuoteData.quotationInfoResponse}
+                size="large"
+              />
+            </ModalContent>
+          )
+        }
+      />
     </Layout>
   );
 }
@@ -233,6 +379,13 @@ const DropdownItem = styled.div`
     background-color: ${COLORS.g0};
     color: ${COLORS.g4};
   }
+`;
+
+const TableContainer = styled.div`
+  width: 70%;
+  height: 480px;
+  overflow: hidden;
+  border-radius: 12px;
 `;
 
 const StyledTable = styled.div`
@@ -333,4 +486,13 @@ const GraphBar = styled.div<{ width: string; color: string }>`
   background-color: ${({ color }) => color};
   border-radius: 0px 8px 8px 0px;
   width: ${({ width }) => width};
+`;
+const ExpandIcon = styled.span`
+  font-size: 50px;
+  color: ${COLORS.w};
+  cursor: pointer;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 2;
 `;

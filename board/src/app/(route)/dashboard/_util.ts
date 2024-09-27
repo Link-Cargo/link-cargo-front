@@ -29,20 +29,20 @@ export const 견적_명세 = [
   },
 ];
 
-export const getCostListByType = (dummy: GetICompareDto, type: string) => {
+export const getCostListByType = (data: GetICompareDto, type: string) => {
   switch (type) {
     case 'THC 비용':
-      return dummy?.result.thcCostList;
+      return data?.result.thcCostList;
     case 'CIC 비용':
-      return dummy?.result.handlingCostList;
+      return data?.result.handlingCostList;
     case 'CFS 비용':
-      return dummy?.result.cfsCostList;
+      return data?.result.cfsCostList;
     case '통관 수수료':
-      return dummy?.result.listStatusCostList;
+      return data?.result.listStatusCostList;
     case '실행 비용':
-      return dummy?.result.customsClearanceCostList;
+      return data?.result.customsClearanceCostList;
     case '핸들링 비용':
-      return dummy?.result.truckingCostList;
+      return data?.result.truckingCostList;
     default:
       return [];
   }
@@ -50,6 +50,16 @@ export const getCostListByType = (dummy: GetICompareDto, type: string) => {
 
 export const barColors = [COLORS.main, COLORS.point, COLORS.g3];
 
-export function formatQuoteListEl(item: any) {
-  return `${item.exportPort} → ${item.importPort} | ETD: ${formatDate(item.ETD)} (요청일: ${formatDate(item.requestDate)})`;
+export function formatQuoteListEl(item: {
+  rawQuotationId: string;
+  exportPort: string;
+  importPort: string;
+  ETD: number[];
+  requestDate: number[];
+}) {
+  return {
+    text: `${item.exportPort} → ${item.importPort} | ETD: ${formatDate(item.ETD)} (요청일: ${formatDate(item.requestDate)})`,
+    importPort: item.importPort, // 입국항 이름
+    exportPort: item.exportPort, // 출국항 이름
+  };
 }
