@@ -3,55 +3,56 @@
 import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
-import { useQuery } from '@tanstack/react-query';
-import { useRecoilValue } from 'recoil';
-import { userAtom } from '@/app/_recoil/userAtom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { Box } from '@/app/_components/dashboard/Box';
 import { BgType } from '@/app/_components/dashboard/Profile';
-import { SelectInput } from '@/app/_components/common/Input';
+import { SelectInput, CustomSelectInput } from '@/app/_components/common/Input';
 import Button from '@/app/_components/common/Button';
 import Layout from '@/app/_components/dashboard/Layout';
 import Graph from './Graph';
-
+import { formatDateRange, getPortIdByName } from '@/app/(route)/request/utill';
+import {
+  formatDate,
+  formatTransitTime,
+} from '@/app/(route)/reserve-list/utill';
+import { formatQuoteListEl } from '../../_util';
+import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 import {
   GetIPredictionDto,
   GetISummaryDto,
   GetIPredictionReasonDto,
   GetIRecommendationDto,
+  GetIUserRawQuotationDto,
   DashboardApiService,
 } from '@/app/_apis/dashboard';
 
-import { formatDateRange } from '@/app/(route)/request/utill';
-import {
-  formatDate,
-  formatTransitTime,
-} from '@/app/(route)/reserve-list/utill';
-
-//TODO
-import { 최근검색어_리스트 } from '../Overview/utils';
+import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
 
 export default function CompareFreightRates() {
   /*---- hooks ----*/
+  const queryClient = useQueryClient();
   /*---- state ----*/
-  const { accessToken } = useRecoilValue(userAtom);
-
-  //TODO
-  const [최근검색어, set최근검색어] = useState(
-    '인천항 → 상하이항 | ETD : 2024.06.21',
-  );
+  const tokens = getTokenFromLocalStorage();
+  //선택된 RawQuotationId
+  const [selectedRawQuotationId, setSelectedRawQuotationId] =
+    useState<string>('');
+  //선택된 RawQuotationId에 대해 포매팅된 텍스트, 입국항, 출국항
+  const [selectedIdFormatting, setSelectedIdFormatting] = useState<{
+    text: string;
+    importId: number;
+    exportId: number;
+  } | null>(null); // 객체 또는 null 값을 허용
+  //월별 검색어
   const [월별_검색_리스트, set월별_검색_리스트] = useState<
     { value: string; label: string }[]
-  >([
-    { value: '9월', label: '9월' },
-    { value: '10월', label: '10월' },
-    { value: '11월', label: '11월' },
-  ]);
+  >([]);
   const [selectedMonth, setSelectedMonth] = useState({
     month: '9월',
     status: '',
     reason: '',
   });
+  /*---- function ----*/
   function handleMonthChange() {}
 
   /*---- api call function ----*/
@@ -61,34 +62,49 @@ export default function CompareFreightRates() {
     isLoading: summaryLoading,
   } = useQuery<GetISummaryDto, Error>({
     queryKey: ['summary'],
-    queryFn: () => DashboardApiService.getSummary(accessToken!),
-    enabled: !!accessToken,
+    queryFn: () => DashboardApiService.getSummary(tokens?.accessToken),
+    enabled: !!tokens?.accessToken,
   });
-
   const {
     data: graphData,
     error: graphError,
     isLoading: graphLoading,
   } = useQuery<GetIPredictionDto, Error>({
     queryKey: ['graph'],
-    queryFn: () => DashboardApiService.getPrediction(accessToken!),
-    enabled: !!accessToken,
+    queryFn: () =>
+      DashboardApiService.getPrediction(
+        tokens?.accessToken,
+        selectedIdFormatting?.importId || 0,
+        selectedIdFormatting?.exportId || 0,
+      ),
+    enabled: !!tokens?.accessToken && !!selectedRawQuotationId,
   });
-
   const {
     data: recommendationData,
     error: recommendationError,
     isLoading: recommendationLoading,
   } = useQuery<GetIRecommendationDto, Error>({
     queryKey: ['recommendation'],
-    queryFn: () => DashboardApiService.getRecommendation(accessToken!),
-    enabled: !!accessToken,
+    queryFn: () =>
+      DashboardApiService.getRecommendation(
+        tokens?.accessToken,
+        selectedRawQuotationId,
+      ),
+    enabled: !!selectedRawQuotationId,
   });
-
   const {
-    data: transformedData,
-    error: predictionError,
-    isLoading: predictionLoading,
+    data: userRawQuotationData,
+    error: userRawQuotationError,
+    isLoading: userRawQuotationLoading,
+  } = useQuery<GetIUserRawQuotationDto, Error>({
+    queryKey: ['userRawQuotationData'],
+    queryFn: () => DashboardApiService.getUserRawQuotation(tokens?.accessToken),
+    enabled: !!tokens?.accessToken,
+  });
+  const {
+    data: reasonData,
+    error: reasonError,
+    isLoading: reasonLoading,
   } = useQuery<
     GetIPredictionReasonDto,
     Error,
@@ -97,51 +113,115 @@ export default function CompareFreightRates() {
       selectedMonth: { month: string; status: string; reason: string };
     }
   >({
-    queryKey: ['prediction'],
-    queryFn: () => DashboardApiService.getPredictionReason(accessToken!),
-    enabled: !!accessToken,
-    select: (data) => {
-      // 월별 검색어 리스트 생성
-      const monthOptions = data.result.predictionReasons.map((item) => {
-        const month = item.date[1]?.month || '';
-        return { value: `${month}월`, label: `${month}월` };
-      });
-
-      // 첫 번째 월별 데이터 기본 선택
-      let selectedMonth = {
-        month: '',
-        status: '',
-        reason: '',
-      };
-      if (monthOptions && monthOptions.length > 0) {
-        const firstMonth = monthOptions[0].value;
-        const firstPrediction = data.result.predictionReasons.find((item) =>
-          item.date.some((date) => `${date.month}월` === firstMonth),
-        );
-        selectedMonth = {
-          month: firstMonth || '',
-          status: firstPrediction?.status || '',
-          reason: firstPrediction?.reason || '',
-        };
-      }
-
-      return {
-        monthOptions,
-        selectedMonth,
-      };
-    },
+    queryKey: ['reason'],
+    queryFn: () => DashboardApiService.getPredictionReason(tokens?.accessToken),
+    enabled: !!tokens?.accessToken,
   });
+  const {
+    data: portData,
+    error: portError,
+    isLoading: portLoading,
+  } = useQuery<GetIPortDto, Error>({
+    queryKey: ['Port'],
+    queryFn: () => getPortsAll(tokens?.accessToken),
+    enabled: !!tokens?.accessToken,
+  });
+
+  /*---- useEffect----*/
+  useEffect(() => {
+    if (selectedRawQuotationId) {
+      queryClient.invalidateQueries({ queryKey: ['recommendation'] });
+      queryClient.invalidateQueries({ queryKey: ['cheapest'] });
+      queryClient.invalidateQueries({ queryKey: ['graph'] });
+      queryClient.invalidateQueries({ queryKey: ['reason'] });
+    }
+  }, [selectedRawQuotationId, queryClient]);
+
+  const RawQuotationList =
+    userRawQuotationData?.result?.rawQuotationInfoList?.map((item) => {
+      const formatted = formatQuoteListEl(item); // 포매팅된 결과를 가져옴
+      return {
+        value: formatted.text, // 텍스트를 문자열로 설정
+        label: formatted.text, // 동일한 텍스트를 라벨로 설정
+        id: item.rawQuotationId, // rawQuotationId를 ID로 사용
+      };
+    }) || [];
+
+  useEffect(() => {
+    if (
+      userRawQuotationData &&
+      userRawQuotationData.result.rawQuotationInfoList.length > 0
+    ) {
+      const firstItem = userRawQuotationData.result.rawQuotationInfoList[0];
+      const firstValue = formatQuoteListEl(firstItem);
+      setSelectedRawQuotationId(firstItem.rawQuotationId);
+      setSelectedIdFormatting({
+        text: firstValue.text,
+        importId:
+          getPortIdByName(portData as GetIPortDto, firstValue.importPort) ?? 0, // undefined일 경우 0으로 설정
+        exportId:
+          getPortIdByName(portData as GetIPortDto, firstValue.exportPort) ?? 0, // undefined일 경우 0으로 설정
+      });
+    }
+  }, [userRawQuotationData]);
+
+  useEffect(() => {
+    if (
+      userRawQuotationData &&
+      userRawQuotationData.result.rawQuotationInfoList.length > 0
+    ) {
+      const firstItem = userRawQuotationData.result.rawQuotationInfoList[0];
+      const firstValue = formatQuoteListEl(firstItem);
+      setSelectedRawQuotationId(firstItem.rawQuotationId);
+      setSelectedIdFormatting({
+        text: firstValue.text,
+        importId:
+          getPortIdByName(portData as GetIPortDto, firstValue.importPort) ?? 0, // undefined일 경우 0으로 설정
+        exportId:
+          getPortIdByName(portData as GetIPortDto, firstValue.exportPort) ?? 0, // undefined일 경우 0으로 설정
+      });
+    }
+  }, [userRawQuotationData]);
 
   /*---- jsx ----*/
   return (
     <Layout>
-      <SelectInput
-        label=""
-        name="운송사"
-        value={최근검색어}
-        onChange={(e) => {}}
-        options={최근검색어_리스트}
-      />
+      {selectedIdFormatting && (
+        <CustomSelectInput
+          label=""
+          name="운송사"
+          value={selectedIdFormatting?.text || ''} // 선택된 포맷팅된 텍스트를 표시
+          onChange={(value, id) => {
+            const selectedItem =
+              userRawQuotationData?.result.rawQuotationInfoList.find(
+                (item) => item.rawQuotationId === id,
+              );
+
+            if (selectedItem) {
+              const formatted = formatQuoteListEl(selectedItem); // 선택된 아이템을 포맷팅
+
+              setSelectedIdFormatting({
+                text: formatted.text,
+                importId:
+                  getPortIdByName(
+                    portData as GetIPortDto,
+                    formatted.importPort,
+                  ) ?? 0,
+                exportId:
+                  getPortIdByName(
+                    portData as GetIPortDto,
+                    formatted.exportPort,
+                  ) ?? 0,
+              });
+
+              setSelectedRawQuotationId(id || '');
+            }
+          }}
+          options={RawQuotationList}
+          placeholder="운송사를 선택하세요"
+        />
+      )}
+      {!selectedIdFormatting && <div>값을 불러오는 중...</div>}
       <FlexBox>
         <Box
           desc="입국항 주요 항만 운임지수"
