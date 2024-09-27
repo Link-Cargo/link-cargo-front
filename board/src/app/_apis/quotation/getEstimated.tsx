@@ -3,8 +3,8 @@ import { ResponseDto, getAsync } from '../common';
 export interface ResultData {
   estimatedQuotations: {
     carrier: string;
-    ETD: string;
-    ETA: string;
+    ETD: number[];
+    ETA: number[];
     forwardingName: string;
   }[];
   count: number;
