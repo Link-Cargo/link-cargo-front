@@ -20,16 +20,10 @@ export default function Page() {
   const router = useRouter();
   /*---- state ----*/
   const [slideIndex, setSlideIndex] = useState(0);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   /*---- function ----*/
-
   const handleSlideChange = useCallback((swiper: any) => {
     setSlideIndex(swiper.activeIndex);
   }, []);
-
-  /*---- useEffect ----*/
-
   /*---- jsx ----*/
   return (
     <Container>

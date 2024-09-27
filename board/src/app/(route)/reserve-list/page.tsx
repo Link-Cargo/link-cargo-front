@@ -6,29 +6,37 @@ import { COLORS } from '@/app/_constant/color';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useRecoilValue } from 'recoil';
-import { userAtom } from '@/app/_recoil/userAtom';
 
 import Button from '@/app/_components/common/Button';
 import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
 import OptionCard from '@/app/_components/common/OptionCard';
-
-import { GetISchedulesDto, QuotationApiService } from '@/app/_apis/quotation';
-
 import { processData } from './utill';
 import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 
-function ContentPage() {
-  /*---- hooks ----*/
-  const router = useRouter();
-  const searchParams = useSearchParams();
+import { GetISchedulesDto, QuotationApiService } from '@/app/_apis/quotation';
 
-  /*---- state ----*/
+function ContentPage() {
+  /*---- router ----*/
+  const router = useRouter();
+  /*---- auth ----*/
   const tokens = getTokenFromLocalStorage();
   const accessToken = tokens?.accessToken || '';
+  if (!accessToken) {
+    router.push('/login');
+  }
+  /*---- hooks ----*/
+  const searchParams = useSearchParams();
+  /*---- state ----*/
   const [selectedList, setSelectedList] = useState<number[]>([]);
-
+  const exportPortId = decodeURIComponent(
+    searchParams.get('exportPortId') || '',
+  );
+  const importPortId = decodeURIComponent(
+    searchParams.get('importPortId') || '',
+  );
+  const wishExportDate = searchParams.get('wishExportDate') || '';
+  const searchBoxText = `${exportPortId} → ${importPortId} | ${wishExportDate}`;
   /*---- function ----*/
   const handleSelect = (id: number) => {
     if (selectedList.includes(id)) {
@@ -42,15 +50,6 @@ function ContentPage() {
     }
   };
 
-  const exportPortId = decodeURIComponent(
-    searchParams.get('exportPortId') || '',
-  );
-  const importPortId = decodeURIComponent(
-    searchParams.get('importPortId') || '',
-  );
-  const wishExportDate = searchParams.get('wishExportDate') || '';
-  const searchBoxText = `${exportPortId} → ${importPortId} | ${wishExportDate}`;
-
   /*---- api call function ----*/
   const {
     data: scheduleData,
@@ -58,7 +57,7 @@ function ContentPage() {
     isLoading: scheduleLoading,
   } = useQuery<GetISchedulesDto, Error>({
     queryKey: ['schedule'],
-    queryFn: () => QuotationApiService.getSchedules(accessToken!),
+    queryFn: () => QuotationApiService.getSchedules(accessToken),
     enabled: !!accessToken,
   });
 

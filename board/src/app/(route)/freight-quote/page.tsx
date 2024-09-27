@@ -5,8 +5,6 @@ import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
-import { useRecoilValue } from 'recoil';
-import { userAtom } from '@/app/_recoil/userAtom';
 
 import Button from '@/app/_components/common/Button';
 import {
@@ -24,9 +22,9 @@ import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 export default function Page() {
   /*---- router ----*/
   const router = useRouter();
+  /*---- auth ----*/
   const tokens = getTokenFromLocalStorage();
   const accessToken = tokens?.accessToken || '';
-
   /*---- state ----*/
   const [formData, setFormData] = useState<CargosContent>({
     exportPortId: null,
@@ -132,7 +130,7 @@ export default function Page() {
     isLoading: importPortLoading,
   } = useQuery<GetIPortDto, Error>({
     queryKey: ['importPort'],
-    queryFn: () => getPorts({ type: PortType.IMPORT }, accessToken!),
+    queryFn: () => getPorts({ type: PortType.IMPORT }, accessToken),
     enabled: !!accessToken,
   });
   const {
@@ -141,7 +139,7 @@ export default function Page() {
     isLoading: exportPortLoading,
   } = useQuery<GetIPortDto, Error>({
     queryKey: ['exportPort'],
-    queryFn: () => getPorts({ type: PortType.EXPORT }, accessToken!),
+    queryFn: () => getPorts({ type: PortType.EXPORT }, accessToken),
     enabled: !!accessToken,
   });
 

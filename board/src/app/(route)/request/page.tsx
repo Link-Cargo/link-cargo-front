@@ -4,9 +4,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { userAtom } from '@/app/_recoil/userAtom';
 import { useMutation, useQueries, useQuery } from '@tanstack/react-query';
-import { useRecoilValue } from 'recoil';
 
 import Button from '@/app/_components/common/Button';
 import Text from '@/app/_components/common/Text';
@@ -31,8 +29,6 @@ import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 import {
   QuotationApiService,
   GetIEstimatedDto,
-  GetISchedulesDto,
-  GetIScheduleDto,
   postIQuotationDto,
   GetICargosContentDto,
   postIRawQuotationDto,
@@ -40,14 +36,18 @@ import {
 import { CargosContent } from '@/app/_apis/quotation/postCargos';
 
 function ContentPage() {
-  /*---- hooks ----*/
+  /*---- router ----*/
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { isShowing, toggle } = useModal();
-
-  /*---- state ----*/
+  /*---- auth ----*/
   const tokens = getTokenFromLocalStorage();
   const accessToken = tokens?.accessToken || '';
+  if (!accessToken) {
+    router.push('/login');
+  }
+  /*---- hooks ----*/
+  const searchParams = useSearchParams();
+  const { isShowing, toggle } = useModal();
+  /*---- state ----*/
   const [queryParams, setQueryParams] = useState<CargosContent>({
     exportPortId: '',
     importPortId: '',
@@ -179,7 +179,7 @@ function ContentPage() {
     queries: 리스트queryParams.map((sId) => ({
       queryKey: ['schedule', sId],
       queryFn: () =>
-        QuotationApiService.getScheduleId(Number(sId), accessToken!),
+        QuotationApiService.getScheduleId(Number(sId), accessToken),
       enabled: !!accessToken,
     })),
   });
@@ -191,7 +191,7 @@ function ContentPage() {
     isLoading: PortLoading,
   } = useQuery<GetIPortDto, Error>({
     queryKey: ['Port'],
-    queryFn: () => getPortsAll(accessToken!),
+    queryFn: () => getPortsAll(accessToken),
     enabled: !!accessToken,
   });
 

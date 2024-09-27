@@ -17,7 +17,6 @@ export default function Page() {
   /*---- hooks ----*/
   const router = useRouter();
   /*---- state ----*/
-  // const setUser = useSetRecoilState(userAtom);
   const [formData, setFormData] = useState<LoginContent>({
     email: '',
     password: '',

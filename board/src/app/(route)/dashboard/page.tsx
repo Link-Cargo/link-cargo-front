@@ -1,9 +1,8 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { userAtom } from '@/app/_recoil/userAtom';
-import { useRecoilValue } from 'recoil';
 import { useQuery } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 import Layout from '@/app/_components/common/Layout';
 import { List } from '@/app/_components/dashboard/List';
@@ -15,6 +14,8 @@ import {
   MyChatHistory,
   PaymentHistory,
 } from './(section)';
+import { getTokenFromLocalStorage } from '@/app/_utils/auth';
+
 import { GetIUserDto, OnboardApiService } from '@/app/_apis/onboard';
 
 interface dashboardListItem {
@@ -36,13 +37,18 @@ const dashboardListConfig: dashboardListItem = {
 };
 
 function Page() {
-  /*---- hooks ----*/
-  const user = useRecoilValue(userAtom);
-  const { accessToken } = useRecoilValue(userAtom);
+  /*---- router ----*/
+  const router = useRouter();
+  /*---- auth ----*/
+  const tokens = getTokenFromLocalStorage();
+  const accessToken = tokens?.accessToken || '';
+  if (!accessToken) {
+    router.push('/login');
+  }
+  /*---- state ----*/
   const [selectedId, setSelectedId] = useState<string>('overview');
   const { section: selectedSection, title: selectedTitle } =
     dashboardListConfig[selectedId];
-
   /*---- function ----*/
   const handleSectionChange = (id: string) => {
     setSelectedId(id);
@@ -62,8 +68,8 @@ function Page() {
     isLoading: UserLoading,
   } = useQuery<GetIUserDto, Error>({
     queryKey: ['User'],
-    queryFn: () => OnboardApiService.getUser(accessToken!),
-    enabled: !!accessToken,
+    queryFn: () => OnboardApiService.getUser(tokens?.accessToken),
+    enabled: !!tokens?.accessToken,
   });
 
   /*---- useEffect ----*/
