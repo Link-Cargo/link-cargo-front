@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { useRouter } from 'next/navigation';
@@ -21,13 +21,11 @@ export const Nav = ({ type = 'default' }: NavProps) => {
   /*---- auth ----*/
   const tokens = getTokenFromLocalStorage();
   const accessToken = tokens?.accessToken || '';
-  if (!accessToken) {
-    router.push('/login');
-  }
+
   /*---- hooks ----*/
   const queryClient = useQueryClient();
   /*---- state ----*/
-  const [isLoggedIn, setIsLoggedIn] = useState(!!accessToken);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   /*---- function ----*/
   const notiReadHandler = (_id?: number) => {
@@ -72,6 +70,15 @@ export const Nav = ({ type = 'default' }: NavProps) => {
       queryClient.invalidateQueries({ queryKey: ['noti'] });
     },
   });
+
+  useEffect(() => {
+    if (!accessToken) {
+      router.push('/login');
+    } else {
+      setIsLoggedIn(true);
+    }
+  }, []);
+
   /*---- jsx ----*/
   return (
     <Container type={type}>

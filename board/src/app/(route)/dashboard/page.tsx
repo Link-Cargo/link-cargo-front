@@ -3,20 +3,29 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 
 import Layout from '@/app/_components/common/Layout';
 import { List } from '@/app/_components/dashboard/List';
 import ProfileCard from '@/app/_components/dashboard/Profile';
-import {
-  CompareFreightRates,
-  CompareQuotes,
-  Overview,
-  MyChatHistory,
-  PaymentHistory,
-} from './(section)';
 import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 
 import { GetIUserDto, OnboardApiService } from '@/app/_apis/onboard';
+
+const Overview = dynamic(() => import('./(section)/Overview'), { ssr: false });
+const CompareQuotes = dynamic(() => import('./(section)/CompareQuotes'), {
+  ssr: false,
+});
+const CompareFreightRates = dynamic(
+  () => import('./(section)/CompareFreightRates'),
+  { ssr: false },
+);
+const MyChatHistory = dynamic(() => import('./(section)/MyChatHistory'), {
+  ssr: false,
+});
+const PaymentHistory = dynamic(() => import('./(section)/PaymentHistory'), {
+  ssr: false,
+});
 
 interface dashboardListItem {
   [id: string]: {

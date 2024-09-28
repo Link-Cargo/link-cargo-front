@@ -42,13 +42,13 @@ export default function RootLayout({
         />
         <title>링카고, 바다에서 시작하는 해외수출, 더 쉽고 편리하게</title>
       </head>
-      <RecoilRootWrapper>
-        <ReactQueryProviders>
-          <StyledComponentsRegistry>
-            <body>{children}</body>
-          </StyledComponentsRegistry>
-        </ReactQueryProviders>
-      </RecoilRootWrapper>
+      <body>
+        <RecoilRootWrapper>
+          <ReactQueryProviders>
+            <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
+          </ReactQueryProviders>
+        </RecoilRootWrapper>
+      </body>
     </html>
   );
 }
