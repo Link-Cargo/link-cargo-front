@@ -16,13 +16,13 @@ import { saveTokenToLocalStorage } from '@/app/_utils/auth';
 export default function Page() {
   /*---- hooks ----*/
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   /*---- state ----*/
   const [formData, setFormData] = useState<LoginContent>({
     email: '',
     password: '',
   });
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
   /*---- function ----*/
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -45,7 +45,7 @@ export default function Page() {
           response.result.refreshToken,
         );
 
-        const redirectUrl = searchParams.get('redirect');
+        // 클라이언트 환경에서만 URL 파라미터 확인 후 리다이렉트
         if (redirectUrl) {
           router.push(redirectUrl);
         } else {
@@ -59,6 +59,12 @@ export default function Page() {
       alert('로그인 실패 : 다시 시도해주세요');
     },
   });
+
+  /*---- useEffect ----*/
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    setRedirectUrl(searchParams.get('redirect'));
+  }, []);
 
   /*---- jsx ----*/
   return (
