@@ -467,20 +467,52 @@ const Table = styled.table`
 
   th {
     color: ${COLORS.g5};
+    position: sticky; /* 테이블 헤더 고정 */
+    top: 0;
+    z-index: 1;
   }
 
   td {
     color: ${COLORS.g3};
   }
 
+  thead,
+  tbody,
+  tr,
+  th,
+  td {
+    display: block; /* block으로 변환하여 tbody에 스크롤 적용 */
+  }
+
   tbody {
+    height: 140px; /* 스크롤 높이 설정 */
+    overflow-y: auto; /* 수직 스크롤 */
+    overflow-x: hidden; /* 수평 스크롤 숨김 */
+  }
+
+  /* 스크롤바 숨기기 */
+  tbody::-webkit-scrollbar {
+    display: none; /* 스크롤바 숨기기 */
+  }
+
+  tr {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  th,
+  td {
+    box-sizing: border-box;
+  }
+
+  tbody,
+  thead {
     tr {
       td:nth-child(1) {
         width: 50px;
         overflow: hidden; /* 내용이 넘칠 경우 숨김 */
         text-overflow: ellipsis; /* 말줄임표 적용 */
         white-space: nowrap; /* 텍스트를 한 줄로 */
-        display: inline-block;
       }
     }
   }
