@@ -209,7 +209,7 @@ export default function CompareQuotes() {
         spaceBetween={0}
         speed={1000}
         pagination={{ clickable: true }}
-        modules={[Mousewheel, Pagination, Autoplay]}
+        modules={[Mousewheel, Autoplay]}
         className="swiper-compare"
       >
         {compareData?.result.dashboardQuotationResponseList.map(
