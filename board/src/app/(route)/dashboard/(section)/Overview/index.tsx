@@ -271,7 +271,8 @@ export default function Overview() {
           <div style={{ flex: '1' }}>
             <Desc>
               {recommendationData?.result.dateDifference}개월 뒤 예약가능한
-              운송사 리스트
+              운송사 리스트 <br />
+              예측 계산 단위: %
               <hr />
             </Desc>
             <Table>
@@ -408,6 +409,7 @@ const Desc = styled.div`
   font-size: 16px;
   font-weight: 400;
 
+  line-height: 26px;
   hr {
     border: 0.5px solid ${COLORS.g1};
   }
@@ -485,7 +487,7 @@ const Table = styled.table`
   }
 
   tbody {
-    height: 140px; /* 스크롤 높이 설정 */
+    height: 100px; /* 스크롤 높이 설정 */
     overflow-y: auto; /* 수직 스크롤 */
     overflow-x: hidden; /* 수평 스크롤 숨김 */
   }
@@ -498,6 +500,7 @@ const Table = styled.table`
   tr {
     display: flex;
     justify-content: space-between;
+    margin-bottom: 3px;
   }
 
   th,
@@ -515,29 +518,6 @@ const Table = styled.table`
         white-space: nowrap; /* 텍스트를 한 줄로 */
       }
     }
-  }
-`;
-
-const ImgContainer = styled.div`
-  border-radius: 12px;
-  overflow: hidden;
-  position: relative;
-
-  img {
-    display: block;
-    width: 100%;
-    height: auto;
-  }
-
-  &:after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.2);
-    z-index: 1;
   }
 `;
 
