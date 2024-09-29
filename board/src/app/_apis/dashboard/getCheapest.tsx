@@ -3,6 +3,7 @@ import { ResponseDto, getAsync } from '../common';
 export interface ResultData {
   firmName: string;
   totalCost: number;
+  forwarderId?: number;
   forwarderName: string;
   forwarderEmail: string;
   forwarderTel: string;
