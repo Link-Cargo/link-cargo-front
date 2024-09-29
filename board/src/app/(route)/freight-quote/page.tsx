@@ -131,7 +131,7 @@ export default function Page() {
   } = useQuery<GetIPortDto, Error>({
     queryKey: ['importPort'],
     queryFn: () => getPorts({ type: PortType.IMPORT }, accessToken),
-    enabled: !!accessToken,
+    // enabled: !!accessToken,
   });
   const {
     data: exportPortData,
@@ -140,7 +140,7 @@ export default function Page() {
   } = useQuery<GetIPortDto, Error>({
     queryKey: ['exportPort'],
     queryFn: () => getPorts({ type: PortType.EXPORT }, accessToken),
-    enabled: !!accessToken,
+    // enabled: !!accessToken,
   });
 
   /*---- useEffect ----*/
