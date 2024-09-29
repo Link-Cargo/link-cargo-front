@@ -117,6 +117,7 @@ const DropdownMenu = styled.div`
 const DropdownItem = styled.div`
   padding: 12px 16px;
   font-size: 16px;
+  white-space: nowrap;
   line-height: 20px;
   color: black;
   cursor: pointer;

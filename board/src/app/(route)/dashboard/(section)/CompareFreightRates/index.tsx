@@ -28,6 +28,7 @@ import {
 } from '@/app/_apis/dashboard';
 
 import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
+import { 월별_리스트, 이유_리스트 } from './mock';
 
 export default function CompareFreightRates() {
   /*---- hooks ----*/
@@ -43,17 +44,13 @@ export default function CompareFreightRates() {
     importId: number;
     exportId: number;
   } | null>(null); // 객체 또는 null 값을 허용
-  //월별 검색어
-  const [월별_검색_리스트, set월별_검색_리스트] = useState<
-    { value: string; label: string }[]
-  >([]);
-  const [selectedMonth, setSelectedMonth] = useState({
-    month: '9월',
-    status: '',
-    reason: '',
-  });
+  //월별 검색어 초기 리스트 인덱스 선택
+  const [selectedMonth, setSelectedMonth] = useState(이유_리스트[0]);
   /*---- function ----*/
-  function handleMonthChange() {}
+  const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = 이유_리스트.find((item) => item.month === e.target.value);
+    if (selected) setSelectedMonth(selected);
+  };
 
   /*---- api call function ----*/
   const {
@@ -241,7 +238,7 @@ export default function CompareFreightRates() {
               name="월별"
               value={selectedMonth.month}
               onChange={handleMonthChange}
-              options={월별_검색_리스트}
+              options={월별_리스트}
             />
             <SubTitle>
               {selectedMonth.status === 'rising'
