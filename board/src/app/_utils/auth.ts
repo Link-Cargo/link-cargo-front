@@ -65,5 +65,5 @@ export const handleLogout = () => {
   localStorage.removeItem('tokens');
   console.log('로그아웃 성공');
   // 로그인 페이지로 리다이렉트
-  window.location.href = '/login';
+  // window.location.href = '/login';
 };

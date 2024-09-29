@@ -9,7 +9,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Noti } from '../Noti';
 
 import { NotiApiService, GetINotiDto } from '@/app/_apis/noti';
-import { getTokenFromLocalStorage } from '@/app/_utils/auth';
+import { getTokenFromLocalStorage, handleLogout } from '@/app/_utils/auth';
 
 interface NavProps {
   type?: 'default' | 'main';
@@ -73,7 +73,7 @@ export const Nav = ({ type = 'default' }: NavProps) => {
 
   useEffect(() => {
     if (!accessToken) {
-      router.push('/login');
+      // router.push('/login');
     } else {
       setIsLoggedIn(true);
     }
@@ -94,7 +94,14 @@ export const Nav = ({ type = 'default' }: NavProps) => {
           {isLoggedIn && <a href="/dashboard">나의 대시보드</a>}
           <a href="/freight-quote">운임 조회</a>
           {isLoggedIn ? (
-            <a href="/dashboard">로그아웃</a>
+            <span
+              onClick={() => {
+                setIsLoggedIn(false);
+                handleLogout();
+              }}
+            >
+              로그아웃
+            </span>
           ) : (
             <a href="/login">로그인</a>
           )}
@@ -153,7 +160,8 @@ const Links = styled.div<NavProps>`
   gap: 12px;
   align-items: center;
 
-  a {
+  a,
+  span {
     color: ${COLORS.main};
     font-size: 16px;
     font-weight: 600;
@@ -163,6 +171,8 @@ const Links = styled.div<NavProps>`
     border-radius: 100px;
     height: 44px;
     line-height: 44px;
+
+    cursor: pointer;
 
     background-color: ${({ type }) =>
       type === 'main' ? 'rgba(250, 250, 250, 0.4)' : 'transparent'};
@@ -184,7 +194,7 @@ const IconContainer = styled.div`
   position: relative;
 `;
 
-const Icon = styled.span`
+const Icon = styled.div`
   font-size: 35px;
   color: ${COLORS.main};
   line-height: 44px;
