@@ -9,6 +9,7 @@ interface TextInputProps {
   name: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onKeyPress?: (event: React.KeyboardEvent<HTMLInputElement>) => void; // onKeyPress 속성 추가
 }
 
 const TextInput = ({
@@ -18,6 +19,7 @@ const TextInput = ({
   name,
   value,
   onChange,
+  onKeyPress, // onKeyPress 추가
 }: TextInputProps) => {
   return (
     <Container>
@@ -28,6 +30,7 @@ const TextInput = ({
         name={name}
         value={value}
         onChange={onChange}
+        onKeyPress={onKeyPress} // onKeyPress 전달
       />
     </Container>
   );
