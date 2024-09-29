@@ -9,6 +9,8 @@ import Button from '@/app/_components/common/Button';
 import { CustomSelectInput } from '@/app/_components/common/Input';
 import useModal from '@/app/_hooks/useModal';
 import Modal from '@/app/_components/common/Modal';
+import ModalContent from '@/app/_components/common/ModalContent';
+import { Table as CustomTable } from '../CompareQuotes/Table';
 import Confirm from '@/app/_components/common/Confirm';
 import Layout from '@/app/_components/dashboard/Layout';
 import { getPortIdByName } from '@/app/(route)/request/utill';
@@ -29,6 +31,7 @@ import {
   GetIUserRawQuotationDto,
 } from '@/app/_apis/dashboard';
 import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
+import { QuotationInfoResponse } from '@/app/_apis/dashboard/getCompare';
 
 export default function Overview() {
   /*---- auth ----*/
@@ -234,12 +237,24 @@ export default function Overview() {
               </li>
             </ul>
           </StyledTable>
-          <ImgContainer>
-            <img src={'assets/report.png'} />
-            <Icon className="material-icons" onClick={toggleExpandModal}>
-              {'fullscreen'}
-            </Icon>
-          </ImgContainer>
+
+          <TableContainer style={{ position: 'relative' }}>
+            <CustomTable
+              data={
+                cheapestData?.result
+                  ?.quotationInfoResponse as QuotationInfoResponse
+              }
+              size="tiny"
+            ></CustomTable>
+            <ExpandIcon
+              className="material-icons"
+              onClick={() => {
+                toggleExpandModal();
+              }}
+            >
+              fullscreen
+            </ExpandIcon>
+          </TableContainer>
         </Box>
         <Box desc="더 저렴한 가격 추천" bgType={BgType.BRIGHT} width="70%">
           <div>
@@ -331,20 +346,23 @@ export default function Overview() {
       <Modal
         isShowing={isExpandShowing}
         content={
-          <Confirm
+          <ModalContent
             onLeft={{
-              onClick: toggleExpandModal,
+              onClick: () => {
+                console.log(cheapestData?.result?.quotationInfoResponse);
+                toggleExpandModal();
+              },
               text: '닫기',
             }}
-            onRight={{
-              onClick: exportImg,
-              text: '다운로드',
-            }}
           >
-            <ImgC>
-              <img src="/assets/report.png" />
-            </ImgC>
-          </Confirm>
+            <CustomTable
+              data={
+                cheapestData?.result
+                  ?.quotationInfoResponse as QuotationInfoResponse
+              }
+              size="large"
+            />
+          </ModalContent>
         }
       />
     </Layout>
@@ -507,3 +525,15 @@ const ImgC = styled.div`
 const ImgD = styled.div`
   width: 300px;
 `;
+
+const ExpandIcon = styled.span`
+  font-size: 50px;
+  color: ${COLORS.w};
+  cursor: pointer;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 10;
+`;
+
+const TableContainer = styled.div``;
