@@ -13,8 +13,10 @@ import Layout from '@/app/_components/common/Layout';
 import OptionCard from '@/app/_components/common/OptionCard';
 import { processData } from './utill';
 import { getTokenFromLocalStorage } from '@/app/_utils/auth';
-
+import Confirm from '@/app/_components/common/Confirm';
 import { GetISchedulesDto, QuotationApiService } from '@/app/_apis/quotation';
+import useModal from '@/app/_hooks/useModal';
+import Modal from '@/app/_components/common/Modal';
 
 function ContentPage() {
   /*---- router ----*/
@@ -22,11 +24,9 @@ function ContentPage() {
   /*---- auth ----*/
   const tokens = getTokenFromLocalStorage();
   const accessToken = tokens?.accessToken || '';
-  if (!accessToken) {
-    router.push('/login');
-  }
   /*---- hooks ----*/
   const searchParams = useSearchParams();
+  const { isShowing, toggle } = useModal();
   /*---- state ----*/
   const [selectedList, setSelectedList] = useState<number[]>([]);
   const exportPortId = decodeURIComponent(
@@ -50,6 +50,37 @@ function ContentPage() {
     }
   };
 
+  function handleNext() {
+    const params = new URLSearchParams(searchParams);
+    params.set('selectedList', JSON.stringify(selectedList));
+    if (accessToken) {
+      router.push(`/request?${params.toString()}`);
+    } else {
+      toggle();
+    }
+  }
+
+  function goLogin() {
+    const params = new URLSearchParams(searchParams);
+    params.set('selectedList', JSON.stringify(selectedList));
+    const reserveListPath = `/reserve-list?${params.toString()}`;
+    router.push(`/login?redirect=${encodeURIComponent(reserveListPath)}`);
+  }
+
+  /*---- useEffect ----*/
+  useEffect(() => {
+    // URL 파라미터에서 selectedList 값을 가져와서 상태에 반영
+    const selectedListParam = searchParams.get('selectedList');
+    if (selectedListParam) {
+      try {
+        // JSON 파싱하여 selectedList에 설정
+        const parsedList = JSON.parse(selectedListParam) as number[];
+        setSelectedList(parsedList);
+      } catch (error) {
+        console.error('selectedList 파싱 오류:', error);
+      }
+    }
+  }, [searchParams]);
   /*---- api call function ----*/
   const {
     data: scheduleData,
@@ -58,7 +89,7 @@ function ContentPage() {
   } = useQuery<GetISchedulesDto, Error>({
     queryKey: ['schedule'],
     queryFn: () => QuotationApiService.getSchedules(accessToken),
-    enabled: !!accessToken,
+    // enabled: !!accessToken,
   });
 
   /*---- jsx ----*/
@@ -116,14 +147,29 @@ function ContentPage() {
           <Button
             text="포워딩 업체 선택 완료"
             type="dark"
-            onClick={() => {
-              const params = new URLSearchParams(searchParams);
-              params.set('selectedList', JSON.stringify(selectedList));
-              router.push(`/request?${params.toString()}`);
-            }}
+            onClick={handleNext}
           />
         </ButtonSection>
       </Container>
+
+      <Modal
+        isShowing={isShowing}
+        content={
+          <Confirm
+            title="로그인이 필요한 서비스입니다."
+            desc={`로그인 후 즉시 포워더로부터 실제 견적서를 받고 비교해보세요.
+            합리적인 선택을 할 수 있도록 링카고가 도와드려요. `}
+            onLeft={{
+              onClick: toggle,
+              text: '닫기',
+            }}
+            onRight={{
+              onClick: goLogin,
+              text: '로그인 바로가기',
+            }}
+          ></Confirm>
+        }
+      />
     </Layout>
   );
 }

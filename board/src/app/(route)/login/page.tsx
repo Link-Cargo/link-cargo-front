@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 
 import Button from '@/app/_components/common/Button';
@@ -16,6 +16,8 @@ import { saveTokenToLocalStorage } from '@/app/_utils/auth';
 export default function Page() {
   /*---- hooks ----*/
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   /*---- state ----*/
   const [formData, setFormData] = useState<LoginContent>({
     email: '',
@@ -42,7 +44,13 @@ export default function Page() {
           response.result.accessToken,
           response.result.refreshToken,
         );
-        router.push('/dashboard');
+
+        const redirectUrl = searchParams.get('redirect');
+        if (redirectUrl) {
+          router.push(redirectUrl);
+        } else {
+          router.push('/dashboard');
+        }
       } else {
         console.error(response.message);
       }

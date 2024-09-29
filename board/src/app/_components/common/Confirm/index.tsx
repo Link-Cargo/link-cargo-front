@@ -49,7 +49,6 @@ const Wrap = styled.div`
 const OptionContainer = styled.div`
   display: flex;
   gap: 20px;
-  padding: 50px 0px 0px 0px;
 `;
 
 const baseStyle = `
@@ -93,6 +92,7 @@ const Title = styled.div`
 
 const Desc = styled.div`
   font-size: 20px;
+  line-height: 30px;
   font-weight: 400;
   color: ${COLORS.g4};
   white-space: pre-wrap;
