@@ -74,6 +74,8 @@ const CheckboxContainer = styled.div<{ isSelected: boolean }>`
   text-align: center;
   justify-content: center;
 
+  white-space: pre;
+
   p {
     color: ${COLORS.g2};
     font-weight: 500;
