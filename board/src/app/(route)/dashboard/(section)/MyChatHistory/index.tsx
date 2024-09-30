@@ -578,6 +578,10 @@ const FileBox = styled.div`
     flex-direction: column;
   }
 
+  > div:nth-child(2) {
+    flex: 1;
+  }
+
   h3 {
     background-color: ${COLORS.g0};
     padding: 20px 0px;
