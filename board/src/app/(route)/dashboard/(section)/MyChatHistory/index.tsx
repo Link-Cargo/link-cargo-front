@@ -10,6 +10,7 @@ import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 import { useQuery } from '@tanstack/react-query';
 
 import { GetIUserDto, OnboardApiService } from '@/app/_apis/onboard';
+import { check } from './utils';
 
 export default function MyChatHistory() {
   /*---- auth ----*/
@@ -35,6 +36,8 @@ export default function MyChatHistory() {
   const [요청, set요청] = useState(false);
   //로그인 된 사용자 id
   const [userId, setUserId] = useState<number>();
+  //수출전체크 안내 박스 열렸는지
+  const [isOpen, setIsOpen] = useState(false);
 
   /*---- api call function ----*/
   const { data: UserData } = useQuery<GetIUserDto, Error>({
@@ -284,17 +287,49 @@ export default function MyChatHistory() {
           </InputContainer>
         </ContentBox>
         <FileBox>
-          <h3>파일 {chatFiles.fileCount}개</h3>
-          {chatFiles.files && chatFiles.files.length > 0 ? (
-            chatFiles.files.map((el: any) => (
-              <FileEl key={el.name}>
-                <h6>{el.name}</h6>
-                <p>{formatDate(el.createdAt)}</p>
-              </FileEl>
-            ))
-          ) : (
-            <p></p>
-          )}
+          <div>
+            <div>
+              <CheckTop>
+                <h4>수출전 체크</h4>
+                <div>
+                  <Arrow isOpen={isOpen} onClick={() => setIsOpen(!isOpen)} />
+                </div>
+              </CheckTop>
+
+              {!isOpen ? (
+                <h5>수출전 점검 포인트</h5>
+              ) : (
+                <h5>
+                  수출 전 고려해야 하는 사항들이에요. 잘 모르는 부분이 있다면
+                  포워더에게 요청해보세요.
+                </h5>
+              )}
+            </div>
+            {isOpen && (
+              <CheckListBox>
+                {check.map((el, index) => (
+                  <div key={index}>
+                    <h6>{el.title}</h6>
+                    <p>{el.desc}</p>
+                  </div>
+                ))}
+              </CheckListBox>
+            )}
+          </div>
+
+          <div>
+            <h3>파일 {chatFiles.fileCount}개</h3>
+            {chatFiles.files && chatFiles.files.length > 0 ? (
+              chatFiles.files.map((el: any) => (
+                <FileEl key={el.name}>
+                  <h6>{el.name}</h6>
+                  <p>{formatDate(el.createdAt)}</p>
+                </FileEl>
+              ))
+            ) : (
+              <p></p>
+            )}
+          </div>
         </FileBox>
       </FlexBox>
     </Layout>
@@ -314,6 +349,19 @@ const FlexBox = styled.div`
   gap: 15px;
 
   height: 700px;
+`;
+
+const CheckListBox = styled.div`
+  display: flex;
+  gap: 24px;
+  flex-direction: column;
+`;
+
+const CheckTop = styled.div`
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  color: ${COLORS.main};
 `;
 
 const UtilBox = styled.div`
@@ -386,7 +434,7 @@ const ChatSummary = styled.div`
 `;
 
 const ContentBox = styled.div`
-  flex: 5;
+  flex: 4;
   background-color: ${COLORS.w};
   border-radius: 12px;
   padding: 20px;
@@ -508,12 +556,27 @@ const SubmitButton = styled.button`
 `;
 
 const FileBox = styled.div`
-  flex: 1;
-  font-size: 20px;
-  background-color: ${COLORS.bg};
-  border: 1px solid ${COLORS.g1};
-  border-radius: 12px;
-  padding: 20px;
+  flex: 2;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  overflow: scroll;
+
+  > div {
+    font-size: 20px;
+    background-color: ${COLORS.bg};
+    border: 1px solid ${COLORS.g1};
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  > div:nth-child(1) {
+    gap: 30px;
+    display: flex;
+    flex-direction: column;
+  }
 
   h3 {
     background-color: ${COLORS.g0};
@@ -523,9 +586,38 @@ const FileBox = styled.div`
     color: ${COLORS.g4};
     border-radius: 12px;
   }
-
   span {
     color: ${COLORS.bk};
+  }
+
+  h4 {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 20px;
+    color: ${COLORS.main};
+    padding-bottom: 8px;
+  }
+
+  h5 {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 16px;
+    color: ${COLORS.main};
+  }
+
+  h6 {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 16px;
+    color: rgba(130, 130, 130, 1);
+    padding-bottom: 5px;
+  }
+
+  p {
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 14px;
+    color: rgba(130, 130, 130, 1);
   }
 `;
 
@@ -543,4 +635,13 @@ const FileEl = styled.div`
   p {
     font-size: 14px;
   }
+`;
+
+const Arrow = styled.div<{ isOpen: boolean }>`
+  border: solid black;
+  border-width: 0 2px 2px 0;
+  display: inline-block;
+  padding: 5px;
+  transform: ${({ isOpen }) => (isOpen ? 'rotate(-135deg)' : 'rotate(45deg)')};
+  transition: transform 0.3s ease;
 `;

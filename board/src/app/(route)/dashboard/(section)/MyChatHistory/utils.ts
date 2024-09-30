@@ -1,149 +1,30 @@
-export const fileData = [
+export const check = [
   {
-    title: '문서',
-    cnt: 20,
+    title: '서류 제출 포맷과 요구사항 확인',
+    desc: ' 항구와 포워더마다 서류 제출 형식이 다를 수 있으므로, 포워더와 협의해 올바른 형식으로 제출하는지 확인하세요.',
   },
   {
-    title: '사진',
-    cnt: 18,
-  },
-];
-
-export interface ChatProps {
-  id: number;
-  userInfo: {
-    name: string;
-    company: string;
-  };
-  chatInfo: {
-    sender: 'me' | 'other';
-    content: string;
-    date: string;
-  }[];
-  requestInfo: string;
-  noti: number;
-  status: boolean;
-}
-
-export const chatData: ChatProps[] = [
-  {
-    id: 0,
-    userInfo: {
-      name: '김동현',
-      company: 'KMTC | 00기업 대리',
-    },
-    chatInfo: [
-      {
-        sender: 'me',
-        content:
-          '김동현 대리님, 안녕하세요. 인천항에서 상하이항으로의 화물 운송 견적을 받고 싶습니다. 예상 운송비와 소요 시간을 알려주세요.',
-        date: '오전 10:00',
-      },
-      {
-        sender: 'other',
-        content:
-          '안녕하세요. 요청하신 인천항 → 상하이항의 운송비는 약 5000달러이며, 소요 시간은 약 10일입니다. 추가 문의사항이 있으시면 말씀해 주세요.',
-        date: '오전 11:26',
-      },
-    ],
-    requestInfo: '인천항 → 상하이항 | ETD: 24.06.24 - ETA: 24.07.01',
-    noti: 1,
-    status: true,
+    title: '세관 규정 및 절차 숙지',
+    desc: '목적지 국가의 세관 규정이 변동될 수 있으니 최신 정보를 확인하고, 추가 서류 요구 시 지연 없이 준비하세요.',
   },
   {
-    id: 1,
-    userInfo: {
-      name: '김현우',
-      company: 'KMTC | 00기업 대리',
-    },
-    chatInfo: [
-      {
-        sender: 'me',
-        content:
-          '김현우 대리님, 안녕하세요. 제시된 운송 일정에 대해 문의 드립니다. 현재 화물이 고온에 민감한데, 이를 고려한 별도의 보온 조치가 가능한지 알려주세요.',
-        date: '오전 09:22',
-      },
-      {
-        sender: 'other',
-        content:
-          '안녕하세요. 보온 조치가 가능하며, 추가 비용이 발생합니다. 정확한 비용과 조치 사항에 대한 세부 사항은 별도로 안내드리겠습니다.',
-        date: '오전 09:26',
-      },
-    ],
-    requestInfo: '인천항 → 상하이항 | ETD: 24.06.24 - ETA: 24.07.01',
-    noti: 1,
-    status: true,
+    title: '항구의 혼잡도와 사전 예약 확인',
+    desc: '항구의 혼잡 상황에 따라 화물 적재가 지연될 수 있어요. 특히 성수기나 특정 항구의 경우 예약이 조기 마감될 수 있으므로, 사전에 예약을 확인해요.',
   },
   {
-    id: 2,
-    userInfo: {
-      name: '전하린',
-      company: 'KMTC | 00기업 대리',
-    },
-    chatInfo: [
-      {
-        sender: 'me',
-        content:
-          '전하린 대리님, 안녕하세요. 항공 운송과 해상 운송의 비용 차이를 알고 싶습니다. 두 방법의 차이를 비교해 주세요.',
-        date: '오전 10:30',
-      },
-      {
-        sender: 'other',
-        content:
-          '안녕하세요. 항공 운송은 해상 운송에 비해 빠르지만 비용이 약 3배 비쌉니다. 상세 견적은 첨부된 문서에서 확인해 주세요.',
-        date: '오전 11:26',
-      },
-    ],
-    requestInfo: '인천항 → 상하이항 | ETD: 24.06.24 - ETA: 24.07.01',
-    noti: 1,
-    status: false,
+    title: '화물의 라벨링과 식별 표시',
+    desc: 'LCL 운송에서는 여러 화물이 함께 실리기 때문에 혼선을 방지하려면, 화물에 명확한 라벨링과 식별 표시를 해두어야 해요.',
   },
   {
-    id: 3,
-    userInfo: {
-      name: '이승명',
-      company: 'KMTC | 00기업 대리',
-    },
-    chatInfo: [
-      {
-        sender: 'me',
-        content:
-          '이승명 대리님, 안녕하세요. 제 화물의 포장 상태가 좋지 않아 걱정입니다. 포장 상태를 점검해 주시고, 추가 포장 비용이 드는지 알려주세요.',
-        date: '오전 10:26',
-      },
-      {
-        sender: 'other',
-        content:
-          '안녕하세요. 포장 상태를 점검한 결과, 추가 포장이 필요합니다. 포장 비용과 세부 사항을 별도로 안내드리겠습니다.',
-        date: '오후 05:23',
-      },
-    ],
-    requestInfo: '인천항 → 상하이항 | ETD: 24.06.24 - ETA: 24.07.01',
-    noti: 1,
-    status: false,
+    title: '운송 트럭의 예약 및 교통 상황 체크',
+    desc: '화물을 항구로 보내는 트럭의 예약을 미리 하고, 교통 상황도 사전에 체크하세요. 교통 체증이나 트럭 예약의 지연이 발생할 수 있어요.',
   },
   {
-    id: 4,
-    userInfo: {
-      name: '권시경',
-      company: 'KMTC | 00기업 대리',
-    },
-    chatInfo: [
-      {
-        sender: 'me',
-        content:
-          '권시경 대리님, 안녕하세요. 화물의 특수 요구사항이 있는 경우, 어떻게 처리해야 하는지에 대해 안내 부탁드립니다.',
-        date: '오전 11:26',
-      },
-      {
-        sender: 'other',
-        content:
-          '안녕하세요. 특수 요구사항은 추가 비용이 발생할 수 있으며, 요구사항에 따라 처리 방안을 논의해야 합니다. 자세한 사항은 상담 후 안내드리겠습니다.',
-        date: '오전 11:26',
-      },
-    ],
-    requestInfo: '인천항 → 상하이항 | ETD: 24.06.24 - ETA: 24.07.01',
-    noti: 1,
-    status: true,
+    title: '서류의 정확성과 일관성 확인',
+    desc: '서류의 정확성과 일관성을 확인해 오류를 방지하고, 인보이스 등 관련 서류가 일치하는지 철저한 검토가 필요해요.',
+  },
+  {
+    title: '화물의 크기와 무게 제한 확인',
+    desc: '화물 적재 마감일 전에, 포워더와 함께 화물의 크기와 무게가 항구의 제한을 초과하지 않는지 확인하세요. 초과 시 추가 비용이 발생하거나 화물이 거부될 수 있습니다.',
   },
 ];
