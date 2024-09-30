@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 
 import { Notification } from '@/app/_apis/noti/getNoti';
+import { AD_NOTI } from './util';
 
 interface notiProps {
   notifications?: Notification[];
@@ -13,7 +14,12 @@ interface notiProps {
 }
 
 export const Noti = (props: notiProps) => {
-  const notifications = props.notifications;
+  const [formatNoti, setFormatNoti] = useState<Notification[]>([]);
+  const notifications = props.notifications || [];
+  useEffect(() => {
+    setFormatNoti([AD_NOTI, ...notifications]);
+  }, [notifications]);
+
   function notiReadHandler(id?: number) {
     props.notiReadHandler(id);
   }
@@ -25,80 +31,54 @@ export const Noti = (props: notiProps) => {
         <span onClick={() => props.notiDeleteHandler()}>모두 삭제</span>
       </DropdownHeader>
       <NotificationList>
-        {notifications?.map((item, index) => (
+        {formatNoti.map((item, index) => (
           <NotificationItem
             key={index}
-            type="noti"
+            type={item.type === 'ADMIN' ? 'ad' : 'noti'}
             isRead={item.isRead}
             onClick={() => notiReadHandler(item.id)}
           >
             <div>
-              <h6>{item.date || '2023년 9월 20일 | 오전 9시 20분'} </h6>
+              <h6>{item.createdAt} </h6>
               <h3>{item.title}</h3>
             </div>
             <h4>{item.content}</h4>
+            {item.type === 'ADMIN' && item.add && (
+              <>
+                <p>{item.add[0].content1}</p>
+                <ul>
+                  <li>
+                    {item.add[0].content2}
+                    <span>{item.add[0].content2_1}</span>
+                  </li>
+                  <li>
+                    {item.add[0].content3}
+                    <span>{item.add[0].content3_1}</span>
+                  </li>
+                </ul>
+                <div>
+                  {item.add[0].content4.map((line, idx) => (
+                    <p key={idx}>{line}</p>
+                  ))}
+                </div>
+              </>
+            )}
+            <ButtonContainer>
+              <CustomButton
+                href={item.buttonUrl}
+                onClick={(e) => {
+                  notiReadHandler(item.id);
+                }}
+              >
+                {item.buttonTitle}
+              </CustomButton>
+            </ButtonContainer>
           </NotificationItem>
         ))}
       </NotificationList>
     </NotificationDropdown>
   );
 };
-
-// export const Noti = ({ notifications, ...rest }: GetINotiDto) => {
-//   return (
-//     <NotificationDropdown>
-//       <DropdownHeader>
-//         <span>모두 확인</span>
-//         <span>모두 삭제</span>
-//       </DropdownHeader>
-//       <NotificationList>
-//         {notifications?.map((item, index) => (
-//           <NotificationItem key={index} type="noti">
-//             <div>
-//               <h6>{item.date}</h6>
-//               <h3>{item.title}</h3>
-//             </div>
-//             <h4>{item.content}</h4>
-//             {/* {item.type === 'ad' && item.add && (
-//               <>
-//                 <p>{item.add.content1}</p>
-//                 <ul>
-//                   <li>
-//                     {item.add.content2}
-//                     <span>{item.add.content2_1}</span>
-//                   </li>
-//                   <li>
-//                     {item.add.content3}
-//                     <span>{item.add.content3_1}</span>
-//                   </li>
-//                 </ul>
-//                 <div>
-//                   {item.add.content4.map((el: string) => (
-//                     <p key={el}>{el}</p>
-//                   ))}
-//                 </div>
-//                 <FlexContainer>
-//                   <Button
-//                     text="화물정보 입력하러 가기"
-//                     flexValue={1}
-//                     type="dark"
-//                     onClick={() => {}}
-//                   />
-//                   <Button
-//                     text="담당자 문의 바로가기"
-//                     flexValue={1}
-//                     type="dark"
-//                     onClick={() => {}}
-//                   />
-//                 </FlexContainer>
-//               </>
-//             )} */}
-//           </NotificationItem>
-//         ))}
-//       </NotificationList>
-//     </NotificationDropdown>
-//   );
-// };
 
 const NotificationDropdown = styled.div`
   position: absolute;
@@ -205,20 +185,33 @@ const NotificationItem = styled.div<{ type: 'noti' | 'ad'; isRead: boolean }>`
   }
 
   ul {
-    padding: 15px;
+    padding: 0px 15px;
     background-color: ${COLORS.w};
     border-radius: 16px;
     margin: 0;
+    z-index: 1;
   }
 
   li {
     list-style: none;
-    line-height: 20px;
+    line-height: 15px;
   }
 `;
 
-const FlexContainer = styled.div`
+const ButtonContainer = styled.div`
   display: flex;
-  width: 100%;
-  gap: 10px;
+  flex-direction: row-reverse;
 `;
+const CustomButton = styled.a`
+  padding: 0px 16px !important;
+  gap: 10px !important;
+  border-radius: 52px !important;
+  color: #fff !important;
+  background-color: ${COLORS.main}!important;
+  line-height: 44px !important;
+  width: 146px !important;
+  text-align: center !important;
+  font-weight: 600 !important;
+`;
+
+export default Noti;

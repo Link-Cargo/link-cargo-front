@@ -1,44 +1,17 @@
-export interface NotificationItemProps {
-  type: 'noti' | 'ad';
-  date: string;
-  title: string;
-  desc: string;
-  add?: {
-    content1: string;
-    content2: string;
-    content2_1: string;
-    content3: string;
-    content3_1: string;
-    content4: string[];
-  };
-}
+import { Notification } from '@/app/_apis/noti/getNoti';
 
-export const notiData: NotificationItemProps[] = [
-  {
-    type: 'ad',
-    date: '오전 09:56',
-    title: 'Link cargo',
-    desc: '(광고) 링카고 화주님! 올해 수출계획은 어떻게 되시나요?',
-  },
-  {
-    type: 'noti',
-    date: '오전 09:56',
-    title: '견적서 도착',
-    desc: '금영글로벌(주) 포워딩 업체',
-  },
-  {
-    type: 'noti',
-    date: '오전 09:56',
-    title: '메시지 도착',
-    desc: '주식회사 A로지스 포워딩 업체',
-  },
-
-  {
-    type: 'ad',
-    date: '오전 09:56',
-    title: 'Link cargo',
-    desc: '(광고) 링카고 화주님! 올해 수출계획은 어떻게 되시나요?',
-    add: {
+export const AD_NOTI: Notification = {
+  id: 100,
+  userId: 0,
+  type: 'ADMIN',
+  title: 'Link cargo',
+  content: '(광고) 링카고 화주님! 올해 수출계획은 어떻게 되시나요?',
+  buttonTitle: '화물정보 입력하러 가기',
+  buttonUrl: 'http://www.link-cargo.com/freight-quote',
+  createdAt: '오전 09:56',
+  isRead: false,
+  add: [
+    {
       content1:
         '작년 8월에 베트남으로 화장품을 수출하셨네요! 올해 3분기 최저 운임지수를 확인해보세요.',
       content2: '베트남 북부지역 주요항만 3분기 최저 운임 시기 예상 시기',
@@ -53,23 +26,5 @@ export const notiData: NotificationItemProps[] = [
         '담당자 이메일: akjfalfj@guem.ac.kr',
       ],
     },
-  },
-  {
-    type: 'noti',
-    date: '오전 09:56',
-    title: '메시지 도착',
-    desc: '주식회사 A로지스 포워딩 업체',
-  },
-  {
-    type: 'noti',
-    date: '오전 09:56',
-    title: '견적서 도착',
-    desc: '금영글로벌(주) 포워딩 업체',
-  },
-  {
-    type: 'noti',
-    date: '오전 09:56',
-    title: '메시지 도착',
-    desc: '주식회사 A로지스 포워딩 업체',
-  },
-];
+  ],
+};
