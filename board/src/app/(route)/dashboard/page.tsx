@@ -42,7 +42,6 @@ const dashboardListConfig: dashboardListItem = {
     section: <CompareFreightRates />,
   },
   chat_history: { title: '나의 대화 이력', section: <MyChatHistory /> },
-  payment_history: { title: '결제 내역', section: <PaymentHistory /> },
 };
 
 function Page() {
