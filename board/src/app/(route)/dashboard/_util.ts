@@ -58,7 +58,7 @@ export function formatQuoteListEl(item: {
   requestDate: number[];
 }) {
   return {
-    text: `${item.exportPort} → ${item.importPort} | ETD: ${formatDate(item.ETD)} (요청일: ${formatDate(item.requestDate)})`,
+    text: `${item.exportPort} → ${item.importPort} | ETD: ${formatDate(item.ETD)} | 요청일: ${formatDate(item.requestDate)}`,
     importPort: item.importPort, // 입국항 이름
     exportPort: item.exportPort, // 출국항 이름
   };
