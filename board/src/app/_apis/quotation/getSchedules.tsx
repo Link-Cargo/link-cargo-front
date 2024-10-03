@@ -50,11 +50,11 @@ export type GetIScheduleDto = ResponseDto<ScheduleId>;
 /*
 모든 선박 스케쥴 리스트 조회
 */
-export const getSchedules = async (at: string) => {
-  const url = `/schedules?page=0&size=10`;
+export const getSchedules = async () => {
+  const url = `/schedules/list?page=0&size=10`;
   const response = await getAsync<GetISchedulesDto, undefined>(
     url,
-    at,
+    undefined,
     undefined,
     undefined,
   );

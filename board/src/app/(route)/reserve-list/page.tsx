@@ -88,8 +88,7 @@ function ContentPage() {
     isLoading: scheduleLoading,
   } = useQuery<GetISchedulesDto, Error>({
     queryKey: ['schedule'],
-    queryFn: () => QuotationApiService.getSchedules(accessToken),
-    // enabled: !!accessToken,
+    queryFn: () => QuotationApiService.getSchedules(),
   });
 
   /*---- jsx ----*/
