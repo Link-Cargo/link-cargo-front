@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 
 export interface ModalContentProps {
+  title?: string;
+  desc?: string;
   /** 팝업 컴포넌트에서 자식 노드로 들어갈 컴포넌트  */
   children?: ReactNode;
   /** 버튼 이벤트 핸들러   */
@@ -15,8 +17,14 @@ export interface ModalContentProps {
 /**
  * 단일 버튼 팝업 컴포넌트
  */
-const ModalContent = ({ children, onLeft }: ModalContentProps) => (
+const ModalContent = ({ title, desc, children, onLeft }: ModalContentProps) => (
   <Wrap>
+    {title && desc ? (
+      <>
+        <Title>{title}</Title>
+        <Desc>{desc}</Desc>
+      </>
+    ) : null}
     <Scroll>{children}</Scroll>
     <OptionContainer>
       <OptionLeft onClick={onLeft?.onClick}>{onLeft?.text}</OptionLeft>
@@ -73,4 +81,21 @@ const OptionLeft = styled.div`
   color: ${COLORS.g3};
   background: ${COLORS.w};
   width: 152px;
+`;
+
+const Title = styled.div`
+  font-size: 36px;
+  font-weight: 700;
+  color: ${COLORS.bk};
+  white-space: pre-wrap;
+  text-align: center;
+`;
+
+const Desc = styled.div`
+  font-size: 20px;
+  line-height: 30px;
+  font-weight: 400;
+  color: ${COLORS.g4};
+  white-space: pre-wrap;
+  text-align: center;
 `;

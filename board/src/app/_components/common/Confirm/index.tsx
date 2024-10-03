@@ -29,7 +29,9 @@ const Confirm = ({ title, desc, children, onLeft, onRight }: ConfirmProps) => (
     {children}
     <OptionContainer>
       <OptionLeft onClick={onLeft?.onClick}>{onLeft?.text}</OptionLeft>
-      <OptionRight onClick={onRight?.onClick}>{onRight?.text}</OptionRight>
+      {onRight?.text && (
+        <OptionRight onClick={onRight?.onClick}>{onRight?.text}</OptionRight>
+      )}
     </OptionContainer>
   </Wrap>
 );
@@ -37,6 +39,8 @@ const Confirm = ({ title, desc, children, onLeft, onRight }: ConfirmProps) => (
 export default Confirm;
 
 const Wrap = styled.div`
+  max-height: 80vh;
+
   border-radius: 40px;
   align-items: center;
   display: flex;
