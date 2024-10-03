@@ -226,8 +226,13 @@ export default function CompareFreightRates() {
           width="70%"
         >
           <SubTitle>
-            현재를 기준으로 {graphData?.result.exportPortName} →{' '}
-            {graphData?.result.importPortName} 운임 예측값입니다.
+            현재를 기준으로{' '}
+            <b>
+              {graphData?.result.exportPortName} →{' '}
+              {graphData?.result.importPortName}
+            </b>{' '}
+            운임 예측값입니다.
+            <p>*CBM당 해당 운임</p>
           </SubTitle>
           <Graph predictions={graphData?.result.predictions || {}} />
         </Box>
@@ -241,9 +246,15 @@ export default function CompareFreightRates() {
               options={월별_리스트}
             />
             <SubTitle>
-              {selectedMonth.status === 'rising'
-                ? '상승이 예상됩니다.'
-                : '하락이 예상됩니다.'}
+              {selectedMonth.status === 'rising' ? (
+                <>
+                  <b>상승</b>이 예상됩니다.
+                </>
+              ) : (
+                <>
+                  <b>하락</b>이 예상됩니다.
+                </>
+              )}
             </SubTitle>
           </FlexBox>
           <Desc>
@@ -264,21 +275,23 @@ export default function CompareFreightRates() {
               으로 예상
             </Title>
             <SubTitle>
-              예상 비용 | <b>{recommendationData?.result.estimatedCost}원</b>
+              예상 비용 |{' '}
+              <b>
+                {recommendationData?.result.estimatedCost?.toLocaleString()}원
+              </b>
             </SubTitle>
           </div>
           <div style={{ flex: '1' }}>
             <Desc>
               {recommendationData?.result.dateDifference}개월 뒤 예약가능한
-              운송사 리스트 <br />
-              예측 계산 단위: %
+              운송사 리스트
               <hr />
             </Desc>
             <div>
               <Table>
                 <thead>
                   <tr>
-                    <th>운송사</th>
+                    <th>선명</th>
                     <th>ETD-ETA</th>
                     <th>소요일</th>
                     <th>서류 마감일</th>
@@ -370,6 +383,17 @@ const SubTitle = styled.div`
   font-weight: 500;
   white-space: pre;
   line-height: 46px;
+
+  b {
+    font-weight: 700;
+    color: ${COLORS.main};
+  }
+
+  p {
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 13px;
+  }
 `;
 
 const Desc = styled.div`

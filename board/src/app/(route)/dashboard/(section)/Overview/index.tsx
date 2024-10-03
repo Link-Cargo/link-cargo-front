@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { styled } from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
 import { Box } from '@/app/_components/dashboard/Box';
 import { BgType } from '@/app/_components/dashboard/Profile';
@@ -32,11 +33,13 @@ import {
 } from '@/app/_apis/dashboard';
 import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
 import { QuotationInfoResponse } from '@/app/_apis/dashboard/getCompare';
+import Report from './report';
 
 export default function Overview() {
   /*---- auth ----*/
   const tokens = getTokenFromLocalStorage();
   /*---- hooks ----*/
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { isShowing: isAiShowing, toggle: toggleAiModal } = useModal();
   const { isShowing: isExpandShowing, toggle: toggleExpandModal } = useModal();
@@ -265,20 +268,22 @@ export default function Overview() {
               으로 예상
             </Title>
             <SubTitle>
-              예상 비용 | <b>{recommendationData?.result.estimatedCost}원</b>
+              예상 비용 |{' '}
+              <b>
+                {recommendationData?.result.estimatedCost?.toLocaleString()}원
+              </b>
             </SubTitle>
           </div>
           <div style={{ flex: '1' }}>
             <Desc>
               {recommendationData?.result.dateDifference}개월 뒤 예약가능한
-              운송사 리스트 <br />
-              예측 계산 단위: %
+              운송사 리스트
               <hr />
             </Desc>
             <Table>
               <thead>
                 <tr>
-                  <th>운송사</th>
+                  <th>선명</th>
                   <th>ETD-ETA</th>
                   <th>소요일</th>
                   <th>서류 마감일</th>
@@ -302,14 +307,21 @@ export default function Overview() {
             </Table>
           </div>
           <div>
-            <Button text="견적 다시 요청하기" type="dark" onClick={() => {}} />
+            <Button
+              text="견적 다시 요청하기"
+              type="dark"
+              onClick={() => {
+                router.push(
+                  '/reserve-list?exportPortId=%EB%8F%84%EC%BF%84%ED%95%AD&importPortId=%EC%8B%9C%EB%93%9C%EB%8B%88%ED%95%AD',
+                );
+              }}
+            />
           </div>
         </Box>
       </FlexBox>
       <FlexBox>
         <Box desc="입국항 혼잡도" bgType={BgType.DARK} width="30%">
-          <Title>
-            <b>{congestionData?.result.percent}%</b>{' '}
+          <Title type={congestionData?.result.status}>
             {congestionData?.result.status}
           </Title>
           <Desc>{congestionData?.result.description}</Desc>
@@ -327,20 +339,14 @@ export default function Overview() {
         isShowing={isAiShowing}
         content={
           <Confirm
-            title="AI 요약 보고서 PDF 내보내기"
-            desc={`AI가 한 페이지로 요약한 내용을 PDF 형식으로 내보냅니다.`}
+            title="AI 요약 보고서"
+            desc={`화물정보 및 일정을 바탕으로 AI가 분석한 수출 요약 보고서를 통해 새로운 인사이트를 얻어보세요.`}
             onLeft={{
               onClick: toggleAiModal,
               text: '닫기',
             }}
-            onRight={{
-              onClick: exportPdf,
-              text: 'PDF 내보내기',
-            }}
           >
-            <ImgD>
-              <img src="/assets/pdf.png" />
-            </ImgD>
+            <Report />
           </Confirm>
         }
       />
@@ -388,7 +394,7 @@ const ReportButton = styled.div`
   cursor: pointer;
 `;
 
-const Title = styled.div`
+const Title = styled.div<{ type?: string }>`
   color: ${COLORS.g4};
   font-size: 28px;
   font-weight: 500;
@@ -397,6 +403,15 @@ const Title = styled.div`
     color: ${COLORS.main};
     font-weight: 800;
   }
+
+  color: ${(props) =>
+    props.type === '혼잡'
+      ? 'rgba(228, 32, 32, 1)'
+      : props.type === '보통'
+        ? 'rgba(228, 185, 32, 1)'
+        : props.type === '양호'
+          ? 'rgba(95, 191, 50, 1)'
+          : COLORS.g4}; // 기본 값 설정
 `;
 
 const SubTitle = styled.div`

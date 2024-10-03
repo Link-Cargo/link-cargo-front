@@ -197,7 +197,9 @@ export default function CompareQuotes() {
           <DropdownMenu>
             {compareData?.result.dashboardQuotationResponseList.map(
               (item, index) => (
-                <DropdownItem key={index}>{item.forwarderEmail}</DropdownItem>
+                <DropdownItem key={index}>
+                  {item.quotationInfoResponse.carrier} | {item.firmName}
+                </DropdownItem>
               ),
             )}
           </DropdownMenu>
@@ -255,7 +257,8 @@ export default function CompareQuotes() {
                           <span>전화번호</span>
                           <span>{item.forwarderTel}</span>
                         </li>
-                        <li>전달 사항 | </li>
+                        <li>전달 사항</li>
+                        <li>{item.particulars}</li>
                       </ul>
                       <Button
                         text="1:1 문의하기"
