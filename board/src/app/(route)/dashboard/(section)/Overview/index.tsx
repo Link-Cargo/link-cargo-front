@@ -32,7 +32,7 @@ import {
 } from '@/app/_apis/dashboard';
 import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
 import { QuotationInfoResponse } from '@/app/_apis/dashboard/getCompare';
-import Report from './report';
+import Report from './Report';
 
 interface 견적다시요청하기용_ROWQUOTATION {
   rawQuotationId: string;
