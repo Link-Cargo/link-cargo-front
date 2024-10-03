@@ -2,139 +2,162 @@ import React from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
   LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
   Title,
   Tooltip,
   Legend,
   Filler,
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { COLORS } from '@/app/_constant/color';
 
-// Chart.js 및 플러그인 등록
+// Chart.js에 필요한 컴포넌트를 등록합니다.
 ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
   LineElement,
+  PointElement,
+  LinearScale,
+  CategoryScale,
   Title,
   Tooltip,
   Legend,
-  ChartDataLabels,
   Filler,
 );
 
 const Graph = ({ predictions = {} }) => {
-  // predictions 데이터에서 x축 레이블과 y축 데이터를 생성
-  const labels = Object.keys(predictions).map((key) => {
-    // 키에서 월과 년을 추출하여 레이블 생성 (예: '(2025,2)' -> '2025년 2월')
-    const [year, month] = key.replace(/[()]/g, '').split(',');
-    return { year, month };
+  // predictions 데이터를 날짜순으로 정렬합니다.
+  const sortedPredictions = Object.entries(predictions).sort((a, b) => {
+    const aDate = new Date(a[0].replace(',', '-01-'));
+    const bDate = new Date(b[0].replace(',', '-01-'));
+    return aDate - bDate;
   });
 
-  const dataValues = Object.values(predictions);
+  // 라벨과 데이터를 추출합니다.
+  const labels = sortedPredictions.map(([date]) => {
+    const month = date.split(',')[1]; // 월만 추출
+    return `${parseInt(month, 10)}월`; // '1월', '2월' 등으로 표시
+  });
 
-  // y축 최소값과 최대값을 데이터에서 동적으로 추출
-  const minYValue = Math.min(...dataValues);
-  const maxYValue = Math.max(...dataValues);
-  const yRange = maxYValue - minYValue;
-  const stepSize = yRange / 2; // 2단계로 나눔
+  const dataValues = sortedPredictions.map(([, value]) => value);
 
-  // 그래프 데이터와 옵션 설정
   const data = {
     labels,
     datasets: [
       {
-        label: '운임 비용',
-        data: dataValues, // y축 값
-        borderColor: 'transparent', // 선의 색상을 투명하게 설정
-        backgroundColor: 'rgba(76, 119, 231, 0.2)', // 그래프 아래 영역을 채우는 색상 (반투명 파란색)
-        pointRadius: 0, // 포인트 제거
-        fill: true, // 영역 채우기 활성화
+        label: '',
+        data: dataValues,
+        borderColor: 'rgba(76, 119, 231, 0.3)', // 그래프 라인 색상
+        backgroundColor: 'rgba(76, 119, 231, 0.3)', // 그래프 채우기 색상
+        fill: true, // 내부 색상 채우기 활성화
+        borderWidth: 2,
+        tension: 0, // 각진 모양으로 설정 (곡선 비활성화)
+        pointRadius: 0, // 포인트를 표시하지 않음
       },
     ],
   };
 
   const options = {
-    maintainAspectRatio: false, // 그래프의 종횡비를 유지하지 않음
-    spanGaps: true, // 데이터 간 간격을 채움
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      datalabels: {
+        display: true,
+        align: 'end',
+        anchor: 'end',
+        font: {
+          size: 16, // 폰트 크기 설정
+          weight: '500', // Medium 설정
+        },
+        color: (ctx) => {
+          const index = ctx.dataIndex;
+          if (index === 0) return 'black'; // 첫 번째 값은 검정색으로 표시
+
+          // 이전 값과 비교하여 색상 결정
+          const previousValue = ctx.dataset.data[index - 1];
+          const change = ctx.dataset.data[index] - previousValue;
+          return change > 0 ? 'red' : 'blue'; // 증가 시 빨간색, 감소 시 파란색
+        },
+        formatter: (value, ctx) => {
+          const index = ctx.dataIndex;
+          // 첫 번째 값은 '현재값\n그래프값' 형식으로 표시
+          if (index === 0) return `현재\n${value}`;
+
+          // 나머지 값은 변화량과 화살표 표시
+          const previousValue = ctx.dataset.data[index - 1];
+          const change = value - previousValue;
+          const arrow = change > 0 ? '↑' : '↓'; // 변화량이 양수면 `↑`, 음수면 `↓`
+          return `${Math.abs(change)}${arrow}`; // 절대값과 화살표를 함께 표시
+        },
+      },
+      legend: {
+        display: false, // 범례 표시하지 않음
+      },
+      tooltip: {
+        callbacks: {
+          label: function (tooltipItem) {
+            const currentValue = tooltipItem.raw;
+            const previousValue =
+              tooltipItem.dataset.data[tooltipItem.dataIndex - 1];
+            if (previousValue !== undefined) {
+              const difference = currentValue - previousValue;
+              return `현재: ${currentValue}, 이전과의 차이: ${difference > 0 ? '+' : ''}${difference}`;
+            }
+            return `현재: ${currentValue}`;
+          },
+        },
+      },
+    },
     scales: {
       y: {
-        min: minYValue, // y축 최소값
-        max: maxYValue + stepSize * 0.5, // y축 최대값을 조금 더 높게 설정하여 텍스트가 잘리지 않도록 함
+        beginAtZero: false,
+        min: 100, // y축 최소값
+        max: 300, // y축 최대값
         ticks: {
-          stepSize: stepSize, // y축 스텝 크기
-          callback: (value) => `${value}`, // y축 레이블 표시
+          stepSize: 200,
+          callback: function (value) {
+            if (value === 100 || value === 300) return value;
+            return '';
+          },
+          color: 'rgba(174, 174, 174, 1)', // y축 글자 색상
+          font: {
+            size: 14, // y축 글자 크기 설정
+          },
         },
         grid: {
-          display: false, // y축 격자 제거
+          display: false, // y축 가로 눈금 비활성화
         },
       },
       x: {
-        display: false, // x축 레이블 표시하지 않음
-      },
-    },
-    layout: {
-      padding: {
-        top: 20, // 그래프 위쪽에 패딩을 추가하여 텍스트가 잘리지 않도록 함
-        bottom: 20, // 그래프 아래쪽에 패딩을 추가하여 텍스트가 잘리지 않도록 함
-      },
-    },
-    plugins: {
-      legend: {
-        display: false, // 상단 범례 표시 여부
-      },
-      datalabels: {
-        align: 'top', // 데이터 레이블을 맨 위로 정렬
-        anchor: 'end', // 포인트 근처에 표시
-        clip: false, // 클립핑 방지
-        formatter: (value, context) => {
-          const index = context.dataIndex;
-          const prevValue = index > 0 ? dataValues[index - 1] : value;
-          const difference = value - prevValue;
-          const direction = difference > 0 ? '↑' : '↓';
-          const { month } = labels[index];
-
-          // 두 줄로 표시: 월 정보와 변화량
-          return [`${month}월`, `${Math.abs(difference)} ${direction}`];
+        ticks: {
+          color: 'rgba(174, 174, 174, 1)', // x축 글자 색상
+          font: {
+            size: 14, // x축 글자 크기 설정
+          },
         },
-        font: (context) => {
-          const index = context.dataIndex;
-          // 첫 번째 줄과 두 번째 줄에 다른 스타일을 적용
-          return context.dataset.data[index] === context.raw
-            ? {
-                size: 14,
-                weight: '500', // medium
-              }
-            : {
-                size: 16,
-                weight: 'bold',
-              };
+        grid: {
+          display: true,
+          color: 'rgba(215, 215, 215, 1)', // x축 배경 라인 색상 설정
         },
-        color: (context) => {
-          // 증가 추세일 경우 파란색, 감소 추세일 경우 빨간색
-          const index = context.dataIndex;
-          const prevValue =
-            index > 0 ? dataValues[index - 1] : dataValues[index];
-          const difference = dataValues[index] - prevValue;
-          return difference > 0 ? COLORS.point : COLORS.red;
-        },
-        offset: 0, // 레이블의 오프셋을 조정하여 텍스트가 짤리지 않도록 함
-        textAlign: 'right',
       },
     },
   };
 
   return (
-    <div>
-      {/* 그래프의 높이와 너비를 설정합니다. */}
-      <div style={{ height: '200px', width: '100%' }}>
-        <Line data={data} options={options} />
+    <div style={{ width: '100%' }}>
+      {/* 전체 컨테이너 높이 설정 */}
+      <div style={{ width: '100%', height: '150px' }}>
+        {/* 그래프 컨테이너 높이 설정 */}
+        <Line data={data} options={options} plugins={[ChartDataLabels]} />
       </div>
-      <p style={{ textAlign: 'right', marginTop: '10px' }}>
+      <p
+        style={{
+          textAlign: 'right',
+          marginTop: '10px',
+          fontSize: '14px',
+          color: 'rgba(174, 174, 174, 1)',
+        }}
+      >
         상기 예측값은 실제와 다를 수 있습니다.
       </p>
     </div>
