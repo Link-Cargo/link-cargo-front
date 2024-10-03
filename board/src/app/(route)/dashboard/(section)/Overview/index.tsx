@@ -22,7 +22,6 @@ import {
 } from '@/app/(route)/reserve-list/utill';
 import { formatQuoteListEl } from '../../_util';
 import { getTokenFromLocalStorage } from '@/app/_utils/auth';
-
 import {
   GetIRecommendationDto,
   GetICongestionDto,
@@ -34,6 +33,14 @@ import {
 import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
 import { QuotationInfoResponse } from '@/app/_apis/dashboard/getCompare';
 import Report from './report';
+
+interface 견적다시요청하기용_ROWQUOTATION {
+  rawQuotationId: string;
+  exportPort: string;
+  importPort: string;
+  ETD: number[];
+  requestDate: number[];
+}
 
 export default function Overview() {
   /*---- auth ----*/
@@ -53,7 +60,8 @@ export default function Overview() {
     importId: number;
     exportId: number;
   } | null>(null); // 객체 또는 null 값을 허용
-
+  const [selectedItem, setSelectedItem] =
+    useState<견적다시요청하기용_ROWQUOTATION>(); //견적다시요청하기용
   /*---- function ----*/
   const exportPdf = () => {};
   const exportImg = () => {};
@@ -138,6 +146,7 @@ export default function Overview() {
       userRawQuotationData.result.rawQuotationInfoList.length > 0
     ) {
       const firstItem = userRawQuotationData.result.rawQuotationInfoList[0];
+      setSelectedItem(firstItem); //견적다시요청하기용
       const firstValue = formatQuoteListEl(firstItem);
       setSelectedRawQuotationId(firstItem.rawQuotationId);
       setSelectedIdFormatting({
@@ -184,6 +193,7 @@ export default function Overview() {
                   (item) => item.rawQuotationId === id,
                 );
 
+              setSelectedItem(selectedItem); //견적다시요청하기용
               if (selectedItem) {
                 const formatted = formatQuoteListEl(selectedItem); // 선택된 아이템을 포맷팅
 
@@ -312,7 +322,7 @@ export default function Overview() {
               type="dark"
               onClick={() => {
                 router.push(
-                  '/reserve-list?exportPortId=%EB%8F%84%EC%BF%84%ED%95%AD&importPortId=%EC%8B%9C%EB%93%9C%EB%8B%88%ED%95%AD',
+                  `http://localhost:3000/reserve-list?exportPortId=${selectedItem?.exportPort}&importPortId=${selectedItem?.importPort}&wishExportDate=${formatDate(selectedItem?.ETD as number[])}&rawQuotationId=${selectedItem?.rawQuotationId}`,
                 );
               }}
             />

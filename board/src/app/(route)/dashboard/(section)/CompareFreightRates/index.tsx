@@ -4,7 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
+import useModal from '@/app/_hooks/useModal';
+import Modal from '@/app/_components/common/Modal';
+import Confirm from '@/app/_components/common/Confirm';
 import { Box } from '@/app/_components/dashboard/Box';
 import { BgType } from '@/app/_components/dashboard/Profile';
 import { SelectInput, CustomSelectInput } from '@/app/_components/common/Input';
@@ -30,9 +34,19 @@ import {
 import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
 import { 월별_리스트, 이유_리스트 } from './mock';
 
+interface 견적다시요청하기용_ROWQUOTATION {
+  rawQuotationId: string;
+  exportPort: string;
+  importPort: string;
+  ETD: number[];
+  requestDate: number[];
+}
+
 export default function CompareFreightRates() {
   /*---- hooks ----*/
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const { isShowing: isExpandShowing, toggle: toggleExpandModal } = useModal();
   /*---- state ----*/
   const tokens = getTokenFromLocalStorage();
   //선택된 RawQuotationId
@@ -46,6 +60,8 @@ export default function CompareFreightRates() {
   } | null>(null); // 객체 또는 null 값을 허용
   //월별 검색어 초기 리스트 인덱스 선택
   const [selectedMonth, setSelectedMonth] = useState(이유_리스트[0]);
+  const [selectedItem, setSelectedItem] =
+    useState<견적다시요청하기용_ROWQUOTATION>(); //견적다시요청하기용
   /*---- function ----*/
   const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = 이유_리스트.find((item) => item.month === e.target.value);
@@ -168,6 +184,7 @@ export default function CompareFreightRates() {
       userRawQuotationData.result.rawQuotationInfoList.length > 0
     ) {
       const firstItem = userRawQuotationData.result.rawQuotationInfoList[0];
+      setSelectedItem(firstItem); //견적다시요청하기용
       const firstValue = formatQuoteListEl(firstItem);
       setSelectedRawQuotationId(firstItem.rawQuotationId);
       setSelectedIdFormatting({
@@ -194,6 +211,7 @@ export default function CompareFreightRates() {
                 (item) => item.rawQuotationId === id,
               );
 
+            setSelectedItem(selectedItem); //견적다시요청하기용
             if (selectedItem) {
               const formatted = formatQuoteListEl(selectedItem); // 선택된 아이템을 포맷팅
 
@@ -320,7 +338,15 @@ export default function CompareFreightRates() {
             </div>
           </div>
           <div>
-            <Button text="견적 다시 요청하기" type="dark" onClick={() => {}} />
+            <Button
+              text="견적 다시 요청하기"
+              type="dark"
+              onClick={() => {
+                router.push(
+                  `http://localhost:3000/reserve-list?exportPortId=${selectedItem?.exportPort}&importPortId=${selectedItem?.importPort}&wishExportDate=${formatDate(selectedItem?.ETD as number[])}&rawQuotationId=${selectedItem?.rawQuotationId}`,
+                );
+              }}
+            />
           </div>
         </Box>
         <Box desc="관련정보 요약" bgType={BgType.DARK} width="30%">

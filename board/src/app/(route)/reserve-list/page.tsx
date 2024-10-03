@@ -27,6 +27,7 @@ function ContentPage() {
   /*---- hooks ----*/
   const searchParams = useSearchParams();
   const { isShowing, toggle } = useModal();
+  const { isShowing: isQuotationShowing, toggle: quotationtoggle } = useModal();
   /*---- state ----*/
   const [selectedList, setSelectedList] = useState<number[]>([]);
   const exportPortId = decodeURIComponent(
@@ -53,10 +54,15 @@ function ContentPage() {
   function handleNext() {
     const params = new URLSearchParams(searchParams);
     params.set('selectedList', JSON.stringify(selectedList));
+
     if (accessToken) {
-      router.push(`/request?${params.toString()}`);
+      if (params.has('rawQuotationId')) {
+        quotationtoggle();
+      } else {
+        router.push(`/request?${params.toString()}`);
+      }
     } else {
-      toggle();
+      toggle(); // accessToken이 없는 경우
     }
   }
 
@@ -65,6 +71,9 @@ function ContentPage() {
     params.set('selectedList', JSON.stringify(selectedList));
     const reserveListPath = `/reserve-list?${params.toString()}`;
     router.push(`/login?redirect=${encodeURIComponent(reserveListPath)}`);
+  }
+  function goDash() {
+    router.push(`/dashboard`);
   }
 
   /*---- useEffect ----*/
@@ -165,6 +174,23 @@ function ContentPage() {
             onRight={{
               onClick: goLogin,
               text: '로그인 바로가기',
+            }}
+          ></Confirm>
+        }
+      />
+      <Modal
+        isShowing={isQuotationShowing}
+        content={
+          <Confirm
+            title="견적서를 요청했습니다!"
+            desc={`해당 스케줄에 해당하는 포워더에게 견적서 송부 요청을 보냈어요.\n24시간 이내로 견적서가 도착해요.`}
+            onLeft={{
+              onClick: toggle,
+              text: '닫기',
+            }}
+            onRight={{
+              onClick: goDash,
+              text: '나의 대시보드 바로가기',
             }}
           ></Confirm>
         }
