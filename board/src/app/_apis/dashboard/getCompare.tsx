@@ -42,6 +42,7 @@ export interface DashboardQuotationResponse {
   forwarderName: string;
   forwarderEmail: string;
   forwarderTel: string | null;
+  particulars: string;
   quotationInfoResponse: QuotationInfoResponse;
 }
 
