@@ -20,6 +20,9 @@ export interface Notification {
     content3_1: string;
     content4: string[];
   }[];
+  add2?: {
+    [key: string]: string;
+  }[];
 }
 
 export interface ResultData {
