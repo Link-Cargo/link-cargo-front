@@ -48,10 +48,10 @@ export type GetISchedulesDto = ResponseDto<ResultData>;
 export type GetIScheduleDto = ResponseDto<ScheduleId>;
 
 /*
-모든 선박 스케쥴 리스트 조회
+요청한 etd 이후 예약 가능 스케쥴 리스트 조회
 */
-export const getSchedules = async () => {
-  const url = `/schedules/list?page=0&size=10`;
+export const getSchedules = async (etd: string) => {
+  const url = `/schedules/list?page=0&size=10&ETD=${etd}`;
   const response = await getAsync<GetISchedulesDto, undefined>(
     url,
     undefined,
