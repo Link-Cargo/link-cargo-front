@@ -36,7 +36,7 @@ export const AD_NOTI: Notification[] = [
     title: '견적서 도착',
     content: '우진로지스 포워딩 업체',
     buttonTitle: '대시보드 바로가기',
-    buttonUrl: 'http://www.link-cargo.com/freight-quote',
+    buttonUrl: 'http://www.link-cargo.com/dashboard#overview',
     createdAt: '오전 09:56',
     isRead: false,
     add2: [
