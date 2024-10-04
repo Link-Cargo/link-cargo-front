@@ -69,7 +69,6 @@ export default function MyChatHistory() {
         })
         .then((response) => {
           const rooms = response.data.result.chatRooms;
-          console.log(rooms);
           setChatRooms(rooms);
           if (rooms.length > 0) {
             setSelectChatRoom(rooms[0]); // 상태 업데이트
@@ -102,7 +101,6 @@ export default function MyChatHistory() {
     const socketUrl = 'ws://43.202.227.122:8080/ws/chat';
     const client = new Client({
       connectHeaders: { Authorization: `Bearer ${tokens?.accessToken}` },
-      debug: (str) => console.log(str),
       reconnectDelay: 10000,
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
@@ -115,7 +113,6 @@ export default function MyChatHistory() {
       rooms.forEach((room) => {
         client.subscribe(`/sub/chatroom/${room.chatRoomId}`, (message) => {
           const newMessage = JSON.parse(message.body);
-          console.log(JSON.stringify(newMessage, null, 2));
           // 채팅방 목록에서 해당 채팅방의 최신 메시지를 업데이트
           setChatRooms((prevRooms) =>
             prevRooms.map((r) =>
@@ -124,8 +121,6 @@ export default function MyChatHistory() {
                 : r
             )
           );
-          console.log(selectChatRoom);
-          console.log(selectChatRoom.chatRoomId, room.chatRoomId);
           // 현재 선택된 채팅방이면 새로운 메시지를 추가
           // 선택된 채팅방이 아니면 isNew를 true로 설정
           if (selectChatRoomRef.current?.chatRoomId !== room.chatRoomId) {
@@ -136,14 +131,11 @@ export default function MyChatHistory() {
             );
           }
           else { // 현재 선택된 채팅방과 새로운 메시지 도착 채팅방이 동일하면
-            console.log(selectChatRoom.chatRoomId, room.chatRoomId);
             setChatMessages((prevMessages) => {
-              console.log(prevMessages);
               if (prevMessages.some((msg) => msg.chatId === newMessage.chatId)) {
                 // 중복된 메시지가 있으면 아무 작업도 하지 않음
                 return prevMessages;
               }
-              console.log([...prevMessages, newMessage]);
               markMessageAsRead(room.chatRoomId, newMessage.chatId); // 현재 채팅방이면 메시지 읽음 처리
               return [...prevMessages, newMessage];
             });
@@ -186,10 +178,7 @@ export default function MyChatHistory() {
   //채팅룸 선택, 선택한 채팅룸 소켓 연결
   const selectChatRoomHandler = useCallback(
     (room: any) => {
-      console.log(room);
-      console.log(room.chatRoomId);
       setSelectChatRoom(room);
-      console.log(selectChatRoom.chatRoomId);
       fetchMessages(room.chatRoomId);
       fetchFiles(room.chatRoomId);
     },
