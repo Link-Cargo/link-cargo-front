@@ -97,7 +97,10 @@ function ContentPage() {
     isLoading: scheduleLoading,
   } = useQuery<GetISchedulesDto, Error>({
     queryKey: ['schedule'],
-    queryFn: () => QuotationApiService.getSchedules(),
+    queryFn: () => QuotationApiService.getSchedules(wishExportDate),
+    staleTime: 0, // 데이터가 즉시 만료되도록 설정
+    refetchOnMount: true, // 컴포넌트가 마운트될 때마다 새로 요청
+    refetchOnWindowFocus: true, // 브라우저 창이 포커스될 때마다 리페치
   });
 
   /*---- jsx ----*/
@@ -108,52 +111,70 @@ function ContentPage() {
           title="예약 가능 리스트"
           desc="원하는 업체를 선택하여 견적을 요청해보세요."
         />
-        <FormSection gapValue={8}>
-          <FlexContainer>
-            <SearchBox>{searchBoxText}</SearchBox>
-            <GrayBox>
-              <div>예상 비용</div>
-              <span>1,073,280원</span>
-            </GrayBox>
-          </FlexContainer>
-          <Tip>
-            <span>TIP!</span>
-            <div>
-              LCL 화물은 FCL 화물보다 4~5일 더 소요돼요. 적재 전과 운송 후에
-              화물의 품질 및 수량 확인, 수출 처리, 컨테이너 배송 및 회수, 추가
-              검사 등 FCL보다 더 많은 과정을 거쳐요. 스케줄을 선택할 때 이 점을
-              고려해주세요.
-            </div>
-          </Tip>
-        </FormSection>
-        <FormSection gapValue={30}>
-          <Caution>
-            <span>
-              도착일자는 현지시간 기준으로, 업체 사정에 따라 사전고지 없이
-              변경될 수 있습니다.
-            </span>
-            <span>도움말</span>
-          </Caution>
-          <CardContainer>
-            {scheduleData?.result.schedules.map((el) => {
-              const processedData = processData(el);
-              return (
-                <OptionCard
-                  key={el.id}
-                  data={processedData}
-                  select={{
-                    isSelected: selectedList.includes(el.id),
-                    num: selectedList.indexOf(el.id) + 1,
-                  }}
-                  onClick={() => handleSelect(el.id)}
-                />
-              );
-            })}
-          </CardContainer>
-        </FormSection>
+        <FlexContainer>
+          <SearchBox>{searchBoxText}</SearchBox>
+          <GrayBox>
+            <div>예상 비용</div>
+            <span>1,073,280원</span>
+          </GrayBox>
+        </FlexContainer>
+
+        {scheduleData?.result.schedules.length === 0 ? (
+          <FormSection gapValue={30} style={{ height: '200px' }}>
+            <Title>출항 가능한 선박 스케줄이 없습니다.</Title>
+            <Desc>
+              세부 화물정보를 입력한 후 포워더의 새로운 스케줄 제안과 견적을
+              받아보세요.
+              <br />
+              24시간 이내로 견적서가 도착합니다.
+            </Desc>
+          </FormSection>
+        ) : (
+          <>
+            <Tip>
+              <span>TIP!</span>
+              <div>
+                LCL 화물은 FCL 화물보다 4~5일 더 소요돼요. 적재 전과 운송 후에
+                화물의 품질 및 수량 확인, 수출 처리, 컨테이너 배송 및 회수, 추가
+                검사 등 FCL보다 더 많은 과정을 거쳐요. 스케줄을 선택할 때 이
+                점을 고려해주세요.
+              </div>
+            </Tip>
+            <FormSection gapValue={30}>
+              <Caution>
+                <span>
+                  도착일자는 현지시간 기준으로, 업체 사정에 따라 사전고지 없이
+                  변경될 수 있습니다.
+                </span>
+                <span>도움말</span>
+              </Caution>
+              <CardContainer>
+                {scheduleData?.result.schedules.map((el) => {
+                  const processedData = processData(el);
+                  return (
+                    <OptionCard
+                      key={el.id}
+                      data={processedData}
+                      select={{
+                        isSelected: selectedList.includes(el.id),
+                        num: selectedList.indexOf(el.id) + 1,
+                      }}
+                      onClick={() => handleSelect(el.id)}
+                    />
+                  );
+                })}
+              </CardContainer>
+            </FormSection>
+          </>
+        )}
+
         <ButtonSection>
           <Button
-            text="포워딩 업체 선택 완료"
+            text={
+              scheduleData?.result.schedules.length === 0
+                ? '직접 견적 요청하기'
+                : '포워딩 업체 선택 완료'
+            }
             type="dark"
             onClick={handleNext}
           />
@@ -310,4 +331,23 @@ const Caution = styled.span`
   justify-content: space-between;
   font-size: 16px;
   color: ${COLORS.g2};
+`;
+
+const Title = styled.div`
+  font-size: 36px;
+  font-weight: 700;
+  color: ${COLORS.bk};
+  white-space: pre-wrap;
+  width: 100%;
+  text-align: center;
+`;
+
+const Desc = styled.div`
+  font-size: 20px;
+  line-height: 30px;
+  font-weight: 400;
+  color: ${COLORS.g4};
+  white-space: pre-wrap;
+  width: 100%;
+  text-align: center;
 `;
