@@ -22,6 +22,7 @@ export default function MyChatHistory() {
   const [selectChatRoom, setSelectChatRoom] = useState<any>(null);
   //채팅방 리스트
   const [chatRooms, setChatRooms] = useState<any[]>([]);
+  const [isSubscribed, setIsSubscribed] = useState(false); // 구독 여부를 저장하는 상태 변수
   //채팅방에서 조회되는 채팅 리스트
   const [chatMessages, setChatMessages] = useState<any[]>([]);
   //채팅방에서 조회되는 파일 리스트
@@ -39,6 +40,9 @@ export default function MyChatHistory() {
   //수출전체크 안내 박스 열렸는지
   const [isOpen, setIsOpen] = useState(false);
 
+  const selectChatRoomRef = useRef(selectChatRoom);
+
+
   /*---- api call function ----*/
   const { data: UserData } = useQuery<GetIUserDto, Error>({
     queryKey: ['User'],
@@ -50,7 +54,13 @@ export default function MyChatHistory() {
     setUserId(UserData?.result.user.id);
   }, []);
 
+  // useEffect로 selectChatRoom 값이 바뀔 때마다 ref를 업데이트
+  useEffect(() => {
+    selectChatRoomRef.current = selectChatRoom;
+  }, [selectChatRoom]);
+
   //GET 채팅방 리스트
+  // 채팅방 리스트 가져오기
   useEffect(() => {
     if (tokens?.accessToken) {
       axios
@@ -59,19 +69,36 @@ export default function MyChatHistory() {
         })
         .then((response) => {
           const rooms = response.data.result.chatRooms;
+          console.log(rooms);
           setChatRooms(rooms);
           if (rooms.length > 0) {
-            setSelectChatRoom(rooms[0]);
-            setupWebSocket(rooms[0].chatRoomId);
-            fetchMessages(rooms[0].chatRoomId);
-            fetchFiles(rooms[0].chatRoomId);
+            setSelectChatRoom(rooms[0]); // 상태 업데이트
           }
         });
     }
   }, [tokens?.accessToken]);
 
-  // 소켓 연결
-  const setupWebSocket = (roomId: number) => {
+  useEffect(() => {
+    // selectChatRoom이 아닌 chatRooms가 변경될 때만 구독을 설정하도록 수정
+    if (chatRooms.length > 0 && !isSubscribed) {
+      setupWebSocketSubscriptions(chatRooms);
+      setIsSubscribed(true); // 최초 구독 설정 후 다시 구독하지 않도록 설정
+    }
+  }, [chatRooms, setSelectChatRoom]);
+
+  // selectChatRoom이 업데이트된 후에 실행
+  useEffect(() => {
+    if (selectChatRoom && chatRooms.length > 0) {
+      // selectChatRoom 값이 설정된 후에만 실행
+      fetchMessages(selectChatRoom.chatRoomId);
+      fetchFiles(selectChatRoom.chatRoomId);
+      markAllMessagesAsRead(selectChatRoom.chatRoomId); // 채팅방 입장 시 읽음 처리
+    }
+  }, [selectChatRoom]);
+
+  // 모든 채팅방에 대해 웹소켓 구독 설정
+  const setupWebSocketSubscriptions = (rooms: any[]) => {
+    // 웹소켓 설정
     const socketUrl = 'ws://43.202.227.122:8080/ws/chat';
     const client = new Client({
       connectHeaders: { Authorization: `Bearer ${tokens?.accessToken}` },
@@ -81,16 +108,46 @@ export default function MyChatHistory() {
       heartbeatOutgoing: 10000,
       webSocketFactory: () => new WebSocket(socketUrl),
     });
-
+    // 웹소켓 연결
     client.onConnect = () => {
       setStompClient(client);
-      client.subscribe(`/sub/chatroom/${roomId}`, (message) => {
-        const newMessage = JSON.parse(message.body);
-        setChatMessages((prevMessages) => {
-          if (prevMessages.some((msg) => msg.id === newMessage.id)) {
-            return prevMessages;
+      // 모든 채팅방에 대해 구독
+      rooms.forEach((room) => {
+        client.subscribe(`/sub/chatroom/${room.chatRoomId}`, (message) => {
+          const newMessage = JSON.parse(message.body);
+          console.log(JSON.stringify(newMessage, null, 2));
+          // 채팅방 목록에서 해당 채팅방의 최신 메시지를 업데이트
+          setChatRooms((prevRooms) =>
+            prevRooms.map((r) =>
+              r.chatRoomId === room.chatRoomId
+                ? { ...r, latestContent: newMessage.content }
+                : r
+            )
+          );
+          console.log(selectChatRoom);
+          console.log(selectChatRoom.chatRoomId, room.chatRoomId);
+          // 현재 선택된 채팅방이면 새로운 메시지를 추가
+          // 선택된 채팅방이 아니면 isNew를 true로 설정
+          if (selectChatRoomRef.current?.chatRoomId !== room.chatRoomId) {
+            setChatRooms((prevRooms) =>
+              prevRooms.map((r) =>
+                r.chatRoomId === room.chatRoomId ? { ...r, isNew: true } : r
+              )
+            );
           }
-          return [...prevMessages, newMessage];
+          else { // 현재 선택된 채팅방과 새로운 메시지 도착 채팅방이 동일하면
+            console.log(selectChatRoom.chatRoomId, room.chatRoomId);
+            setChatMessages((prevMessages) => {
+              console.log(prevMessages);
+              if (prevMessages.some((msg) => msg.chatId === newMessage.chatId)) {
+                // 중복된 메시지가 있으면 아무 작업도 하지 않음
+                return prevMessages;
+              }
+              console.log([...prevMessages, newMessage]);
+              markMessageAsRead(room.chatRoomId, newMessage.chatId); // 현재 채팅방이면 메시지 읽음 처리
+              return [...prevMessages, newMessage];
+            });
+          }
         });
       });
     };
@@ -101,14 +158,38 @@ export default function MyChatHistory() {
     client.activate();
   };
 
+  // 채팅방 입장 시 모든 메시지 읽음 처리
+  const markAllMessagesAsRead = (chatRoomId: number) => {
+    axios.post(`http://www.link-cargo-dev.com/api/v1/chat/${chatRoomId}/all/read`, {}, {
+      headers: { Authorization: `Bearer ${tokens?.accessToken}` }
+    }).then(() => {
+      // 해당 채팅방의 isNew를 false로 변경
+      setChatRooms((prevRooms) =>
+        prevRooms.map((room) =>
+          room.chatRoomId === chatRoomId ? { ...room, isNew: false } : room
+        )
+      );
+    }).catch(error => {
+      console.error("Error marking all messages as read:", error);
+    });
+  };
+
+  // 개별 메시지 읽음 처리
+  const markMessageAsRead = (chatRoomId: number, chatId: number) => {
+    axios.post(`http://www.link-cargo-dev.com/api/v1/chat/${chatRoomId}/${chatId}/read`, {}, {
+      headers: { Authorization: `Bearer ${tokens?.accessToken}` }
+    }).catch(error => {
+      console.error("Error marking message as read:", error);
+    });
+  };
+
   //채팅룸 선택, 선택한 채팅룸 소켓 연결
   const selectChatRoomHandler = useCallback(
     (room: any) => {
+      console.log(room);
+      console.log(room.chatRoomId);
       setSelectChatRoom(room);
-      if (stompClient) {
-        stompClient.deactivate();
-      }
-      setupWebSocket(room.chatRoomId);
+      console.log(selectChatRoom.chatRoomId);
       fetchMessages(room.chatRoomId);
       fetchFiles(room.chatRoomId);
     },
@@ -130,7 +211,6 @@ export default function MyChatHistory() {
       });
 
       setMessageInput('');
-      fetchMessages(selectChatRoom.chatRoomId);
     }
   };
 
@@ -205,7 +285,7 @@ export default function MyChatHistory() {
               placeholder="검색어 입력"
               name="search"
               value=""
-              onChange={() => {}}
+              onChange={() => { }}
             />
           </div>
           <CheckboxInput
@@ -222,10 +302,15 @@ export default function MyChatHistory() {
             {chatRooms.map((room) => (
               <ChatEl
                 key={room.chatRoomId}
-                onClick={() => selectChatRoomHandler(room)}
+                onClick={() =>
+                  selectChatRoomHandler(room)
+                }
                 isSelected={selectChatRoom?.chatRoomId === room.chatRoomId}
               >
-                <h3>{room.targetUserName}</h3>
+                <ChatHeader>
+                  <h3>{room.targetUserName}</h3>
+                  {room.isNew && <span>●</span>}
+                </ChatHeader>
                 <ChatSummary>
                   <div>{room.latestContent}</div>
                 </ChatSummary>
@@ -375,14 +460,14 @@ const UtilBox = styled.div`
 
 const ChatList = styled.div`
   border: 1px solid ${COLORS.g1};
-
   display: flex;
   flex-direction: column;
   border-radius: 12px;
-
   overflow-y: scroll;
   overflow-x: hidden;
-
+  width: 100%; /* 가로 폭을 100%로 설정 */
+  box-sizing: border-box; /* 패딩과 보더를 포함한 크기 계산 */
+  
   h3 {
     font-weight: bold;
     font-size: 16px;
@@ -391,7 +476,7 @@ const ChatList = styled.div`
 
 const ChatEl = styled.div<{ isSelected: boolean }>`
   cursor: pointer;
-  width: 100%;
+  width: 100%; /* ChatList 가로폭에 맞춤 */
   background-color: ${(props) =>
     props.isSelected ? '#ffffff' : 'transparent'};
   padding: 30px 20px;
@@ -399,7 +484,20 @@ const ChatEl = styled.div<{ isSelected: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-sizing: border-box; /* 패딩과 보더 포함한 크기 계산 */
 `;
+
+const ChatHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  span {
+    color: #007aff;
+  }
+`;
+
 
 const ChatSummary = styled.div`
   display: flex;
