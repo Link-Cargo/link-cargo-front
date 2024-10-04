@@ -35,6 +35,7 @@ import {
 } from '@/app/_apis/quotation';
 import { CargosContent } from '@/app/_apis/quotation/postCargos';
 import Table from './Table';
+import { ResultData } from '@/app/_apis/quotation/getEstimated';
 
 function ContentPage() {
   /*---- router ----*/
@@ -275,25 +276,27 @@ function ContentPage() {
           title="견적 요청"
           desc="화물 정보를 점검하고 업체별로 견적서를 요청해보세요."
         />
-        <FormSection gapValue={24}>
-          <Text subtitle="선택한 업체" />
-          <FlexContainer>
-            {ScheduleIdData.map((query, index) => {
-              const { data, isLoading, error } = query;
-              return (
-                <MultiTextBox
-                  key={index}
-                  title={data?.result?.vessel || ''}
-                  desc={
-                    data?.result?.ETD && data?.result?.ETA
-                      ? formatDateRange(data.result.ETD, data.result.ETA)
-                      : 'No schedule data'
-                  }
-                />
-              );
-            })}
-          </FlexContainer>
-        </FormSection>
+        {리스트queryParams.length > 0 && (
+          <FormSection gapValue={24}>
+            <Text subtitle="선택한 업체" />
+            <FlexContainer>
+              {ScheduleIdData.map((query, index) => {
+                const { data, isLoading, error } = query;
+                return (
+                  <MultiTextBox
+                    key={index}
+                    title={data?.result?.vessel || ''}
+                    desc={
+                      data?.result?.ETD && data?.result?.ETA
+                        ? formatDateRange(data.result.ETD, data.result.ETA)
+                        : 'No schedule data'
+                    }
+                  />
+                );
+              })}
+            </FlexContainer>
+          </FormSection>
+        )}
         <FormSection gapValue={24}>
           <Text subtitle="화물 정보" />
           <FlexContainer>
@@ -420,7 +423,11 @@ function ContentPage() {
               text: '나의 대시보드 바로가기',
             }}
           >
-            {<Table data={temp} />}
+            {리스트queryParams.length > 0 && (
+              <ImgC>
+                <img src="/assets/estimated.png" />
+              </ImgC>
+            )}
           </Confirm>
         }
       />
