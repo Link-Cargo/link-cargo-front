@@ -17,7 +17,7 @@ export type GetIEstimatedDto = ResponseDto<ResultData>;
 */
 export const getEstimated = async (quotationIds: string[], at: string) => {
   const queryString = quotationIds.map((id) => `quotationIds=${id}`).join('&');
-  const url = `/estimated?${queryString}`;
+  const url = `/quotations/estimated?${queryString}`;
   const response = await getAsync<GetIEstimatedDto, undefined>(
     url,
     at,
