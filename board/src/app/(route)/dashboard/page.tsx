@@ -63,7 +63,7 @@ function Page() {
     window.location.hash = `#${id}`;
   };
   const handleHashChange = () => {
-    const hash = window.location.hash.substring(1) || 'overview';
+    const hash = window.location.hash.split('?')[0].substring(1) || 'overview';
     if (dashboardListConfig[hash]) {
       setSelectedId(hash);
     }
@@ -82,7 +82,7 @@ function Page() {
 
   /*---- useEffect ----*/
   useEffect(() => {
-    const hash = window.location.hash.substring(1) || 'overview';
+    const hash = window.location.hash.split('?')[0].substring(1) || 'overview';
     if (dashboardListConfig[hash]) {
       setSelectedId(hash);
     }

@@ -264,9 +264,7 @@ export default function CompareQuotes() {
                         text="1:1 문의하기"
                         flexValue={1}
                         type="dark"
-                        onClick={() => {
-                          router.push('/dashboard#chat');
-                        }}
+                        onClick={() => router.push('/loading?id=9')}
                       />
                     </StyledTable>
                   </Box>
