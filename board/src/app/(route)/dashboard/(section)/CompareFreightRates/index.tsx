@@ -295,7 +295,10 @@ export default function CompareFreightRates() {
             <SubTitle>
               예상 비용 |{' '}
               <b>
-                {recommendationData?.result.estimatedCost?.toLocaleString()}원
+                {Math.floor(
+                  recommendationData?.result.estimatedCost || 0,
+                ).toLocaleString()}
+                원
               </b>
             </SubTitle>
           </div>
