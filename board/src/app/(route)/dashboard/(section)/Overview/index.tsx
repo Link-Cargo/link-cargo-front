@@ -231,7 +231,8 @@ export default function Overview() {
               <b>{cheapestData?.result.firmName}</b>
             </Title>
             <SubTitle>
-              총 비용 | <b>{cheapestData?.result.totalCost}원</b>
+              총 비용 |{' '}
+              <b>{cheapestData?.result.totalCost.toLocaleString()}원</b>
             </SubTitle>
           </div>
           <StyledTable>
