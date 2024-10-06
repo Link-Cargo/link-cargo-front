@@ -41,7 +41,7 @@ const dashboardListConfig: dashboardListItem = {
     title: '운임 관련 비교',
     section: <CompareFreightRates />,
   },
-  chat_history: { title: '나의 대화 이력', section: <MyChatHistory /> },
+  chat: { title: '나의 대화 이력', section: <MyChatHistory /> },
 };
 
 function Page() {

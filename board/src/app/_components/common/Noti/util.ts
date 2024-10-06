@@ -53,7 +53,7 @@ export const AD_NOTI: Notification[] = [
     title: '메시지 도착',
     content: '우진로지스 포워딩 업체',
     buttonTitle: '담당자 문의 바로가기',
-    buttonUrl: 'http://localhost:3000/dashboard#chat_history',
+    buttonUrl: 'http://www.link-cargo.com/dashboard#chat',
     createdAt: '오전 09:56',
     isRead: false,
   },

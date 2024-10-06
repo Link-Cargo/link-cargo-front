@@ -265,7 +265,7 @@ export default function CompareQuotes() {
                         flexValue={1}
                         type="dark"
                         onClick={() => {
-                          router.push('/dashboard#chat_history');
+                          router.push('/dashboard#chat');
                         }}
                       />
                     </StyledTable>
