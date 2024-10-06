@@ -11,7 +11,7 @@ import Button from '@/app/_components/common/Button';
 import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
 import OptionCard from '@/app/_components/common/OptionCard';
-import { processData } from './utill';
+import { formatWishExportDate, processData } from './utill';
 import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 import Confirm from '@/app/_components/common/Confirm';
 import { GetISchedulesDto, QuotationApiService } from '@/app/_apis/quotation';
@@ -41,8 +41,11 @@ function ContentPage() {
   const importPortId = decodeURIComponent(
     searchParams.get('importPortId') || '',
   );
-  const wishExportDate = searchParams.get('wishExportDate') || '';
-  const searchBoxText = `${exportPortId} → ${importPortId} | ${wishExportDate}`;
+
+  const rawWishExportDate = searchParams.get('wishExportDate') || '';
+  const wishExportDate = formatWishExportDate(rawWishExportDate);
+
+  const searchBoxText = `${exportPortId} → ${importPortId} | ${rawWishExportDate}`;
 
   /*---- function ----*/
   const handleSelect = (id: number) => {

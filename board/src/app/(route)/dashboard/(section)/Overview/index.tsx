@@ -322,7 +322,7 @@ export default function Overview() {
               type="dark"
               onClick={() => {
                 router.push(
-                  `http://localhost:3000/reserve-list?exportPortId=${selectedItem?.exportPort}&importPortId=${selectedItem?.importPort}&wishExportDate=${formatDate(selectedItem?.ETD as number[])}&rawQuotationId=${selectedItem?.rawQuotationId}`,
+                  `/reserve-list?exportPortId=${selectedItem?.exportPort}&importPortId=${selectedItem?.importPort}&wishExportDate=${formatDate(selectedItem?.ETD as number[])}&rawQuotationId=${selectedItem?.rawQuotationId}`,
                 );
               }}
             />

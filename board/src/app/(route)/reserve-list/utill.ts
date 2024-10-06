@@ -33,3 +33,13 @@ export function processData(data: any) {
     화물마감일: formatDate(data.cargoCutOff),
   };
 }
+
+export const formatWishExportDate = (dateStr: string): string => {
+  const regex = /^(\d{2})\. (\d{2})\. (\d{2})\./;
+  const match = dateStr.match(regex);
+  if (match) {
+    const [, year, month, day] = match;
+    return `20${year}-${month}-${day}`;
+  }
+  return dateStr;
+};
