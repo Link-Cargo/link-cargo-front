@@ -19,6 +19,9 @@ import { CargosContent, CargosInfo } from '@/app/_apis/quotation/postCargos';
 import { GetIPortDto, getPorts, PortType } from '@/app/_apis/getPorts';
 import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 
+import Popup from '@/app/_components/common/Popup';
+import { useTutorial } from '@/app/_hooks/useTutorial';
+
 export default function Page() {
   /*---- router ----*/
   const router = useRouter();
@@ -40,6 +43,7 @@ export default function Page() {
   const [exportPortOptions, setExportPortOptions] = useState<
     { value: string; label: string; id: number }[]
   >([]);
+  const { isShow, isTodayShow, onClose, onTodayHideToggle } = useTutorial();
 
   /*---- function ----*/
   const handleInputChange = (
@@ -344,6 +348,15 @@ export default function Page() {
           />
         </ButtonSection>
       </Container>
+
+      <Popup
+        isShow={isShow}
+        isTodayShow={isTodayShow}
+        content={'처음어어도 괜찮아,\n링카고 튜로리얼'}
+        onClick={() => router.push('/tutorial#freightQuote')}
+        onClose={onClose}
+        onTodayHideToggle={onTodayHideToggle}
+      />
     </Layout>
   );
 }

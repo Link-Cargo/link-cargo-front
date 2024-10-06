@@ -18,6 +18,9 @@ import { GetISchedulesDto, QuotationApiService } from '@/app/_apis/quotation';
 import useModal from '@/app/_hooks/useModal';
 import Modal from '@/app/_components/common/Modal';
 
+import Popup from '@/app/_components/common/Popup';
+import { useTutorial } from '@/app/_hooks/useTutorial';
+
 function ContentPage() {
   /*---- router ----*/
   const router = useRouter();
@@ -28,6 +31,8 @@ function ContentPage() {
   const searchParams = useSearchParams();
   const { isShowing, toggle } = useModal();
   const { isShowing: isQuotationShowing, toggle: quotationtoggle } = useModal();
+  const { isShow, isTodayShow, onClose, onTodayHideToggle } = useTutorial();
+
   /*---- state ----*/
   const [selectedList, setSelectedList] = useState<number[]>([]);
   const exportPortId = decodeURIComponent(
@@ -38,6 +43,7 @@ function ContentPage() {
   );
   const wishExportDate = searchParams.get('wishExportDate') || '';
   const searchBoxText = `${exportPortId} → ${importPortId} | ${wishExportDate}`;
+
   /*---- function ----*/
   const handleSelect = (id: number) => {
     if (selectedList.includes(id)) {
@@ -65,6 +71,11 @@ function ContentPage() {
       toggle(); // accessToken이 없는 경우
     }
   }
+
+  const handleTutorial = () => {
+    const params = searchParams.toString();
+    router.push(`/tutorial#reserveList?${params}`);
+  };
 
   function goLogin() {
     const params = new URLSearchParams(searchParams);
@@ -111,35 +122,47 @@ function ContentPage() {
           title="예약 가능 리스트"
           desc="원하는 업체를 선택하여 견적을 요청해보세요."
         />
-        <FlexContainer>
-          <SearchBox>{searchBoxText}</SearchBox>
-          <GrayBox>
-            <div>예상 비용</div>
-            <span>1,073,280원</span>
-          </GrayBox>
-        </FlexContainer>
 
         {scheduleData?.result.schedules.length === 0 ? (
-          <FormSection gapValue={30} style={{ height: '200px' }}>
-            <Title>출항 가능한 선박 스케줄이 없습니다.</Title>
-            <Desc>
-              세부 화물정보를 입력한 후 포워더의 새로운 스케줄 제안과 견적을
-              받아보세요.
-              <br />
-              24시간 이내로 견적서가 도착합니다.
-            </Desc>
+          <FormSection gapValue={100}>
+            <FlexContainer>
+              <SearchBox>{searchBoxText}</SearchBox>
+              <GrayBox>
+                <div>예상 비용</div>
+                <span>1,073,280원</span>
+              </GrayBox>
+            </FlexContainer>
+            <FormSection gapValue={30} style={{ height: '200px' }}>
+              <Title>출항 가능한 선박 스케줄이 없습니다.</Title>
+              <Desc>
+                세부 화물정보를 입력한 후 포워더의 새로운 스케줄 제안과 견적을
+                받아보세요.
+                <br />
+                24시간 이내로 견적서가 도착합니다.
+              </Desc>
+            </FormSection>
           </FormSection>
         ) : (
           <>
-            <Tip>
-              <span>TIP!</span>
-              <div>
-                LCL 화물은 FCL 화물보다 4~5일 더 소요돼요. 적재 전과 운송 후에
-                화물의 품질 및 수량 확인, 수출 처리, 컨테이너 배송 및 회수, 추가
-                검사 등 FCL보다 더 많은 과정을 거쳐요. 스케줄을 선택할 때 이
-                점을 고려해주세요.
-              </div>
-            </Tip>
+            <FormSection gapValue={10}>
+              <FlexContainer>
+                <SearchBox>{searchBoxText}</SearchBox>
+                <GrayBox>
+                  <div>예상 비용</div>
+                  <span>1,073,280원</span>
+                </GrayBox>
+              </FlexContainer>
+              <Tip>
+                <span>TIP!</span>
+                <div>
+                  LCL 화물은 FCL 화물보다 4~5일 더 소요돼요. 적재 전과 운송 후에
+                  화물의 품질 및 수량 확인, 수출 처리, 컨테이너 배송 및 회수,
+                  추가 검사 등 FCL보다 더 많은 과정을 거쳐요. 스케줄을 선택할 때
+                  이 점을 고려해주세요.
+                </div>
+              </Tip>
+            </FormSection>
+
             <FormSection gapValue={30}>
               <Caution>
                 <span>
@@ -215,6 +238,15 @@ function ContentPage() {
             }}
           ></Confirm>
         }
+      />
+
+      <Popup
+        isShow={isShow}
+        isTodayShow={isTodayShow}
+        content={'처음어어도 괜찮아,\n링카고 튜로리얼'}
+        onClick={() => handleTutorial()}
+        onClose={onClose}
+        onTodayHideToggle={onTodayHideToggle}
       />
     </Layout>
   );
