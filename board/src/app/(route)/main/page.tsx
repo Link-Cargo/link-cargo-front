@@ -14,15 +14,12 @@ import 'swiper/css/autoplay';
 import { Mousewheel, Pagination, Autoplay } from 'swiper/modules';
 import { featureCardsConfigs } from './utill';
 import { Nav } from '@/app/_components/common/Nav';
-import Popup from '@/app/_components/common/Popup';
-import { useTutorial } from '@/app/_hooks/useTutorial';
 
 export default function Page() {
   /*---- router ----*/
   const router = useRouter();
   /*---- state ----*/
   const [slideIndex, setSlideIndex] = useState(0);
-  const { isShow, isTodayShow, onClose, onTodayHideToggle } = useTutorial();
   /*---- function ----*/
   const handleSlideChange = useCallback((swiper: any) => {
     setSlideIndex(swiper.activeIndex);
@@ -90,14 +87,6 @@ export default function Page() {
           </ButtonSection>
         </StyledSwiperSlide>
       </Swiper>
-
-      <Popup
-        isShow={isShow}
-        isTodayShow={isTodayShow}
-        onClick={() => router.push('/tutorial')}
-        onClose={onClose}
-        onTodayHideToggle={onTodayHideToggle}
-      />
     </Container>
   );
 }
