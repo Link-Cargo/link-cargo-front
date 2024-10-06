@@ -4,17 +4,17 @@ import React, { useEffect, useState } from 'react';
 import { RingLoader } from 'react-spinners';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function Page() {
+type PageProps = {
+  params: {
+    id: string;
+  };
+};
+
+export default function Page({ params }: PageProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const id = searchParams.get('id');
-
   useEffect(() => {
-    if (id) {
-      router.push(`/dashboard#chat?chatRoomId=${id}`);
-    }
-  }, [id, router]);
+    router.push(`/dashboard#chat?chatRoomId=${params.id}`);
+  }, [router]);
 
   return (
     <div
