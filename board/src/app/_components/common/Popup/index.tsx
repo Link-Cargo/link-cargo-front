@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 interface PopupProps {
   isShow: boolean;
   isTodayShow: boolean;
+  content: string;
   onClick: () => void;
   onClose: () => void;
   onTodayHideToggle: () => void;
@@ -15,6 +16,7 @@ const Popup = ({
   isShow,
   isTodayShow,
   onClick,
+  content,
   onClose,
   onTodayHideToggle,
 }: PopupProps) => {
@@ -40,11 +42,7 @@ const Popup = ({
         <Logo>
           <img src="/assets/logo_icon.png" />
         </Logo>
-        <h3>
-          처음이어도 괜찮아,
-          <br />
-          링카고 튜토리얼
-        </h3>
+        <h3>{content}</h3>
       </Content>
       <Bottom>
         <TodayShow onClick={onTodayHideToggle}>
@@ -128,6 +126,7 @@ const Content = styled.div`
   flex: 1;
   cursor: pointer;
   padding: 30px 0px;
+  white-space: pre-line;
 `;
 
 const Bottom = styled.div`
