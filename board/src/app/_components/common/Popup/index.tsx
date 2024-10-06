@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 interface PopupProps {
   isShow: boolean;
   isTodayShow: boolean;
+  onClick: () => void;
   onClose: () => void;
   onTodayHideToggle: () => void;
 }
@@ -13,6 +14,7 @@ interface PopupProps {
 const Popup = ({
   isShow,
   isTodayShow,
+  onClick,
   onClose,
   onTodayHideToggle,
 }: PopupProps) => {
@@ -34,7 +36,7 @@ const Popup = ({
 
   return (
     <Container isShow={isShow} isClosing={isClosing}>
-      <Content onClick={() => router.push('/tutorial')}>
+      <Content onClick={onClick}>
         <Logo>
           <img src="/assets/logo_icon.png" />
         </Logo>

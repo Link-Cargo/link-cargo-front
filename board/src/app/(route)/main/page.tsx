@@ -94,6 +94,7 @@ export default function Page() {
       <Popup
         isShow={isShow}
         isTodayShow={isTodayShow}
+        onClick={() => router.push('/tutorial')}
         onClose={onClose}
         onTodayHideToggle={onTodayHideToggle}
       />
