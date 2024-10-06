@@ -243,7 +243,7 @@ export default function CompareQuotes() {
                         </li>
                         <li>
                           <span>총 비용</span>
-                          <span>{item.totalCost}</span>
+                          <span>{item.totalCost.toLocaleString()}</span>
                         </li>
                         <li>
                           <span>담당자</span>
