@@ -98,6 +98,7 @@ export const Nav = ({ type = 'default' }: NavProps) => {
               onClick={() => {
                 setIsLoggedIn(false);
                 handleLogout();
+                router.push('/login');
               }}
             >
               로그아웃
