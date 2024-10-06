@@ -145,7 +145,7 @@ export default function CompareQuotes() {
               color={barColors[index % barColors.length]}
             />
           </span>
-          <span>{Object.values(item)[0]}원</span>
+          <span>{Object.values(item)[0]}$</span>
         </li>
       ))}
     </ul>
