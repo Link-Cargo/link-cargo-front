@@ -232,14 +232,18 @@ function ContentPage() {
             title="견적서를 요청했습니다!"
             desc={`해당 스케줄에 해당하는 포워더에게 견적서 송부 요청을 보냈어요.\n24시간 이내로 견적서가 도착해요.`}
             onLeft={{
-              onClick: toggle,
+              onClick: quotationtoggle,
               text: '닫기',
             }}
             onRight={{
               onClick: goDash,
               text: '나의 대시보드 바로가기',
             }}
-          ></Confirm>
+          >
+            <ImgC>
+              <img src="/assets/estimated.png" />
+            </ImgC>
+          </Confirm>
         }
       />
 
@@ -385,4 +389,8 @@ const Desc = styled.div`
   white-space: pre-wrap;
   width: 100%;
   text-align: center;
+`;
+
+const ImgC = styled.div`
+  width: 800px;
 `;
