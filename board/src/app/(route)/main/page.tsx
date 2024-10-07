@@ -103,7 +103,7 @@ const StyledSwiperSlide = styled(SwiperSlide)`
   flex-direction: column;
   align-items: center;
   height: 100vh;
-  justify-content: space-between;
+  justify-content: space-evenly;
 `;
 
 const Bg = styled.img`
@@ -118,18 +118,15 @@ const FlexContainer = styled.div`
   justify-content: center;
   gap: 40px;
   align-items: center;
-  flex: 5;
 `;
 
 const Title = styled.div`
   background-color: ${COLORS.bg};
   width: 100%;
-  padding: 120px 0px 50px 0px;
+  padding: 100px 0px 30px 0px;
   display: flex;
   justify-content: center;
   align-items: center;
-
-  flex: 2;
 
   div {
     display: flex;
@@ -138,14 +135,14 @@ const Title = styled.div`
   }
 
   h6 {
-    font-size: 32px;
+    font-size: 25px;
     font-weight: 600;
     color: ${COLORS.main};
     line-height: 51.2px;
   }
 
   span {
-    font-size: 30px;
+    font-size: 23px;
     color: ${COLORS.g4};
   }
 
@@ -159,7 +156,7 @@ const Title = styled.div`
 
   li {
     list-style: none;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 600;
     color: ${COLORS.g4};
     display: flex;
@@ -170,18 +167,16 @@ const Title = styled.div`
 
 const Button = styled.div`
   width: 348px;
-  font-size: 24px;
+  font-size: 20px;
   margin: 0 auto;
   border-radius: 100px;
-  line-height: 80px;
-  height: 80px;
+  line-height: 60px;
+  height: 60px;
   text-align: center;
   color: ${COLORS.w};
   background-color: ${COLORS.main};
-  font-weight: 800;
+  font-weight: 600;
   cursor: pointer;
 `;
 
-const ButtonSection = styled.div`
-  flex: 1;
-`;
+const ButtonSection = styled.div``;

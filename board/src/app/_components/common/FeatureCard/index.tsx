@@ -38,20 +38,20 @@ const StyledFeatureCard = styled.div<StyledFeatureCardProps>`
   gap: 20px;
 
   img {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
   }
 
   h3 {
-    font-size: 28px;
-    line-height: 34px;
+    font-size: 25px;
+    line-height: 30px;
     font-weight: 700;
     color: ${COLORS.w};
   }
 
   p {
-    font-size: 16px;
-    line-height: 26px;
+    font-size: 13px;
+    line-height: 20px;
     font-weight: 500;
     color: ${COLORS.g1};
   }
