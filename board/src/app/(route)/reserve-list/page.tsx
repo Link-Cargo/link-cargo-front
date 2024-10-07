@@ -282,7 +282,8 @@ const CardContainer = styled.div`
   display: flex;
   gap: 18px 18px;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: start;
+  width: 100%;
 `;
 
 const FormSection = styled.div<{ gapValue: number }>`
