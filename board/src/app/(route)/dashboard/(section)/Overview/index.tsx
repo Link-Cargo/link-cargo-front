@@ -20,7 +20,7 @@ import {
   formatDate,
   formatTransitTime,
 } from '@/app/(route)/reserve-list/utill';
-import { formatQuoteListEl } from '../../_util';
+import { formatQuoteListEl, formatWishExportDate } from '../../_util';
 import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 import {
   GetIRecommendationDto,
@@ -337,7 +337,7 @@ export default function Overview() {
               type="dark"
               onClick={() => {
                 router.push(
-                  `/reserve-list?exportPortId=${selectedItem?.exportPort}&importPortId=${selectedItem?.importPort}&wishExportDate=${formatDate(selectedItem?.ETD as number[])}&rawQuotationId=${selectedItem?.rawQuotationId}`,
+                  `/reserve-list?exportPortId=${selectedItem?.exportPort}&importPortId=${selectedItem?.importPort}&wishExportDate=${formatWishExportDate(recommendationData?.result.dateDifference as number, selectedItem?.ETD as number[])}&rawQuotationId=${selectedItem?.rawQuotationId}`,
                 );
               }}
             />

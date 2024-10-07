@@ -63,3 +63,23 @@ export function formatQuoteListEl(item: {
     exportPort: item.exportPort, // 출국항 이름
   };
 }
+
+export function formatWishExportDate(
+  monthDifference: number,
+  dateArray: number[],
+): string {
+  const [year, month, day] = dateArray;
+
+  const newMonth = month + monthDifference;
+
+  const newYear = year + Math.floor((newMonth - 1) / 12);
+  const adjustedMonth = ((newMonth - 1) % 12) + 1;
+
+  const newDate = new Date(Date.UTC(newYear, adjustedMonth - 1, day));
+
+  const formattedYear = newDate.getUTCFullYear();
+  const formattedMonth = String(newDate.getUTCMonth() + 1).padStart(2, '0');
+  const formattedDay = String(newDate.getUTCDate()).padStart(2, '0');
+
+  return `${formattedYear}-${formattedMonth}-${formattedDay}`;
+}
