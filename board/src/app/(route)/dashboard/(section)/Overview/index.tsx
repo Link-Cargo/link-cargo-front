@@ -33,6 +33,7 @@ import {
 import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
 import { QuotationInfoResponse } from '@/app/_apis/dashboard/getCompare';
 import Report from './Report';
+import Loading from '@/app/_components/common/Loading';
 
 interface 견적다시요청하기용_ROWQUOTATION {
   rawQuotationId: string;
@@ -177,6 +178,16 @@ export default function Overview() {
       queryClient.invalidateQueries({ queryKey: ['congestion'] });
     }
   }, [selectedRawQuotationId, queryClient]);
+
+  if (
+    summaryLoading ||
+    congestionLoading ||
+    recommendationLoading ||
+    userRawQuotationLoading ||
+    cheapestLoading
+  ) {
+    return <Loading width="1000px" height="500px" />;
+  }
 
   /*---- jsx ----*/
   return (

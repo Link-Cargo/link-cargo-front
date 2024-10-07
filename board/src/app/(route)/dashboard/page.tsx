@@ -11,6 +11,7 @@ import ProfileCard from '@/app/_components/dashboard/Profile';
 import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 
 import { GetIUserDto, OnboardApiService } from '@/app/_apis/onboard';
+import Loading from '@/app/_components/common/Loading';
 
 const Overview = dynamic(() => import('./(section)/Overview'), { ssr: false });
 const CompareQuotes = dynamic(() => import('./(section)/CompareQuotes'), {
@@ -97,15 +98,23 @@ function Page() {
     <Layout>
       <Container>
         <div>
-          <ProfileCard
-            imgSrc={UserData?.result.user.profile || '/assets/r1.png'}
-            title={`${UserData?.result.user.lastName}${UserData?.result.user.firstName}`}
-            desc={
-              UserData?.result.user.role === 'CONSIGNOR'
-                ? '소규모 수출 화주'
-                : '포워더'
-            }
-          />
+          {UserData ? (
+            <ProfileCard
+              imgSrc={UserData?.result.user.profile || '/assets/r1.png'}
+              title={
+                `${UserData?.result.user.lastName}${UserData?.result.user.firstName}` ||
+                ''
+              }
+              desc={
+                UserData?.result.user.role === 'CONSIGNOR'
+                  ? '소규모 수출 화주'
+                  : '포워더'
+              }
+            />
+          ) : (
+            <Loading width="177px" height="215px" />
+          )}
+
           <List
             listData={Object.entries(dashboardListConfig).map(
               ([id, { title, section }]) => ({
@@ -136,7 +145,7 @@ const Container = styled.div`
   gap: 50px;
 
   section {
-    flex: 1;
+    width: 1000px;
   }
 `;
 

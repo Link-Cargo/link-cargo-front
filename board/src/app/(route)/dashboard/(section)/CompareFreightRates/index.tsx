@@ -33,6 +33,7 @@ import {
 
 import { GetIPortDto, getPortsAll } from '@/app/_apis/getPorts';
 import { 월별_리스트, 이유_리스트 } from './mock';
+import Loading from '@/app/_components/common/Loading';
 
 interface 견적다시요청하기용_ROWQUOTATION {
   rawQuotationId: string;
@@ -197,6 +198,15 @@ export default function CompareFreightRates() {
     }
   }, [userRawQuotationData]);
 
+  if (
+    summaryLoading ||
+    graphLoading ||
+    recommendationLoading ||
+    userRawQuotationLoading
+  ) {
+    return <Loading width="1000px" height="500px" />;
+  }
+
   /*---- jsx ----*/
   return (
     <Layout>
@@ -236,7 +246,6 @@ export default function CompareFreightRates() {
           placeholder="운송사를 선택하세요"
         />
       )}
-      {!selectedIdFormatting && <div>값을 불러오는 중...</div>}
       <FlexBox>
         <Box
           desc="입국항 주요 항만 운임지수"

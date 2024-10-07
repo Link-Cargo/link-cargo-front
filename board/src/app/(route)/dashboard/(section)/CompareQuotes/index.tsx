@@ -37,6 +37,7 @@ import {
   DashboardApiService,
   GetIUserRawQuotationDto,
 } from '@/app/_apis/dashboard';
+import Loading from '@/app/_components/common/Loading';
 
 export default function CompareQuotes() {
   /*---- router ----*/
@@ -150,6 +151,10 @@ export default function CompareQuotes() {
       ))}
     </ul>
   );
+
+  if (compareLoading || userRawQuotationLoading) {
+    return <Loading width="1000px" height="500px" />;
+  }
   return (
     <Layout>
       <FlexBox>
