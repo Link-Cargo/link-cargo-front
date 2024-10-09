@@ -62,6 +62,9 @@ export default function MyChatHistory() {
   //GET 채팅방 리스트
   // 채팅방 리스트 가져오기
   useEffect(() => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const chatRoomIdFromQuery = queryParams.get('chatRoomId');
+
     if (tokens?.accessToken) {
       axios
         .get('http://www.link-cargo-dev.com/api/v1/chat/rooms', {
@@ -70,8 +73,15 @@ export default function MyChatHistory() {
         .then((response) => {
           const rooms = response.data.result.chatRooms;
           setChatRooms(rooms);
-          if (rooms.length > 0) {
-            setSelectChatRoom(rooms[0]); // 상태 업데이트
+          
+          // chatRoomId와 일치하는 room 찾기
+          const selectedRoom = chatRoomIdFromQuery
+              ? rooms.find((room) => room.chatRoomId === chatRoomIdFromQuery)
+              : rooms[0];
+
+          // 일치하는 room이 있는 경우 선택, 그렇지 않으면 첫 번째 room 선택
+          if (selectedRoom) {
+            setSelectChatRoom(selectedRoom);
           }
         });
     }
