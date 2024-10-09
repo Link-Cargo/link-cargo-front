@@ -321,7 +321,7 @@ export default function MyChatHistory() {
                   {room.isNew && <span>●</span>}
                 </ChatHeader>
                 <ChatSummary>
-                  <div>{room.latestContent}</div>
+                  <div>{room.latestContent.replace(/\\n/g, '\n')}</div>
                 </ChatSummary>
               </ChatEl>
             ))}
