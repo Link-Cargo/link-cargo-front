@@ -62,8 +62,16 @@ export default function MyChatHistory() {
   //GET 채팅방 리스트
   // 채팅방 리스트 가져오기
   useEffect(() => {
-    const queryParams = new URLSearchParams(window.location.search);
+    // URL에서 해시 부분을 가져옵니다.
+    const hash = window.location.hash; // 예: "#chat?chatRoomId=42" 또는 "#chat"
+
+    // 해시 부분에서 '?' 뒤의 쿼리 문자열을 추출합니다.
+    const queryString = hash.includes('?') ? hash.split('?')[1] : '';
+  
+    // URLSearchParams를 사용해 쿼리 파라미터를 파싱합니다.
+    const queryParams = new URLSearchParams(queryString);
     const chatRoomIdFromQuery = queryParams.get('chatRoomId');
+    console.log(typeof(chatRoomIdFromQuery)); // "42" 또는 null
 
     if (tokens?.accessToken) {
       axios
@@ -74,15 +82,17 @@ export default function MyChatHistory() {
           const rooms = response.data.result.chatRooms;
           setChatRooms(rooms);
           
-          // chatRoomId와 일치하는 room 찾기
-          const selectedRoom = chatRoomIdFromQuery
-              ? rooms.find((room: any) => room.chatRoomId === chatRoomIdFromQuery)
-              : rooms[0];
+          let selectedRoom = chatRoomIdFromQuery
+            ? rooms.find(
+              (room: any) => room.chatRoomId.toString() === chatRoomIdFromQuery
+            )
+          : undefined;
 
-          // 일치하는 room이 있는 경우 선택, 그렇지 않으면 첫 번째 room 선택
-          if (selectedRoom) {
-            setSelectChatRoom(selectedRoom);
+          // selectedRoom이 undefined이고, rooms 배열에 항목이 있을 경우 첫 번째 room 선택
+          if (!selectedRoom && rooms.length > 0) {
+            selectedRoom = rooms[0];
           }
+          setSelectChatRoom(selectedRoom);
         });
     }
   }, [tokens?.accessToken]);
@@ -339,11 +349,10 @@ export default function MyChatHistory() {
             {chatMessages.length > 0 ? (
               chatMessages.map((el, index) => {
                 return (
-                  <ChatBox
-                    key={index}
-                    type={el.senderId === userId ? 'me' : 'other'}
-                  >
-                    <div style={{ whiteSpace: 'pre-wrap' }} >{el.content}</div>
+                  <ChatBox key={index} type={el.senderId === userId ? 'me' : 'other'}>
+                    <div style={{ whiteSpace: 'pre-wrap' }}>
+                      {el.content.replace(/\\n/g, '\n')}
+                    </div>
                     <p>{formatDate(el.createdAt)}</p>
                   </ChatBox>
                 );
