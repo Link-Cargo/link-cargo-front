@@ -76,7 +76,7 @@ export default function MyChatHistory() {
           
           // chatRoomId와 일치하는 room 찾기
           const selectedRoom = chatRoomIdFromQuery
-              ? rooms.find((room) => room.chatRoomId === chatRoomIdFromQuery)
+              ? rooms.find((room: any) => room.chatRoomId === chatRoomIdFromQuery)
               : rooms[0];
 
           // 일치하는 room이 있는 경우 선택, 그렇지 않으면 첫 번째 room 선택
