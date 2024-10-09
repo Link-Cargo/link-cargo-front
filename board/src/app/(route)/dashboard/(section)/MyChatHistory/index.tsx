@@ -73,12 +73,15 @@ export default function MyChatHistory() {
         .then((response) => {
           const rooms = response.data.result.chatRooms;
           setChatRooms(rooms);
-          if (chatRoomIdFromQuery) {
-            // 쿼리 파라미터에 chatRoomId가 있을 경우 해당 값을 사용
-            setSelectChatRoom(chatRoomIdFromQuery);
-          } else if (rooms.length > 0) {
-            // 그렇지 않으면 첫 번째 채팅방 사용
-            setSelectChatRoom(rooms[0].chatRoomId);
+          
+          // chatRoomId와 일치하는 room 찾기
+          const selectedRoom = chatRoomIdFromQuery
+              ? rooms.find((room) => room.chatRoomId === chatRoomIdFromQuery)
+              : rooms[0];
+
+          // 일치하는 room이 있는 경우 선택, 그렇지 않으면 첫 번째 room 선택
+          if (selectedRoom) {
+            setSelectChatRoom(selectedRoom);
           }
         });
     }
