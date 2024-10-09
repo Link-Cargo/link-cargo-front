@@ -343,7 +343,7 @@ export default function MyChatHistory() {
                     key={index}
                     type={el.senderId === userId ? 'me' : 'other'}
                   >
-                    <div>{el.content}</div>
+                    <div style={{ whiteSpace: 'pre-wrap' }} >{el.content}</div>
                     <p>{formatDate(el.createdAt)}</p>
                   </ChatBox>
                 );
