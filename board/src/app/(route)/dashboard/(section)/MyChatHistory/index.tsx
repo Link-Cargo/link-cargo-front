@@ -343,7 +343,7 @@ export default function MyChatHistory() {
                     key={index}
                     type={el.senderId === userId ? 'me' : 'other'}
                   >
-                    <div>{el.content}</div>
+                    <div dangerouslySetInnerHTML={{ __html: el.content.replace(/\n/g, '<br />') }} />
                     <p>{formatDate(el.createdAt)}</p>
                   </ChatBox>
                 );
