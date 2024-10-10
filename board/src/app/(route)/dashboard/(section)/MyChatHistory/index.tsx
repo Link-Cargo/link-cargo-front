@@ -34,7 +34,7 @@ export default function MyChatHistory() {
   //스크롤 위치 ref
   const messagesEndRef = useRef<HTMLDivElement>(null);
   //부킹요청 버튼 상태
-  const [요청, set요청] = useState(false);
+  const [요청, set요청] = useState(true);
   //로그인 된 사용자 id
   const [userId, setUserId] = useState<number>();
   //수출전체크 안내 박스 열렸는지
