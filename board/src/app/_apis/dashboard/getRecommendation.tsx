@@ -8,7 +8,7 @@ export interface ResultData {
 }
 
 export interface Schedule {
-  carrier: string;
+  vesselName: string;
   ETD: number[];
   ETA: number[];
   transitTime: number;

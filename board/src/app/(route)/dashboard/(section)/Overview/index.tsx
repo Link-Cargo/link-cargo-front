@@ -319,7 +319,7 @@ export default function Overview() {
                 {!recommendationData && <div>값을 불러오는 중...</div>}
                 {recommendationData?.result.scheduleInfos.map((item, index) => (
                   <tr key={index}>
-                    <td>{item.carrier}</td>
+                    <td>{item.vesselName}</td>
                     <td>{formatDateRange(item.ETD, item.ETD)}</td>
                     <td>
                       {formatTransitTime(item.transitTime, item.transportType)}

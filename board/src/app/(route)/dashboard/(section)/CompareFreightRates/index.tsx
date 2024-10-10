@@ -332,7 +332,7 @@ export default function CompareFreightRates() {
                   {recommendationData?.result.scheduleInfos.map(
                     (item, index) => (
                       <tr key={index}>
-                        <td>{item.carrier}</td>
+                        <td>{item.vesselName}</td>
                         <td>{formatDateRange(item.ETD, item.ETD)}</td>
                         <td>
                           {formatTransitTime(
