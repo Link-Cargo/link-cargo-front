@@ -347,7 +347,7 @@ export default function Overview() {
       <FlexBox>
         <Box desc="입국항 혼잡도" bgType={BgType.DARK} width="30%">
           <Title type={congestionData?.result.status}>
-            {congestionData?.result.status}
+            <h3>{congestionData?.result.status}</h3>
           </Title>
           <Desc>{congestionData?.result.description}</Desc>
         </Box>
@@ -427,6 +427,10 @@ const Title = styled.div<{ type?: string }>`
   b {
     color: ${COLORS.main};
     font-weight: 800;
+  }
+
+  h3 {
+    font-weight: 700;
   }
 
   color: ${(props) =>

@@ -172,7 +172,6 @@ function ContentPage() {
                   도착일자는 현지시간 기준으로, 업체 사정에 따라 사전고지 없이
                   변경될 수 있습니다.
                 </span>
-                <span>도움말</span>
               </Caution>
               <CardContainer>
                 {scheduleData?.result.schedules.map((el) => {
