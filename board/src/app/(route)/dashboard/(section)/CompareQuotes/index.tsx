@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { styled } from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 
 import { Box } from '@/app/_components/dashboard/Box';
 import { BgType } from '@/app/_components/dashboard/Box';
@@ -38,6 +38,11 @@ import {
   GetIUserRawQuotationDto,
 } from '@/app/_apis/dashboard';
 import Loading from '@/app/_components/common/Loading';
+import {
+  ChatRoomContent,
+  postChatRoom,
+  PostIChatRoomDto,
+} from '@/app/_apis/chat/postChatRoom';
 
 export default function CompareQuotes() {
   /*---- router ----*/
@@ -87,6 +92,25 @@ export default function CompareQuotes() {
     queryKey: ['userRawQuotationData'],
     queryFn: () => DashboardApiService.getUserRawQuotation(tokens?.accessToken),
     enabled: !!tokens?.accessToken,
+  });
+
+  const {
+    mutate: mutateChat,
+    data: chatData,
+    error: chatError,
+  } = useMutation<
+    PostIChatRoomDto,
+    Error,
+    { req_body: ChatRoomContent; at: string }
+  >({
+    mutationFn: ({ req_body, at }) => postChatRoom(req_body, at),
+    onSuccess: (response: PostIChatRoomDto) => {
+      const chatRoomIds = response.result.chatRoomId;
+      router.push(`/loading/${chatRoomIds}`);
+    },
+    onError: (error: any) => {
+      const response = error.response?.data;
+    },
   });
 
   const RawQuotationList =
@@ -269,9 +293,15 @@ export default function CompareQuotes() {
                         text="1:1 문의하기"
                         flexValue={1}
                         type="dark"
-                        onClick={() =>
-                          router.push(`/loading/${item.forwarderId}`)
-                        }
+                        onClick={() => {
+                          mutateChat({
+                            req_body: {
+                              targetUserId: item.forwarderId as number, //포워더id
+                              schedule: `${item.quotationInfoResponse.exportPort} → ${item.quotationInfoResponse.importPort} | ${item.quotationInfoResponse.carrier} `,
+                            },
+                            at: tokens.accessToken,
+                          });
+                        }}
                       />
                     </StyledTable>
                   </Box>
