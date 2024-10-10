@@ -42,7 +42,6 @@ export default function MyChatHistory() {
 
   const selectChatRoomRef = useRef(selectChatRoom);
 
-
   /*---- api call function ----*/
   const { data: UserData } = useQuery<GetIUserDto, Error>({
     queryKey: ['User'],
@@ -67,11 +66,11 @@ export default function MyChatHistory() {
 
     // 해시 부분에서 '?' 뒤의 쿼리 문자열을 추출합니다.
     const queryString = hash.includes('?') ? hash.split('?')[1] : '';
-  
+
     // URLSearchParams를 사용해 쿼리 파라미터를 파싱합니다.
     const queryParams = new URLSearchParams(queryString);
     const chatRoomIdFromQuery = queryParams.get('chatRoomId');
-    console.log(typeof(chatRoomIdFromQuery)); // "42" 또는 null
+    console.log(typeof chatRoomIdFromQuery); // "42" 또는 null
 
     if (tokens?.accessToken) {
       axios
@@ -81,12 +80,13 @@ export default function MyChatHistory() {
         .then((response) => {
           const rooms = response.data.result.chatRooms;
           setChatRooms(rooms);
-          
+
           let selectedRoom = chatRoomIdFromQuery
             ? rooms.find(
-              (room: any) => room.chatRoomId.toString() === chatRoomIdFromQuery
-            )
-          : undefined;
+                (room: any) =>
+                  room.chatRoomId.toString() === chatRoomIdFromQuery,
+              )
+            : undefined;
 
           // selectedRoom이 undefined이고, rooms 배열에 항목이 있을 경우 첫 번째 room 선택
           if (!selectedRoom && rooms.length > 0) {
@@ -138,21 +138,23 @@ export default function MyChatHistory() {
             prevRooms.map((r) =>
               r.chatRoomId === room.chatRoomId
                 ? { ...r, latestContent: newMessage.content }
-                : r
-            )
+                : r,
+            ),
           );
           // 현재 선택된 채팅방이면 새로운 메시지를 추가
           // 선택된 채팅방이 아니면 isNew를 true로 설정
           if (selectChatRoomRef.current?.chatRoomId !== room.chatRoomId) {
             setChatRooms((prevRooms) =>
               prevRooms.map((r) =>
-                r.chatRoomId === room.chatRoomId ? { ...r, isNew: true } : r
-              )
+                r.chatRoomId === room.chatRoomId ? { ...r, isNew: true } : r,
+              ),
             );
-          }
-          else { // 현재 선택된 채팅방과 새로운 메시지 도착 채팅방이 동일하면
+          } else {
+            // 현재 선택된 채팅방과 새로운 메시지 도착 채팅방이 동일하면
             setChatMessages((prevMessages) => {
-              if (prevMessages.some((msg) => msg.chatId === newMessage.chatId)) {
+              if (
+                prevMessages.some((msg) => msg.chatId === newMessage.chatId)
+              ) {
                 // 중복된 메시지가 있으면 아무 작업도 하지 않음
                 return prevMessages;
               }
@@ -172,27 +174,40 @@ export default function MyChatHistory() {
 
   // 채팅방 입장 시 모든 메시지 읽음 처리
   const markAllMessagesAsRead = (chatRoomId: number) => {
-    axios.post(`http://www.link-cargo-dev.com/api/v1/chat/${chatRoomId}/all/read`, {}, {
-      headers: { Authorization: `Bearer ${tokens?.accessToken}` }
-    }).then(() => {
-      // 해당 채팅방의 isNew를 false로 변경
-      setChatRooms((prevRooms) =>
-        prevRooms.map((room) =>
-          room.chatRoomId === chatRoomId ? { ...room, isNew: false } : room
-        )
-      );
-    }).catch(error => {
-      console.error("Error marking all messages as read:", error);
-    });
+    axios
+      .post(
+        `http://www.link-cargo-dev.com/api/v1/chat/${chatRoomId}/all/read`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${tokens?.accessToken}` },
+        },
+      )
+      .then(() => {
+        // 해당 채팅방의 isNew를 false로 변경
+        setChatRooms((prevRooms) =>
+          prevRooms.map((room) =>
+            room.chatRoomId === chatRoomId ? { ...room, isNew: false } : room,
+          ),
+        );
+      })
+      .catch((error) => {
+        console.error('Error marking all messages as read:', error);
+      });
   };
 
   // 개별 메시지 읽음 처리
   const markMessageAsRead = (chatRoomId: number, chatId: number) => {
-    axios.post(`http://www.link-cargo-dev.com/api/v1/chat/${chatRoomId}/${chatId}/read`, {}, {
-      headers: { Authorization: `Bearer ${tokens?.accessToken}` }
-    }).catch(error => {
-      console.error("Error marking message as read:", error);
-    });
+    axios
+      .post(
+        `http://www.link-cargo-dev.com/api/v1/chat/${chatRoomId}/${chatId}/read`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${tokens?.accessToken}` },
+        },
+      )
+      .catch((error) => {
+        console.error('Error marking message as read:', error);
+      });
   };
 
   //채팅룸 선택, 선택한 채팅룸 소켓 연결
@@ -294,7 +309,7 @@ export default function MyChatHistory() {
               placeholder="검색어 입력"
               name="search"
               value=""
-              onChange={() => { }}
+              onChange={() => {}}
             />
           </div>
           <CheckboxInput
@@ -311,9 +326,7 @@ export default function MyChatHistory() {
             {chatRooms.map((room) => (
               <ChatEl
                 key={room.chatRoomId}
-                onClick={() =>
-                  selectChatRoomHandler(room)
-                }
+                onClick={() => selectChatRoomHandler(room)}
                 isSelected={selectChatRoom?.chatRoomId === room.chatRoomId}
               >
                 <ChatHeader>
@@ -349,7 +362,10 @@ export default function MyChatHistory() {
             {chatMessages.length > 0 ? (
               chatMessages.map((el, index) => {
                 return (
-                  <ChatBox key={index} type={el.senderId === userId ? 'me' : 'other'}>
+                  <ChatBox
+                    key={index}
+                    type={el.senderId === userId ? 'me' : 'other'}
+                  >
                     <div style={{ whiteSpace: 'pre-wrap' }}>
                       {el.content.replace(/\\n/g, '\n')}
                     </div>
@@ -471,11 +487,11 @@ const ChatList = styled.div`
   display: flex;
   flex-direction: column;
   border-radius: 12px;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   width: 100%; /* 가로 폭을 100%로 설정 */
   box-sizing: border-box; /* 패딩과 보더를 포함한 크기 계산 */
-  
+
   h3 {
     font-weight: bold;
     font-size: 16px;
@@ -505,7 +521,6 @@ const ChatHeader = styled.div`
     color: #007aff;
   }
 `;
-
 
 const ChatSummary = styled.div`
   display: flex;
