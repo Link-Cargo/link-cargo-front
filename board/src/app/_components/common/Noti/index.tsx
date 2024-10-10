@@ -116,7 +116,7 @@ const NotificationDropdown = styled.div`
   box-shadow: 0px 0px 10px rgba(0, 0, 20, 0.1);
   border-radius: 40px;
   width: 600px;
-  height: 670px;
+  max-height: 670px;
   z-index: 100;
   display: flex;
   flex-direction: column;
