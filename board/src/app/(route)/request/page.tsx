@@ -205,8 +205,7 @@ function ContentPage() {
     isLoading: PortLoading,
   } = useQuery<GetIPortDto, Error>({
     queryKey: ['Port'],
-    queryFn: () => getPortsAll(accessToken),
-    enabled: !!accessToken,
+    queryFn: () => getPortsAll(),
   });
 
   function customMutate(req_body: CargosContent, _at: string) {

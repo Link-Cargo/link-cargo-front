@@ -132,7 +132,6 @@ export default function Page() {
         ),
         wishExportDate: transformDate(formData.wishExportDate),
       },
-      at: accessToken,
     });
 
     const params = new URLSearchParams();
@@ -176,21 +175,15 @@ export default function Page() {
     isLoading: portLoading,
   } = useQuery<GetIPortDto, Error>({
     queryKey: ['Port'],
-    queryFn: () => getPortsAll(tokens?.accessToken),
-    enabled: !!tokens?.accessToken,
+    queryFn: () => getPortsAll(),
   });
 
   const {
     mutate: mutateCalc,
     data: CalcData,
     error: CalcError,
-  } = useMutation<
-    PostICalculateDto,
-    Error,
-    { req_body: CargosContent; at: string }
-  >({
-    mutationFn: ({ req_body, at }) =>
-      QuotationApiService.postCalculate(req_body, at),
+  } = useMutation<PostICalculateDto, Error, { req_body: CargosContent }>({
+    mutationFn: ({ req_body }) => QuotationApiService.postCalculate(req_body),
     onSuccess: (response: PostICalculateDto) => {
       localStorage.setItem('calc', response.result.toString());
     },

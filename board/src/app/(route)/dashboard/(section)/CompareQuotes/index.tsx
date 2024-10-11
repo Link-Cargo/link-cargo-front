@@ -129,8 +129,7 @@ export default function CompareQuotes() {
     isLoading: portLoading,
   } = useQuery<GetIPortDto, Error>({
     queryKey: ['Port'],
-    queryFn: () => getPortsAll(tokens?.accessToken),
-    enabled: !!tokens?.accessToken,
+    queryFn: () => getPortsAll(),
   });
 
   /*---- useEffect ----*/

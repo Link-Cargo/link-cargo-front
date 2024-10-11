@@ -31,11 +31,11 @@ export const getPorts = async (type: typeContent, at: string) => {
   return response;
 };
 
-export const getPortsAll = async (at: string) => {
+export const getPortsAll = async () => {
   const url = `/ports`;
   const response = await getAsync<GetIPortDto, undefined>(
     url,
-    at,
+    undefined,
     undefined,
     undefined,
   );

@@ -28,12 +28,11 @@ export type PostICalculateDto = ResponseDto<number>;
 /*
 예상 견적서 조회
 */
-export const postCalculate = async (req_body: CargosContent, at: string) => {
+export const postCalculate = async (req_body: CargosContent) => {
   const url = `/cargos/calculate`;
   const response = await postAsync<PostICalculateDto, CargosContent>(
     url,
     req_body,
-    at,
   );
   return response;
 };
