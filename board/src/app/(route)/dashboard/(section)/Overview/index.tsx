@@ -296,6 +296,7 @@ export default function Overview() {
                 ).toLocaleString()}
                 원
               </b>
+              <p>*CBM당 해당 운임</p>
             </SubTitle>
           </div>
           <div style={{ flex: '1' }}>
@@ -446,6 +447,12 @@ const SubTitle = styled.div`
   color: ${COLORS.g5};
   font-size: 18px;
   line-height: 36px;
+
+  p {
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 13px;
+  }
 `;
 const Desc = styled.div`
   color: ${COLORS.g4};

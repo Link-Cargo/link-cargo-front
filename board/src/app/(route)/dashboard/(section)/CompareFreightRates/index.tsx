@@ -308,6 +308,7 @@ export default function CompareFreightRates() {
                 ).toLocaleString()}
                 원
               </b>
+              <p>*CBM당 해당 운임</p>
             </SubTitle>
           </div>
           <div style={{ flex: '1' }}>
