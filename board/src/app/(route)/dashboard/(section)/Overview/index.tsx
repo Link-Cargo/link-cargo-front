@@ -336,6 +336,7 @@ export default function Overview() {
               text="견적 다시 요청하기"
               type="dark"
               onClick={() => {
+                localStorage.setItem('calc', '969246');
                 router.push(
                   `/reserve-list?exportPortId=${selectedItem?.exportPort}&importPortId=${selectedItem?.importPort}&wishExportDate=${formatWishExportDate(recommendationData?.result.dateDifference as number, selectedItem?.ETD as number[])}&rawQuotationId=${selectedItem?.rawQuotationId}`,
                 );
