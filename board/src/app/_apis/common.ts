@@ -272,10 +272,7 @@ API.interceptors.response.use(
           const { accessToken, refreshToken } =
             await getTokenFromLocalStorage();
 
-          const res = await OnboardApiService.getReToken(
-            accessToken,
-            refreshToken,
-          );
+          const res = await OnboardApiService.getReToken(refreshToken);
 
           if (res) {
             const {

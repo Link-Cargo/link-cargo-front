@@ -33,7 +33,6 @@ export const postLogin = async (req_body: LoginContent) => {
 */
 
 export const getReToken = async (
-  accessToken: string,
   refreshToken: string,
 ): Promise<PostILoginDto> => {
   try {
@@ -41,7 +40,6 @@ export const getReToken = async (
 
     const response: AxiosResponse<PostILoginDto> = await API.get(url, {
       headers: {
-        Authorization: `Bearer ${accessToken}`,
         'Refresh-Token': refreshToken,
         accept: '*/*',
       },

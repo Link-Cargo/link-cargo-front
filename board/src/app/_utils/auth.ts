@@ -50,7 +50,6 @@ export const saveTokenToLocalStorage = (
     };
 
     localStorage.setItem('tokens', JSON.stringify(tokenData));
-    console.log('2');
   } catch (error) {
     window.location.href = '/login';
   }
