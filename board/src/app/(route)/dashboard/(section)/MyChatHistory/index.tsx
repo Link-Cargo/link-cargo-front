@@ -348,7 +348,7 @@ export default function MyChatHistory() {
                   <b>{selectChatRoom.targetUserName}</b>
                   <span>{selectChatRoom.targetUserCompany}</span>
                   <BookingButton status={요청} onClick={() => set요청(!요청)}>
-                    {요청 ? '부킹요청' : '부킹요청취소'}
+                    {요청 ? '부킹 요청' : '부킹 요청 취소'}
                   </BookingButton>
                 </div>
                 <div>{selectChatRoom.schedule}</div>
@@ -597,8 +597,7 @@ const BookingButton = styled.button<{ status: boolean }>`
   background-color: ${(props) => (props.status ? COLORS.main : COLORS.red)};
   color: white;
   border: none;
-  width: 72px;
-  height: 22px;
+  padding: 4px 14px;
   border-radius: 50px;
   cursor: pointer;
   font-size: 12px;
