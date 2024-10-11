@@ -66,6 +66,7 @@ export default function CompareQuotes() {
     text: string;
     importId: number;
     exportId: number;
+    etd: string;
   } | null>(null); // 객체 또는 null 값을 허용
   const [selectedQuoteData, setSelectedQuoteData] = useState<any>(null);
 
@@ -147,6 +148,7 @@ export default function CompareQuotes() {
           getPortIdByName(portData as GetIPortDto, firstValue.importPort) ?? 0, // undefined일 경우 0으로 설정
         exportId:
           getPortIdByName(portData as GetIPortDto, firstValue.exportPort) ?? 0, // undefined일 경우 0으로 설정
+        etd: firstValue.ETD,
       });
     }
   }, [userRawQuotationData]);
@@ -207,6 +209,7 @@ export default function CompareQuotes() {
                       portData as GetIPortDto,
                       formatted.exportPort,
                     ) ?? 0,
+                  etd: formatted.ETD,
                 });
 
                 setSelectedRawQuotationId(id || '');
@@ -296,7 +299,7 @@ export default function CompareQuotes() {
                           mutateChat({
                             req_body: {
                               targetUserId: item.forwarderId as number, //포워더id
-                              schedule: `${item.quotationInfoResponse.exportPort} → ${item.quotationInfoResponse.importPort} | ${item.quotationInfoResponse.carrier} `,
+                              schedule: `${item.quotationInfoResponse.exportPort} → ${item.quotationInfoResponse.importPort} | ETD: ${selectedIdFormatting?.etd} | ${item.quotationInfoResponse.carrier} `,
                             },
                             at: tokens.accessToken,
                           });
