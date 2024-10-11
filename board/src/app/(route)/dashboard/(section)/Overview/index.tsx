@@ -495,6 +495,10 @@ const StyledTable = styled.div`
   ul > li:nth-child(3) > span:nth-child(2) {
     color: ${COLORS.g4};
     font-weight: 500;
+
+    width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   ul > li > span:nth-child(1) {
