@@ -35,6 +35,7 @@ function ContentPage() {
 
   /*---- state ----*/
   const [selectedList, setSelectedList] = useState<number[]>([]);
+  const [calc, setCalc] = useState<string>('');
   const exportPortId = decodeURIComponent(
     searchParams.get('exportPortId') || '',
   );
@@ -90,6 +91,17 @@ function ContentPage() {
     router.push(`/dashboard`);
   }
 
+  useEffect(() => {
+    const _calc = localStorage.getItem('calc');
+    if (_calc) {
+      const formattedCalc = parseFloat(_calc)
+        .toFixed(0)
+        .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+      setCalc(formattedCalc);
+    }
+  }, []);
+
   /*---- useEffect ----*/
   useEffect(() => {
     // URL 파라미터에서 selectedList 값을 가져와서 상태에 반영
@@ -132,7 +144,7 @@ function ContentPage() {
               <SearchBox>{searchBoxText}</SearchBox>
               <GrayBox>
                 <div>예상 비용</div>
-                <span>1,073,280원</span>
+                <span>{calc}원</span>
               </GrayBox>
             </FlexContainer>
             <FormSection gapValue={30} style={{ height: '200px' }}>
@@ -152,7 +164,7 @@ function ContentPage() {
                 <SearchBox>{searchBoxText}</SearchBox>
                 <GrayBox>
                   <div>예상 비용</div>
-                  <span>1,073,280원</span>
+                  <span>{calc}원</span>
                 </GrayBox>
               </FlexContainer>
               <Tip>

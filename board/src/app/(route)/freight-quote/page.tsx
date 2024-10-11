@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { COLORS } from '@/app/_constant/color';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 import Button from '@/app/_components/common/Button';
 import {
@@ -16,11 +16,18 @@ import Text from '@/app/_components/common/Text';
 import Layout from '@/app/_components/common/Layout';
 
 import { CargosContent, CargosInfo } from '@/app/_apis/quotation/postCargos';
-import { GetIPortDto, getPorts, PortType } from '@/app/_apis/getPorts';
+import {
+  GetIPortDto,
+  getPorts,
+  getPortsAll,
+  PortType,
+} from '@/app/_apis/getPorts';
 import { getTokenFromLocalStorage } from '@/app/_utils/auth';
 
 import Popup from '@/app/_components/common/Popup';
 import { useTutorial } from '@/app/_hooks/useTutorial';
+import { PostICalculateDto, QuotationApiService } from '@/app/_apis/quotation';
+import { getPortIdByName, transformDate } from '../request/utill';
 
 export default function Page() {
   /*---- router ----*/
@@ -112,6 +119,22 @@ export default function Page() {
   };
 
   const handleSubmit = () => {
+    mutateCalc({
+      req_body: {
+        ...formData,
+        exportPortId: getPortIdByName(
+          portData as GetIPortDto,
+          formData.exportPortId,
+        ),
+        importPortId: getPortIdByName(
+          portData as GetIPortDto,
+          formData.importPortId,
+        ),
+        wishExportDate: transformDate(formData.wishExportDate),
+      },
+      at: accessToken,
+    });
+
     const params = new URLSearchParams();
 
     (Object.keys(formData) as (keyof CargosContent)[]).forEach((key) => {
@@ -145,6 +168,35 @@ export default function Page() {
     queryKey: ['exportPort'],
     queryFn: () => getPorts({ type: PortType.EXPORT }, accessToken),
     // enabled: !!accessToken,
+  });
+
+  const {
+    data: portData,
+    error: portError,
+    isLoading: portLoading,
+  } = useQuery<GetIPortDto, Error>({
+    queryKey: ['Port'],
+    queryFn: () => getPortsAll(tokens?.accessToken),
+    enabled: !!tokens?.accessToken,
+  });
+
+  const {
+    mutate: mutateCalc,
+    data: CalcData,
+    error: CalcError,
+  } = useMutation<
+    PostICalculateDto,
+    Error,
+    { req_body: CargosContent; at: string }
+  >({
+    mutationFn: ({ req_body, at }) =>
+      QuotationApiService.postCalculate(req_body, at),
+    onSuccess: (response: PostICalculateDto) => {
+      localStorage.setItem('calc', response.result.toString());
+    },
+    onError: (error: any) => {
+      const response = error.response?.data;
+    },
   });
 
   /*---- useEffect ----*/
